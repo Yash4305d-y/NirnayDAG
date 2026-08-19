@@ -8,7 +8,7 @@ import {
   useEdgesState,
   BackgroundVariant,
 } from '@xyflow/react';
-import type { Node, Edge } from '@xyflow/react';
+import type { Node } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { SAMPLE_ADRS } from '../mocks/sampleAdrs';
 import type { NirnayADR } from '../core/types';
