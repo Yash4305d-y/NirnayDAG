@@ -4,8 +4,6 @@
   --color-primary: #10b981;
 }
 
-@config "../../tailwind.config.js";
-
 :root {
   --bg-deep-obsidian: #05070B;
   --bg-surface-glass: rgba(14, 18, 28, 0.65);

@@ -1,4 +1,4 @@
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import type { NirnayADR, DecisionStatus } from '../core/types.js';
 
 interface ADRFrontmatter {
