@@ -1,15 +1,16 @@
-export type ADRStatus = "proposed" | "accepted" | "superseded" | "deprecated";
+export type DecisionStatus = 'accepted' | 'proposed' | 'superseded' | 'deprecated';
 
-export interface NirnayNode extends Record<string, unknown> {
+export interface NirnayADR extends Record<string, unknown> {
   id: string;
   title: string;
-  status: ADRStatus;
-  timestamp: string; // ISO-8601
+  category: 'Infrastructure' | 'Database' | 'AI / Engine' | 'Security';
+  status: DecisionStatus;
+  timestamp: string;
   context: string;
   decision: string;
   consequences: {
-    positive: string[];
-    negative: string[];
+    pros: string[];
+    cons: string[];
   };
   dependencies: string[];
   supersedes?: string;
@@ -19,16 +20,16 @@ export interface NirnayEdge {
   id: string;
   source: string;
   target: string;
-  type?: string; // e.g., 'dependency', 'supersedes'
+  type?: string;
   label?: string;
   animated?: boolean;
 }
 
 export interface DAGGraph {
-  nodes: Record<string, NirnayNode>;
+  nodes: Record<string, NirnayADR>;
   edges: NirnayEdge[];
   adjacencyList: Record<string, string[]>;
-  reverseAdjacencyList: Record<string, string[]>; // useful for tracing upstream
+  reverseAdjacencyList: Record<string, string[]>;
 }
 
 export interface NirnayValidationError {

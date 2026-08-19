@@ -1,6 +1,6 @@
-import type { NirnayNode, DAGGraph } from './types';
+import type { NirnayADR, DAGGraph } from './types';
 
-export function buildGraph(nodes: NirnayNode[]): DAGGraph {
+export function buildGraph(nodes: NirnayADR[]): DAGGraph {
   const graph: DAGGraph = {
     nodes: {},
     edges: [],

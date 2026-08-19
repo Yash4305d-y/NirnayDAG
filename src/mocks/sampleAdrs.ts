@@ -1,97 +1,74 @@
-import type { NirnayNode } from '../core/types';
+import type { NirnayADR } from '../core/types';
 
-export const sampleAdrs: NirnayNode[] = [
+export const SAMPLE_ADRS: NirnayADR[] = [
   {
     id: 'ADR-001',
-    title: 'Migrate to Microservices Architecture',
+    title: 'Adopt Event-Driven Architecture via Apache Kafka',
+    category: 'Infrastructure',
     status: 'accepted',
-    timestamp: '2023-01-15T10:00:00Z',
-    context: 'The monolithic application is becoming too large to maintain and deploy efficiently. We need to split it into smaller, independently deployable services to increase developer velocity.',
-    decision: 'Adopt a microservices architecture using Docker and Kubernetes. Services will be bounded by domain contexts.',
+    timestamp: '2026-01-15',
+    context: 'Synchronous REST microservices are leading to cascading timeouts during burst traffic.',
+    decision: 'Implement an asynchronous event bus using Kafka for all cross-service state propagation.',
     consequences: {
-      positive: ['Independent deployment', 'Better scalability', 'Technology heterogeneity'],
-      negative: ['Increased operational complexity', 'Distributed system challenges (network latency, fault tolerance)']
+      pros: ['Decoupled services', 'High throughput', 'Replayable event log'],
+      cons: ['Eventual consistency complexity', 'Operational overhead of Kafka clusters'],
     },
-    dependencies: []
+    dependencies: [],
   },
   {
     id: 'ADR-002',
-    title: 'Use RabbitMQ for Async Messaging',
-    status: 'deprecated',
-    timestamp: '2023-03-10T14:30:00Z',
-    context: 'Services need to communicate asynchronously without tight coupling.',
-    decision: 'Use RabbitMQ as the message broker for all asynchronous communication between microservices.',
+    title: 'Migrate Primary Storage to PostgreSQL with pgvector',
+    category: 'Database',
+    status: 'accepted',
+    timestamp: '2026-02-02',
+    context: 'Need transactional ACID integrity while indexing high-dimensional embeddings for AI features.',
+    decision: 'Consolidate on PostgreSQL with the pgvector extension instead of running separate relational and vector DBs.',
     consequences: {
-      positive: ['Decoupled services', 'Reliable message delivery'],
-      negative: ['Hard to scale globally', 'Complex clustering setup']
+      pros: ['Unified backup & ACID compliance', 'Lower operational footprint'],
+      cons: ['High memory utilization for large vector indexes'],
     },
-    dependencies: ['ADR-001']
+    dependencies: ['ADR-001'],
   },
   {
     id: 'ADR-003',
-    title: 'Adopt Kafka for Event Streaming',
-    status: 'accepted',
-    timestamp: '2024-02-20T09:15:00Z',
-    context: 'RabbitMQ is struggling with our high-throughput event data and replay requirements. We need a more scalable streaming platform.',
-    decision: 'Migrate from RabbitMQ to Apache Kafka for high-throughput event streaming and event sourcing capabilities.',
+    title: 'Legacy In-Memory Pinecone Instance',
+    category: 'Database',
+    status: 'superseded',
+    timestamp: '2025-11-10',
+    context: 'Early prototype needed rapid semantic search before self-hosted infra was ready.',
+    decision: 'Use managed Pinecone for initial vector lookups.',
     consequences: {
-      positive: ['High throughput and scalability', 'Event replay ability', 'Durable storage'],
-      negative: ['Higher operational overhead', 'Complex client configuration']
+      pros: ['Zero operational setup', 'Fast initial delivery'],
+      cons: ['High SaaS cost scaling', 'Siloed data store'],
     },
-    dependencies: ['ADR-001'],
-    supersedes: 'ADR-002'
+    dependencies: [],
   },
   {
     id: 'ADR-004',
-    title: 'Centralized Logging with ELK Stack',
+    title: 'Deploy Model-Context-Protocol (MCP) Server for Agents',
+    category: 'AI / Engine',
     status: 'accepted',
-    timestamp: '2023-05-12T11:45:00Z',
-    context: 'With microservices, debugging across multiple service logs is tedious. We need a centralized logging solution.',
-    decision: 'Implement the ELK stack (Elasticsearch, Logstash, Kibana) for log aggregation and searching.',
+    timestamp: '2026-03-20',
+    context: 'Autonomous AI agents need secure, standardized tool execution and database introspection.',
+    decision: 'Adopt Anthropic Model Context Protocol (MCP) as the unified interface for system tools.',
     consequences: {
-      positive: ['Searchable centralized logs', 'Better observability', 'Custom dashboards'],
-      negative: ['Heavy resource usage for Elasticsearch', 'Maintenance of the logging pipeline']
+      pros: ['Interoperable tool registry', 'Granular sandboxed execution'],
+      cons: ['Evolving specification requires ongoing maintenance'],
     },
-    dependencies: ['ADR-001']
+    dependencies: ['ADR-002'],
   },
   {
     id: 'ADR-005',
-    title: 'Deploy AI Inference on CPUs',
-    status: 'superseded',
-    timestamp: '2023-08-05T16:00:00Z',
-    context: 'We need to deploy our first set of Machine Learning models for user recommendations.',
-    decision: 'Run AI inference workloads on standard CPU instances to keep initial costs low and simplify deployment.',
-    consequences: {
-      positive: ['Low initial cost', 'Standard deployment pipeline'],
-      negative: ['High latency for complex models', 'Poor throughput under load']
-    },
-    dependencies: ['ADR-001']
-  },
-  {
-    id: 'ADR-006',
-    title: 'Migrate AI Inference to GPU Cluster',
-    status: 'accepted',
-    timestamp: '2024-04-10T10:30:00Z',
-    context: 'Our new LLM-based features are too slow on CPUs, causing timeouts and bad user experience.',
-    decision: 'Provision a dedicated GPU cluster (NVIDIA T4/A10G) specifically for serving large AI models via a gateway.',
-    consequences: {
-      positive: ['10x latency reduction', 'Ability to run larger models (LLMs)', 'Higher throughput'],
-      negative: ['Significant cost increase', 'Specialized infrastructure management']
-    },
-    dependencies: ['ADR-001'],
-    supersedes: 'ADR-005'
-  },
-  {
-    id: 'ADR-007',
-    title: 'Implement GraphQL API Gateway',
+    title: 'Implement Hybrid GraphRAG for Decision Lineage',
+    category: 'AI / Engine',
     status: 'proposed',
-    timestamp: '2024-05-01T13:20:00Z',
-    context: 'Frontend clients are making too many REST calls to different microservices, leading to over-fetching and slow load times.',
-    decision: 'Introduce a GraphQL API Gateway (Apollo Federation) to aggregate microservices and provide a unified, tailored schema for clients.',
+    timestamp: '2026-08-10',
+    context: 'Vector search alone misses multi-hop structural causality between engineering choices.',
+    decision: 'Layer a Directed Acyclic Graph traversal engine over pgvector embeddings for hybrid search.',
     consequences: {
-      positive: ['Reduced over-fetching', 'Single endpoint for clients', 'Better developer experience for frontend'],
-      negative: ['New single point of failure', 'Complexity in schema stitching/federation', 'Caching challenges']
+      pros: ['Deterministic dependency tracing', 'Zero hallucinations on blast radius queries'],
+      cons: ['Increased query latency across deep DAG paths'],
     },
-    dependencies: ['ADR-001']
-  }
+    dependencies: ['ADR-002', 'ADR-004'],
+  },
 ];

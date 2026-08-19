@@ -10,13 +10,14 @@ import {
 import type { Node, Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import dagre from 'dagre';
-import type { NirnayNode } from '../core/types';
+import type { NirnayADR } from '../core/types';
 import { buildGraph, getBlastRadius } from '../core/dagEngine';
 import { DecisionNode } from './DecisionNode';
 import type { DecisionNodeType } from './DecisionNode';
+import { GlowEdge } from './GlowEdge';
 
 interface NirnayCanvasProps {
-  data: NirnayNode[];
+  data: NirnayADR[];
   searchQuery: string;
   isSimulating: boolean;
   onNodeSelect: (nodeId: string | null) => void;
@@ -26,6 +27,10 @@ interface NirnayCanvasProps {
 
 const nodeTypes = {
   decision: DecisionNode,
+};
+
+const edgeTypes = {
+  glow: GlowEdge,
 };
 
 const getLayoutedElements = <T extends Node>(nodes: T[], edges: Edge[], direction = 'TB') => {
@@ -106,6 +111,7 @@ export function NirnayCanvas({
       id: e.id,
       source: e.source,
       target: e.target,
+      type: 'glow',
       animated: e.animated || (isSimulating && blastRadiusNodes.includes(e.target)),
       style: { stroke: e.type === 'supersedes' ? '#6366f1' : '#374151', strokeWidth: 2 },
       markerEnd: {
@@ -133,6 +139,7 @@ export function NirnayCanvas({
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
