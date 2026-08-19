@@ -4,15 +4,19 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "tsup --watch",
-    "build": "tsup",
+    "dev": "vite",
+    "build": "tsup && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
     "ndag": "tsx src/cli/index.ts",
     "mcp": "tsx src/mcp/server.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "prepublishOnly": "npm run typecheck && npm run build"
+    "prepublishOnly": "npm run typecheck && npm run build",
+    "start": "vite preview",
+    "cli:validate": "node ./bin/ndag.js validate",
+    "cli:blast": "node ./bin/ndag.js blast",
+    "mcp:start": "node ./dist/mcp.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

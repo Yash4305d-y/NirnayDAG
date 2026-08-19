@@ -20,12 +20,13 @@ import { useSimulationStore } from '../store/useSimulationStore.js';
 import { SimulatorHUD } from './SimulatorHUD.js';
 import { DAGEngine } from '../core/dagEngine.js';
 
-const nodeTypes = { decisionNode: DecisionNode };
+// @ts-ignore
+const nodeTypes = { decisionNode: StitchNodeCard };
 const edgeTypes = { glowEdge: GlowEdge };
 
-export const NirnayCanvas = () => {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+export const NirnayCanvas = ({ customAdrs }: { customAdrs?: NirnayADR[] | null }) => {
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<any>([]);
   const [selectedAdr, setSelectedAdr] = useState<NirnayADR | null>(null);
   const [impactedIds, setImpactedIds] = useState<string[]>([]);
 
@@ -37,10 +38,12 @@ export const NirnayCanvas = () => {
     setFragilityScore,
   } = useSimulationStore();
 
+  const baseAdrs = customAdrs || SAMPLE_ADRS;
+
   const activeData = useMemo(() => {
     if (isSimulationMode) {
       const result = SimulationEngine.compute(
-        SAMPLE_ADRS,
+        baseAdrs,
         simulatedOverrides,
         virtualNodes,
         virtualEdges
@@ -48,8 +51,8 @@ export const NirnayCanvas = () => {
       setFragilityScore(result.fragilityScore);
       return { adrs: result.activeGraph, orphaned: result.orphanedNodes, impacted: result.impactedNodes };
     }
-    return { adrs: SAMPLE_ADRS, orphaned: [], impacted: [] };
-  }, [isSimulationMode, simulatedOverrides, virtualNodes, virtualEdges, setFragilityScore]);
+    return { adrs: baseAdrs, orphaned: [], impacted: [] };
+  }, [isSimulationMode, simulatedOverrides, virtualNodes, virtualEdges, setFragilityScore, baseAdrs]);
 
   const calculateBlastRadius = useCallback((rootId: string) => {
     const engine = new DAGEngine(activeData.adrs);

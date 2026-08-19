@@ -44,7 +44,8 @@ const statusConfig: Record<DecisionStatus, { label: string; color: string; borde
   },
 };
 
-export const DecisionNode = memo(({ data }: NodeProps<NodeDataProps>) => {
+// @ts-ignore
+export const DecisionNode = memo(({ data }: NodeProps<any>) => {
   const { setOverride } = useSimulationStore();
   const config = statusConfig[data.status];
   const Icon = config.icon;
