@@ -12,6 +12,8 @@ import type { Node, Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { SAMPLE_ADRS } from '../mocks/sampleAdrs';
 import type { NirnayADR } from '../core/types';
+import { DAGEngine } from '../core/dagEngine';
+import { getLayoutedGraph } from '../core/layoutEngine';
 import { DecisionNode } from './DecisionNode';
 import { GlowEdge } from './GlowEdge';
 import { ShieldAlert, Zap, Layers, GitBranch } from 'lucide-react';
@@ -23,61 +25,39 @@ export const NirnayCanvas = () => {
   const [selectedAdr, setSelectedAdr] = useState<NirnayADR | null>(null);
   const [impactedIds, setImpactedIds] = useState<string[]>([]);
 
-  // Compute blast radius: find all downstream transitive dependencies
+  const engine = useMemo(() => new DAGEngine(SAMPLE_ADRS), []);
+
   const calculateBlastRadius = useCallback((rootId: string) => {
-    const impacted = new Set<string>();
-    const queue = [rootId];
+    return engine.getBlastRadius(rootId);
+  }, [engine]);
 
-    while (queue.length > 0) {
-      const current = queue.shift()!;
-      SAMPLE_ADRS.forEach((adr) => {
-        if (adr.dependencies.includes(current) && !impacted.has(adr.id)) {
-          impacted.add(adr.id);
-          queue.push(adr.id);
-        }
-      });
-    }
-    return Array.from(impacted);
-  }, []);
-
-  // Initial Graph layout mapping
-  const initialNodes: Node[] = useMemo(() => {
-    return SAMPLE_ADRS.map((adr, index) => ({
-      id: adr.id,
-      type: 'decisionNode',
-      position: { x: 350 * (index % 3) + 80, y: Math.floor(index / 3) * 220 + 80 },
+  const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(() => {
+    const { nodes, edges } = getLayoutedGraph(SAMPLE_ADRS, 'TB');
+    
+    const finalNodes = nodes.map(n => ({
+      ...n,
       data: {
-        ...adr,
-        isSelected: selectedAdr?.id === adr.id,
-        isDimmed: selectedAdr ? selectedAdr.id !== adr.id && !impactedIds.includes(adr.id) : false,
-      },
+        ...n.data,
+        isDimmed: selectedAdr ? selectedAdr.id !== n.id && !impactedIds.includes(n.id) : false,
+      }
     }));
+
+    const finalEdges = edges.map(e => ({
+      ...e,
+      selected: selectedAdr?.id === e.source || selectedAdr?.id === e.target,
+    }));
+
+    return { nodes: finalNodes, edges: finalEdges };
   }, [selectedAdr, impactedIds]);
 
-  const initialEdges: Edge[] = useMemo(() => {
-    const edges: Edge[] = [];
-    SAMPLE_ADRS.forEach((adr) => {
-      adr.dependencies.forEach((depId) => {
-        edges.push({
-          id: `e-${depId}->${adr.id}`,
-          source: depId,
-          target: adr.id,
-          type: 'glowEdge',
-          selected: selectedAdr?.id === depId || selectedAdr?.id === adr.id,
-        });
-      });
-    });
-    return edges;
-  }, [selectedAdr]);
-
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
 
   // Sync state manually because useNodesState initial values aren't reactive after mount
   useMemo(() => {
-    setNodes(initialNodes);
-    setEdges(initialEdges);
-  }, [initialNodes, initialEdges, setNodes, setEdges]);
+    setNodes(layoutedNodes);
+    setEdges(layoutedEdges);
+  }, [layoutedNodes, layoutedEdges, setNodes, setEdges]);
 
   const handleNodeClick = (_: any, node: Node) => {
     const targetAdr = SAMPLE_ADRS.find((a) => a.id === node.id) || null;

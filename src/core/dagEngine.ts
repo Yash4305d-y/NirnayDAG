@@ -1,148 +1,161 @@
-import type { NirnayADR, DAGGraph } from './types';
+import type { NirnayADR } from './types';
 
-export function buildGraph(nodes: NirnayADR[]): DAGGraph {
-  const graph: DAGGraph = {
-    nodes: {},
-    edges: [],
-    adjacencyList: {},
-    reverseAdjacencyList: {}
-  };
+export interface DAGValidationResult {
+  isValid: boolean;
+  hasCycle: boolean;
+  cyclePath?: string[];
+  missingDependencies: { adrId: string; missingId: string }[];
+  topologicalOrder: string[];
+}
 
-  // Initialize nodes and empty adjacency lists
-  nodes.forEach(node => {
-    graph.nodes[node.id] = node;
-    graph.adjacencyList[node.id] = [];
-    graph.reverseAdjacencyList[node.id] = [];
-  });
+export class DAGEngine {
+  private adrs: Map<string, NirnayADR>;
+  private adjacencyList: Map<string, string[]>; // dependency -> dependents (forward)
+  private reverseAdjacencyList: Map<string, string[]>; // dependent -> dependencies (backward)
 
-  // Populate edges and adjacency lists
-  nodes.forEach(node => {
-    node.dependencies.forEach(depId => {
-      if (graph.nodes[depId]) {
-        graph.edges.push({
-          id: `${depId}->${node.id}`,
-          source: depId,
-          target: node.id,
-          type: 'dependency'
-        });
-        graph.adjacencyList[depId].push(node.id);
-        graph.reverseAdjacencyList[node.id].push(depId);
-      }
+  constructor(adrs: NirnayADR[]) {
+    this.adrs = new Map(adrs.map((a) => [a.id, a]));
+    this.adjacencyList = new Map();
+    this.reverseAdjacencyList = new Map();
+
+    this.buildGraph();
+  }
+
+  private buildGraph(): void {
+    this.adrs.forEach((_, id) => {
+      this.adjacencyList.set(id, []);
+      this.reverseAdjacencyList.set(id, []);
     });
 
-    if (node.supersedes && graph.nodes[node.supersedes]) {
-      graph.edges.push({
-        id: `${node.supersedes}=>${node.id}`,
-        source: node.supersedes,
-        target: node.id,
-        type: 'supersedes',
-        animated: true,
-        label: 'supersedes'
+    this.adrs.forEach((adr) => {
+      adr.dependencies.forEach((depId) => {
+        if (this.adjacencyList.has(depId)) {
+          this.adjacencyList.get(depId)!.push(adr.id);
+        }
+        if (this.reverseAdjacencyList.has(adr.id)) {
+          this.reverseAdjacencyList.get(adr.id)!.push(depId);
+        }
       });
-      // For DAG analysis, treat supersedes as a directed edge from the old to the new
-      graph.adjacencyList[node.supersedes].push(node.id);
-      graph.reverseAdjacencyList[node.id].push(node.supersedes);
+    });
+  }
+
+  /**
+   * Kahn's Algorithm for Topological Sort & Circular Dependency Detection
+   */
+  public validate(): DAGValidationResult {
+    const inDegree = new Map<string, number>();
+    const missingDependencies: { adrId: string; missingId: string }[] = [];
+
+    // Verify all referenced dependencies actually exist
+    this.adrs.forEach((adr) => {
+      inDegree.set(adr.id, 0);
+      adr.dependencies.forEach((depId) => {
+        if (!this.adrs.has(depId)) {
+          missingDependencies.push({ adrId: adr.id, missingId: depId });
+        }
+      });
+    });
+
+    // Compute in-degrees based on existing nodes
+    this.adrs.forEach((adr) => {
+      adr.dependencies.forEach((depId) => {
+        if (this.adrs.has(depId)) {
+          inDegree.set(adr.id, (inDegree.get(adr.id) || 0) + 1);
+        }
+      });
+    });
+
+    const queue: string[] = [];
+    inDegree.forEach((deg, id) => {
+      if (deg === 0) queue.push(id);
+    });
+
+    const topologicalOrder: string[] = [];
+
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      topologicalOrder.push(current);
+
+      const dependents = this.adjacencyList.get(current) || [];
+      dependents.forEach((dep) => {
+        inDegree.set(dep, inDegree.get(dep)! - 1);
+        if (inDegree.get(dep) === 0) {
+          queue.push(dep);
+        }
+      });
     }
-  });
 
-  return graph;
-}
+    const hasCycle = topologicalOrder.length !== this.adrs.size;
+    let cyclePath: string[] | undefined;
 
-export function detectCycle(graph: DAGGraph): { hasCycle: boolean; cyclePath?: string[] } {
-  const visited: Record<string, boolean> = {};
-  const recStack: Record<string, boolean> = {};
-  const path: string[] = [];
-
-  for (const nodeId in graph.nodes) {
-    if (detectCycleUtil(nodeId, graph, visited, recStack, path)) {
-      return { hasCycle: true, cyclePath: [...path, nodeId] };
+    if (hasCycle) {
+      cyclePath = this.detectCyclePath();
     }
+
+    return {
+      isValid: !hasCycle && missingDependencies.length === 0,
+      hasCycle,
+      cyclePath,
+      missingDependencies,
+      topologicalOrder,
+    };
   }
 
-  return { hasCycle: false };
-}
+  /**
+   * DFS-based cycle path extractor for human-readable error reporting
+   */
+  private detectCyclePath(): string[] {
+    const visited = new Set<string>();
+    const recursionStack = new Set<string>();
+    const path: string[] = [];
 
-function detectCycleUtil(
-  nodeId: string,
-  graph: DAGGraph,
-  visited: Record<string, boolean>,
-  recStack: Record<string, boolean>,
-  path: string[]
-): boolean {
-  if (recStack[nodeId]) {
-    return true; // Cycle detected
-  }
-  if (visited[nodeId]) {
-    return false;
-  }
+    const dfs = (node: string): boolean => {
+      visited.add(node);
+      recursionStack.add(node);
+      path.push(node);
 
-  visited[nodeId] = true;
-  recStack[nodeId] = true;
-  path.push(nodeId);
+      const neighbors = this.adjacencyList.get(node) || [];
+      for (const neighbor of neighbors) {
+        if (!visited.has(neighbor)) {
+          if (dfs(neighbor)) return true;
+        } else if (recursionStack.has(neighbor)) {
+          path.push(neighbor);
+          return true;
+        }
+      }
 
-  for (const neighbor of graph.adjacencyList[nodeId] || []) {
-    if (detectCycleUtil(neighbor, graph, visited, recStack, path)) {
-      return true;
-    }
-  }
+      recursionStack.delete(node);
+      path.pop();
+      return false;
+    };
 
-  path.pop();
-  recStack[nodeId] = false;
-  return false;
-}
-
-export function getTopologicalOrder(graph: DAGGraph): string[] {
-  if (detectCycle(graph).hasCycle) {
-    throw new Error("Graph contains a cycle, cannot perform topological sort");
-  }
-
-  const inDegree: Record<string, number> = {};
-  for (const nodeId in graph.nodes) {
-    inDegree[nodeId] = 0;
-  }
-
-  for (const nodeId in graph.adjacencyList) {
-    for (const neighbor of graph.adjacencyList[nodeId]) {
-      inDegree[neighbor]++;
-    }
-  }
-
-  const queue: string[] = [];
-  for (const nodeId in inDegree) {
-    if (inDegree[nodeId] === 0) {
-      queue.push(nodeId);
-    }
-  }
-
-  const order: string[] = [];
-  while (queue.length > 0) {
-    const current = queue.shift()!;
-    order.push(current);
-
-    for (const neighbor of graph.adjacencyList[current] || []) {
-      inDegree[neighbor]--;
-      if (inDegree[neighbor] === 0) {
-        queue.push(neighbor);
+    for (const node of this.adrs.keys()) {
+      if (!visited.has(node)) {
+        if (dfs(node)) return path;
       }
     }
+
+    return [];
   }
 
-  return order;
-}
+  /**
+   * Computes transitive blast radius for any ADR node
+   */
+  public getBlastRadius(rootId: string): string[] {
+    const impacted = new Set<string>();
+    const queue = [rootId];
 
-export function getBlastRadius(nodeId: string, graph: DAGGraph): string[] {
-  const blastRadius = new Set<string>();
-  const queue = [nodeId];
-
-  while (queue.length > 0) {
-    const current = queue.shift()!;
-    for (const neighbor of graph.adjacencyList[current] || []) {
-      if (!blastRadius.has(neighbor)) {
-        blastRadius.add(neighbor);
-        queue.push(neighbor);
-      }
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      const dependents = this.adjacencyList.get(current) || [];
+      dependents.forEach((childId) => {
+        if (!impacted.has(childId)) {
+          impacted.add(childId);
+          queue.push(childId);
+        }
+      });
     }
-  }
 
-  return Array.from(blastRadius);
+    return Array.from(impacted);
+  }
 }
