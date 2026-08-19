@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
@@ -16,12 +16,14 @@ import '@xyflow/react/dist/style.css';
 import { SAMPLE_ADRS } from '../mocks/sampleAdrs.js';
 import type { NirnayADR } from '../core/types.js';
 import { DAGEngine } from '../core/dagEngine.js';
+import { getLayoutedGraph } from '../core/layoutEngine.js';
 import { DecisionNode } from './DecisionNode.js';
 import { GlowEdge } from './GlowEdge.js';
 import { DecisionDrawer } from './DecisionDrawer.js';
 import { SimulatorDock } from './SimulatorDock.js';
-import { loadLocalADRs } from '../utils/localFolderLoader.js';
-import { GitBranch, FolderOpen, CheckCircle, AlertCircle } from 'lucide-react';
+import { SourceModal } from './SourceModal.js';
+import { Toast, type ToastConfig } from './Toast.js';
+import { GitBranch, Link, CheckCircle, AlertCircle } from 'lucide-react';
 
 const nodeTypes = { decisionNode: DecisionNode };
 const edgeTypes = { glowEdge: GlowEdge };
@@ -31,6 +33,9 @@ const CanvasContent = () => {
   const [selectedAdr, setSelectedAdr] = useState<NirnayADR | null>(null);
   const [impactedIds, setImpactedIds] = useState<string[]>([]);
   const [isSimulating, setIsSimulating] = useState(false);
+  const [toastMessage, setToastMessage] = useState<ToastConfig | null>(null);
+  const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
+  
   const { fitView } = useReactFlow();
 
   const dagEngine = useMemo(() => new DAGEngine(adrs), [adrs]);
@@ -43,43 +48,36 @@ const CanvasContent = () => {
     [dagEngine]
   );
 
-  const initialNodes: Node[] = useMemo(() => {
-    return adrs.map((adr, index) => ({
-      id: adr.id,
-      type: 'decisionNode',
-      position: { x: 340 * (index % 3) + 80, y: Math.floor(index / 3) * 240 + 80 },
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
+  // Synchronize dynamic updates & Dagre Layout
+  useEffect(() => {
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedGraph(adrs, 'TB');
+
+    const enrichedNodes = layoutedNodes.map((n: Node) => ({
+      ...n,
       data: {
-        ...adr,
-        isSelected: selectedAdr?.id === adr.id,
-        isDimmed: selectedAdr ? selectedAdr.id !== adr.id && !impactedIds.includes(adr.id) : false,
+        ...n.data,
+        isSelected: selectedAdr?.id === n.id,
+        isDimmed: selectedAdr ? selectedAdr.id !== n.id && !impactedIds.includes(n.id) : false,
       },
     }));
-  }, [adrs, selectedAdr, impactedIds]);
 
-  const initialEdges: Edge[] = useMemo(() => {
-    const edges: Edge[] = [];
-    adrs.forEach((adr) => {
-      adr.dependencies.forEach((depId) => {
-        edges.push({
-          id: `e-${depId}->${adr.id}`,
-          source: depId,
-          target: adr.id,
-          type: 'glowEdge',
-          selected: selectedAdr?.id === depId || selectedAdr?.id === adr.id,
-        });
-      });
-    });
-    return edges;
-  }, [adrs, selectedAdr]);
+    const enrichedEdges = layoutedEdges.map((e: Edge) => ({
+      ...e,
+      selected: selectedAdr?.id === e.source || selectedAdr?.id === e.target,
+      animated: impactedIds.includes(e.source)
+    }));
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
-  // Synchronize dynamic updates
-  React.useEffect(() => {
-    setNodes(initialNodes);
-    setEdges(initialEdges);
-  }, [initialNodes, initialEdges, setNodes, setEdges]);
+    setNodes(enrichedNodes);
+    setEdges(enrichedEdges);
+    
+    // Auto-center after render
+    setTimeout(() => {
+      fitView({ padding: 0.25, duration: 400 });
+    }, 50);
+  }, [adrs, selectedAdr, impactedIds, setNodes, setEdges, fitView]);
 
   const handleNodeClick = (_: any, node: Node) => {
     const target = adrs.find((a) => a.id === node.id) || null;
@@ -94,18 +92,37 @@ const CanvasContent = () => {
     setImpactedIds([]);
   };
 
-  const handleLoadFolder = async () => {
-    const loadedAdrs = await loadLocalADRs();
-    if (loadedAdrs && loadedAdrs.length > 0) {
-      setAdrs(loadedAdrs);
-      setSelectedAdr(null);
-      setImpactedIds([]);
-      setTimeout(() => fitView({ padding: 0.25, duration: 400 }), 50);
+  const handleImport = (newAdrs: NirnayADR[], count: number, errors: any[]) => {
+    setAdrs(newAdrs);
+    setSelectedAdr(null);
+    setImpactedIds([]);
+    setIsSourceModalOpen(false);
+    
+    if (errors.length > 0) {
+      setToastMessage({
+        type: 'warning',
+        title: `⚠️ Imported ${newAdrs.length} ADRs successfully`,
+        subtitle: `(${errors.length} files skipped due to format errors)`
+      });
+    } else {
+      setToastMessage({
+        type: 'success',
+        title: `✅ Successfully imported ${newAdrs.length} ADRs`
+      });
     }
+    setTimeout(() => fitView({ padding: 0.25, duration: 400 }), 50);
   };
 
   return (
     <div className="relative w-full h-screen bg-[#07090e] text-slate-100 overflow-hidden font-sans">
+      <Toast toast={toastMessage} onClose={() => setToastMessage(null)} />
+      <SourceModal 
+        isOpen={isSourceModalOpen} 
+        onClose={() => setIsSourceModalOpen(false)} 
+        onImport={handleImport} 
+        showToast={setToastMessage} 
+      />
+
       {/* Top Floating HUD */}
       <header className="absolute top-5 left-6 z-20 flex items-center gap-6 px-5 py-3 rounded-2xl bg-[#0d111a]/85 border border-white/[0.08] backdrop-blur-xl shadow-2xl pointer-events-auto">
         <div className="flex items-center gap-3">
@@ -142,13 +159,13 @@ const CanvasContent = () => {
         </div>
       </header>
 
-      {/* Top-Right "Load Local Folder" Button */}
+      {/* Top-Right Connect Source Button */}
       <button
-        onClick={handleLoadFolder}
+        onClick={() => setIsSourceModalOpen(true)}
         className="absolute top-5 right-6 z-20 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0d111a]/85 hover:bg-[#131926] border border-white/[0.08] hover:border-cyan-500/40 text-xs font-mono text-slate-200 transition-all duration-200 shadow-2xl pointer-events-auto"
       >
-        <FolderOpen className="w-4 h-4 text-cyan-400" />
-        <span>Load Local Folder</span>
+        <Link className="w-4 h-4 text-cyan-400" />
+        <span>Connect Source</span>
       </button>
 
       {/* Canvas */}

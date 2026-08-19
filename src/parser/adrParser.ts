@@ -11,7 +11,7 @@ interface ADRFrontmatter {
   supersedes?: string;
 }
 
-export function parseADRMarkdown(fileContent: string): NirnayADR {
+export function parseADRMarkdown(fileContent: string, filename?: string): NirnayADR {
   const frontmatterRegex = /^---\s*[\r\n]+([\s\S]*?)[\r\n]+---\s*[\r\n]+([\s\S]*)$/;
   const match = fileContent.match(frontmatterRegex);
 
@@ -46,9 +46,11 @@ export function parseADRMarkdown(fileContent: string): NirnayADR {
   const pros = extractListMultiple(consequencesRaw, ['Positive', 'Pros', 'Benefits']);
   const cons = extractListMultiple(consequencesRaw, ['Negative', 'Cons', 'Drawbacks']);
 
+  const fallbackId = filename ? filename.replace(/\.(md|markdown)$/i, '') : `ADR-${Math.random().toString(36).substring(2, 8)}`;
+  
   return {
-    id: metadata.id,
-    title: metadata.title,
+    id: metadata.id || fallbackId,
+    title: metadata.title || fallbackId,
     category: metadata.category || 'Infrastructure',
     status: metadata.status || 'proposed',
     timestamp: metadata.timestamp || new Date().toISOString().split('T')[0],
