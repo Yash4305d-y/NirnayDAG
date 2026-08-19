@@ -1,12 +1,14 @@
 import React from 'react';
 import { useSimulationStore } from '../../store/useSimulationStore.js';
-import { ShieldAlert, Layers } from 'lucide-react';
+import { ShieldAlert, Layers, Columns, Rows } from 'lucide-react';
 
 interface GlassHUDProps {
   totalNodes: number;
+  layoutDirection?: 'TB' | 'LR';
+  onToggleLayout?: () => void;
 }
 
-export const GlassHUD: React.FC<GlassHUDProps> = ({ totalNodes }) => {
+export const GlassHUD: React.FC<GlassHUDProps> = ({ totalNodes, layoutDirection, onToggleLayout }) => {
   const { isSimulationMode } = useSimulationStore();
 
   return (
@@ -26,6 +28,17 @@ export const GlassHUD: React.FC<GlassHUDProps> = ({ totalNodes }) => {
       </div>
       <div className="h-8 w-px bg-[var(--border-subtle)] mx-2" />
       <div className="flex items-center gap-6">
+        <div className="flex flex-col border-r border-[var(--border-subtle)] pr-6 mr-2">
+          <span className="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-1 flex items-center gap-1.5">
+            {layoutDirection === 'TB' ? <Rows size={10} /> : <Columns size={10} />} Layout
+          </span>
+          <button
+            onClick={onToggleLayout}
+            className="px-3 py-1 bg-white/5 hover:bg-white/10 rounded-md text-xs font-bold uppercase tracking-wider text-slate-300 transition-colors"
+          >
+            {layoutDirection === 'TB' ? 'Top-Down' : 'Left-Right'}
+          </button>
+        </div>
         <div className="flex flex-col">
           <span className="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-bold">Total Nodes</span>
           <span className="text-sm font-semibold text-slate-200">{totalNodes} Decisions</span>

@@ -61,7 +61,7 @@ export const StitchNodeCard = memo(({ data }: NodeProps<any>) => {
         whileHover={{ scale: 1.02 }}
         transition={{ type: "spring", stiffness: 400, damping: 28 }}
         style={{
-          opacity: data.isDimmed ? 0.3 : 1,
+          opacity: data.isDimmed ? 0.2 : 1,
           willChange: 'transform'
         }}
         className={`group relative w-[320px] rounded-2xl bg-[var(--bg-surface-glass)] backdrop-blur-2xl p-5 overflow-hidden transition-colors duration-300 ${
