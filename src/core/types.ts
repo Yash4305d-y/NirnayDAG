@@ -1,6 +1,6 @@
 export type ADRStatus = "proposed" | "accepted" | "superseded" | "deprecated";
 
-export interface NirnayNode {
+export interface NirnayNode extends Record<string, unknown> {
   id: string;
   title: string;
   status: ADRStatus;
