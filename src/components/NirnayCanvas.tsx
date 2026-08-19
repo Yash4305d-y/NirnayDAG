@@ -24,6 +24,9 @@ import { SimulatorDock } from './SimulatorDock.js';
 import { SourceModal } from './SourceModal.js';
 import { Toast, type ToastConfig } from './Toast.js';
 import { GitBranch, Link, CheckCircle, AlertCircle } from 'lucide-react';
+import { GraphToolbar, type FilterState } from './GraphToolbar.js';
+import { ExportMenu } from './ExportMenu.js';
+import { exportToPng, exportToSvg, exportToJson } from '../utils/exportGraph.js';
 
 const nodeTypes = { decisionNode: DecisionNode };
 const edgeTypes = { glowEdge: GlowEdge };
@@ -36,17 +39,39 @@ const CanvasContent = () => {
   const [toastMessage, setToastMessage] = useState<ToastConfig | null>(null);
   const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
   
+  const [filters, setFilters] = useState<FilterState>({
+    search: '',
+    status: [],
+    category: 'All'
+  });
+  
   const { fitView } = useReactFlow();
 
   const dagEngine = useMemo(() => new DAGEngine(adrs), [adrs]);
   const validation = useMemo(() => dagEngine.validate(), [dagEngine]);
 
   const calculateBlast = useCallback(
-    (id: string) => {
-      return dagEngine.getBlastRadius(id);
-    },
+    (id: string) => dagEngine.getBlastRadius(id),
     [dagEngine]
   );
+
+  const filteredAdrs = useMemo(() => {
+    return adrs.filter(adr => {
+      if (filters.category !== 'All' && adr.category !== filters.category) return false;
+      if (filters.status.length > 0 && !filters.status.includes(adr.status)) return false;
+      if (filters.search) {
+        const query = filters.search.toLowerCase();
+        if (
+          !adr.id.toLowerCase().includes(query) &&
+          !adr.title.toLowerCase().includes(query) &&
+          !adr.context.toLowerCase().includes(query)
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [adrs, filters]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -55,14 +80,25 @@ const CanvasContent = () => {
   useEffect(() => {
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedGraph(adrs, 'TB');
 
-    const enrichedNodes = layoutedNodes.map((n: Node) => ({
-      ...n,
-      data: {
-        ...n.data,
-        isSelected: selectedAdr?.id === n.id,
-        isDimmed: selectedAdr ? selectedAdr.id !== n.id && !impactedIds.includes(n.id) : false,
-      },
-    }));
+    // Generate set of filtered IDs for O(1) lookup
+    const filteredIds = new Set(filteredAdrs.map(a => a.id));
+    const isFiltering = filters.search || filters.status.length > 0 || filters.category !== 'All';
+
+    const enrichedNodes = layoutedNodes.map((n: Node) => {
+      const isMatch = filteredIds.has(n.id);
+      return {
+        ...n,
+        data: {
+          ...n.data,
+          isSelected: selectedAdr?.id === n.id,
+          // Dim if we are selecting something and it's not impacted, OR if filtering is active and it doesn't match
+          isDimmed: (selectedAdr ? (selectedAdr.id !== n.id && !impactedIds.includes(n.id)) : false) 
+                    || (isFiltering && !isMatch)
+        },
+        // ignore pointer events if dimmed by filter
+        style: isFiltering && !isMatch ? { pointerEvents: 'none' } : undefined,
+      };
+    });
 
     const enrichedEdges = layoutedEdges.map((e: Edge) => ({
       ...e,
@@ -77,7 +113,7 @@ const CanvasContent = () => {
     setTimeout(() => {
       fitView({ padding: 0.25, duration: 400 });
     }, 50);
-  }, [adrs, selectedAdr, impactedIds, setNodes, setEdges, fitView]);
+  }, [adrs, selectedAdr, impactedIds, filteredAdrs, filters, setNodes, setEdges, fitView]);
 
   const handleNodeClick = (_: any, node: Node) => {
     const target = adrs.find((a) => a.id === node.id) || null;
@@ -111,6 +147,29 @@ const CanvasContent = () => {
       });
     }
     setTimeout(() => fitView({ padding: 0.25, duration: 400 }), 50);
+  };
+
+  const handleExportPng = async () => {
+    const flowEl = document.querySelector('.react-flow') as HTMLElement;
+    if (flowEl) {
+      const rect = flowEl.getBoundingClientRect();
+      await exportToPng(flowEl, rect.width, rect.height);
+      setToastMessage({ type: 'success', title: 'Exported PNG successfully' });
+    }
+  };
+
+  const handleExportSvg = async () => {
+    const flowEl = document.querySelector('.react-flow') as HTMLElement;
+    if (flowEl) {
+      const rect = flowEl.getBoundingClientRect();
+      await exportToSvg(flowEl, rect.width, rect.height);
+      setToastMessage({ type: 'success', title: 'Exported SVG successfully' });
+    }
+  };
+
+  const handleExportJson = () => {
+    exportToJson(adrs);
+    setToastMessage({ type: 'success', title: 'Exported JSON successfully' });
   };
 
   return (
@@ -158,15 +217,25 @@ const CanvasContent = () => {
           </div>
         </div>
       </header>
+      
+      {/* Search & Filter Toolbar */}
+      <GraphToolbar filters={filters} onFilterChange={setFilters} />
 
-      {/* Top-Right Connect Source Button */}
-      <button
-        onClick={() => setIsSourceModalOpen(true)}
-        className="absolute top-5 right-6 z-20 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0d111a]/85 hover:bg-[#131926] border border-white/[0.08] hover:border-cyan-500/40 text-xs font-mono text-slate-200 transition-all duration-200 shadow-2xl pointer-events-auto"
-      >
-        <Link className="w-4 h-4 text-cyan-400" />
-        <span>Connect Source</span>
-      </button>
+      {/* Top-Right Control Dock */}
+      <div className="absolute top-5 right-6 z-20 flex items-center gap-3">
+        <ExportMenu 
+          onExportPng={handleExportPng}
+          onExportSvg={handleExportSvg}
+          onExportJson={handleExportJson}
+        />
+        <button
+          onClick={() => setIsSourceModalOpen(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0d111a]/85 hover:bg-[#131926] border border-white/[0.08] hover:border-cyan-500/40 text-xs font-mono text-slate-200 transition-all duration-200 shadow-2xl pointer-events-auto"
+        >
+          <Link className="w-4 h-4 text-cyan-400" />
+          <span>Connect Source</span>
+        </button>
+      </div>
 
       {/* Canvas */}
       <ReactFlow
