@@ -4,6 +4,8 @@ import {
   useNodesState,
   useEdgesState,
   Node,
+  ReactFlowProvider,
+  useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { SAMPLE_ADRS } from '../mocks/sampleAdrs.js';
@@ -13,6 +15,8 @@ import { getLayoutedGraph } from '../core/layoutEngine.js';
 import { StitchNodeCard } from './fx/StitchNodeCard.js';
 import { EnergyFlowEdge } from './fx/EnergyFlowEdge.js';
 import { GlassHUD } from './fx/GlassHUD.js';
+import { SimulatorDock } from './SimulatorDock.js';
+import { DecisionDrawer } from './DecisionDrawer.js';
 import { BackgroundMatrix } from './fx/BackgroundMatrix.js';
 import { useSimulationStore } from '../store/useSimulationStore.js';
 import { DAGEngine } from '../core/dagEngine.js';
@@ -21,11 +25,15 @@ import { DAGEngine } from '../core/dagEngine.js';
 const nodeTypes = { decisionNode: StitchNodeCard };
 const edgeTypes = { glowEdge: EnergyFlowEdge };
 
-export const NirnayCanvas = ({ customAdrs }: { customAdrs?: NirnayADR[] | null }) => {
+const CanvasInner = ({ customAdrs }: { customAdrs?: NirnayADR[] | null }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<any>([]);
   const [selectedAdr, setSelectedAdr] = useState<NirnayADR | null>(null);
   const [impactedIds, setImpactedIds] = useState<string[]>([]);
+  
+  const [layoutDirection, setLayoutDirection] = useState<'TB' | 'LR'>('TB');
+
+  const { fitView } = useReactFlow();
 
   const {
     isSimulationMode,
@@ -57,12 +65,12 @@ export const NirnayCanvas = ({ customAdrs }: { customAdrs?: NirnayADR[] | null }
   }, [activeData.adrs]);
 
   useEffect(() => {
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedGraph(activeData.adrs);
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedGraph(activeData.adrs, layoutDirection);
 
     const enrichedNodes = layoutedNodes.map((n: Node) => {
       const isSelected = selectedAdr?.id === n.id;
       const isImpacted = impactedIds.includes(n.id) || activeData.impacted.includes(n.id);
-      const isDimmed = (selectedAdr || impactedIds.length > 0) && !isSelected && !isImpacted;
+      const isDimmed = (selectedAdr !== null) && !isSelected && !isImpacted;
       const isOrphaned = activeData.orphaned.includes(n.id);
 
       return {
@@ -91,7 +99,11 @@ export const NirnayCanvas = ({ customAdrs }: { customAdrs?: NirnayADR[] | null }
 
     setNodes(enrichedNodes);
     setEdges(enrichedEdges);
-  }, [activeData, selectedAdr, impactedIds, setNodes, setEdges, isSimulationMode]);
+    
+    setTimeout(() => {
+      fitView({ padding: 0.25, duration: 400 });
+    }, 50);
+  }, [activeData, selectedAdr, impactedIds, setNodes, setEdges, isSimulationMode, fitView, layoutDirection]);
 
   const onNodeClick = useCallback((_: any, node: Node) => {
     const adr = activeData.adrs.find((a) => a.id === node.id);
@@ -111,10 +123,10 @@ export const NirnayCanvas = ({ customAdrs }: { customAdrs?: NirnayADR[] | null }
   }, []);
 
   return (
-    <div className={`w-full h-screen bg-[var(--bg-deep-obsidian)] relative overflow-hidden transition-all duration-700 ${isSimulationMode ? 'shadow-[inset_0_0_150px_rgba(245,158,11,0.15)]' : ''}`}>
-      <BackgroundMatrix />
-      
-      <GlassHUD totalNodes={activeData.adrs.length} />
+    <>
+      <GlassHUD totalNodes={activeData.adrs.length} layoutDirection={layoutDirection} onToggleLayout={() => setLayoutDirection(d => d === 'TB' ? 'LR' : 'TB')} />
+      <SimulatorDock />
+      <DecisionDrawer adr={selectedAdr} isOpen={selectedAdr !== null} onClose={onPaneClick} impactedIds={impactedIds} />
 
       <ReactFlow
         nodes={nodes}
@@ -130,6 +142,17 @@ export const NirnayCanvas = ({ customAdrs }: { customAdrs?: NirnayADR[] | null }
         minZoom={0.2}
         maxZoom={1.5}
       />
+    </>
+  );
+};
+
+export const NirnayCanvas = ({ customAdrs }: { customAdrs?: NirnayADR[] | null }) => {
+  return (
+    <div className={`w-full h-screen bg-[var(--bg-deep-obsidian)] relative overflow-hidden transition-all duration-700`}>
+      <BackgroundMatrix />
+      <ReactFlowProvider>
+        <CanvasInner customAdrs={customAdrs} />
+      </ReactFlowProvider>
     </div>
   );
 };
