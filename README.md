@@ -1,32 +1,144 @@
-# React + TypeScript + Vite
+<div align="center">
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+# ☸️ NirnayDAG
 
-Currently, two official plugins are available:
+### Directed Acyclic Graphs for Architectural Context & Decision Lineage
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+[![CI Status](https://img.shields.io/badge/CI-Passing-10b981?style=flat-square&logo=githubactions&logoColor=white)](#)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?style=flat-square&logo=typescript&logoColor=white)](#)
+[![MCP Compliant](https://img.shields.io/badge/MCP-Protocol%20Ready-6366f1?style=flat-square)](#)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](#)
 
-## React Compiler
+**NirnayDAG** (*Nirṇaya* / निर्णय — decisive resolution) transforms flat, disconnected Architecture Decision Records (ADRs) into an interactive, computational Directed Acyclic Graph. Map dependencies, run cycle-detection, simulate technical blast radiuses, and expose system context directly to AI coding agents via MCP.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+</div>
 
-## Expanding the Oxlint configuration
+---
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## ⚡ Key Highlights
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+* 🕸️ **Deterministic Lineage:** Trace architectural choices from root infrastructure down to high-level application abstractions.
+* 💥 **Blast Radius Engine:** Instantly compute which downstream systems, services, or decisions break when an upstream decision changes or is deprecated.
+* 🛡️ **Zero-Cycle Validation:** Strict topological sorting using Kahn's algorithm catches circular dependencies and missing parent references at CI time.
+* 🤖 **MCP-Native for AI Agents:** Built-in Model Context Protocol (MCP) server allows tools like Claude Desktop, Cursor, and Antigravity to query, navigate, and propose ADRs autonomously.
+* ✨ **Mesmerizing Visualizer:** Dark-mode glassmorphic interface with real-time graph physics, bezier pulse-lines, and status glow shaders.
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+flowchart TD
+    subgraph Storage ["Local Workspace"]
+        A[adrs/*.md Files with YAML Frontmatter]
+    end
+
+    subgraph CoreEngine ["NirnayDAG Core Engine"]
+        B[ADR Parser & Metadata Extractor]
+        C[DAG Engine & Cycle Validator]
+        D[Topological Sorter & Blast Radius Analyzer]
+    end
+
+    subgraph Interfaces ["Interfaces & Consumers"]
+        E[ndag CLI]
+        F[Glassmorphic Canvas UI]
+        G[Stdio MCP Server]
+        H[GitHub Actions PR Bot]
+    end
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    D --> F
+    D --> G
+    D --> H
+    G <-->|Model Context Protocol| I[AI Coding Agents]
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+---
+
+## 🚀 Getting Started
+
+### Installation
+Clone the repository and install dependencies:
+```bash
+git clone https://github.com/your-org/NirnayDAG.git
+cd NirnayDAG
+npm install
+```
+
+### 1. Initialize a Workspace
+To initialize NirnayDAG in any project, run:
+```bash
+npm run ndag -- init
+```
+This generates the `.nirnay/` config and an `adrs/` folder with a scaffolded initial decision.
+
+### 2. Validate Graph Integrity
+Ensure your architectural decisions form a valid DAG (no circular dependencies):
+```bash
+npm run ndag -- validate
+```
+
+### 3. Compute Blast Radius
+Before making a change, see its downstream impact across all services and decisions:
+```bash
+npm run ndag -- blast ADR-002
+```
+
+### 4. Interactive Visualizer
+Launch the interactive ReactFlow canvas to visually inspect your decisions:
+```bash
+npm run ndag -- serve
+```
+
+---
+
+## 🤖 MCP Integration
+
+NirnayDAG includes a fully compliant Stdio MCP server for integration with advanced AI agents like **Claude Desktop** and **Antigravity**.
+
+Launch the server using:
+```bash
+npm run mcp
+```
+
+### Exposing Tools to AI:
+Once connected via MCP, your AI agent can natively execute:
+- `get_decision_graph()`
+- `validate_architecture_dag()`
+- `get_blast_radius({ adrId: 'ADR-100' })`
+- `create_adr({ ... })`
+
+---
+
+## 📝 Creating ADRs
+All ADRs are stored as standard Markdown files with YAML frontmatter.
+
+**Example \`ADR-001.md\`**:
+\`\`\`yaml
+---
+id: ADR-001
+title: Adopt Event-Driven Architecture via Apache Kafka
+category: Infrastructure
+status: accepted
+timestamp: 2026-01-15
+dependencies: []
+---
+
+## Context
+Synchronous REST microservices are leading to cascading timeouts...
+
+## Decision
+Implement an asynchronous event bus using Kafka...
+
+## Consequences
+
+### Positive
+- Decoupled services
+- High throughput
+
+### Negative
+- Eventual consistency complexity
+\`\`\`
