@@ -1,199 +1,173 @@
-import { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
   Controls,
-  MiniMap,
   useNodesState,
   useEdgesState,
   BackgroundVariant,
+  Node,
 } from '@xyflow/react';
-import type { Node } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { SAMPLE_ADRS } from '../mocks/sampleAdrs';
-import type { NirnayADR } from '../core/types';
-import { DAGEngine } from '../core/dagEngine';
-import { getLayoutedGraph } from '../core/layoutEngine';
-import { DecisionNode } from './DecisionNode';
-import { GlowEdge } from './GlowEdge';
-import { ShieldAlert, Zap, Layers, GitBranch } from 'lucide-react';
+import { SAMPLE_ADRS } from '../mocks/sampleAdrs.js';
+import type { NirnayADR } from '../core/types.js';
+import { SimulationEngine } from '../core/simulationEngine.js';
+import { getLayoutedGraph } from '../core/layoutEngine.js';
+import { DecisionNode } from './DecisionNode.js';
+import { GlowEdge } from './GlowEdge.js';
+import { Layers, ShieldAlert } from 'lucide-react';
+import { useSimulationStore } from '../store/useSimulationStore.js';
+import { SimulatorHUD } from './SimulatorHUD.js';
+import { DAGEngine } from '../core/dagEngine.js';
 
 const nodeTypes = { decisionNode: DecisionNode };
 const edgeTypes = { glowEdge: GlowEdge };
 
 export const NirnayCanvas = () => {
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedAdr, setSelectedAdr] = useState<NirnayADR | null>(null);
   const [impactedIds, setImpactedIds] = useState<string[]>([]);
 
-  const engine = useMemo(() => new DAGEngine(SAMPLE_ADRS), []);
+  const {
+    isSimulationMode,
+    simulatedOverrides,
+    virtualNodes,
+    virtualEdges,
+    setFragilityScore,
+  } = useSimulationStore();
+
+  const activeData = useMemo(() => {
+    if (isSimulationMode) {
+      const result = SimulationEngine.compute(
+        SAMPLE_ADRS,
+        simulatedOverrides,
+        virtualNodes,
+        virtualEdges
+      );
+      setFragilityScore(result.fragilityScore);
+      return { adrs: result.activeGraph, orphaned: result.orphanedNodes, impacted: result.impactedNodes };
+    }
+    return { adrs: SAMPLE_ADRS, orphaned: [], impacted: [] };
+  }, [isSimulationMode, simulatedOverrides, virtualNodes, virtualEdges, setFragilityScore]);
 
   const calculateBlastRadius = useCallback((rootId: string) => {
+    const engine = new DAGEngine(activeData.adrs);
     return engine.getBlastRadius(rootId);
-  }, [engine]);
+  }, [activeData.adrs]);
 
-  const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(() => {
-    const { nodes, edges } = getLayoutedGraph(SAMPLE_ADRS, 'TB');
-    
-    const finalNodes = nodes.map(n => ({
-      ...n,
-      data: {
-        ...n.data,
-        isDimmed: selectedAdr ? selectedAdr.id !== n.id && !impactedIds.includes(n.id) : false,
+  useEffect(() => {
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedGraph(activeData.adrs);
+
+    const enrichedNodes = layoutedNodes.map((n: Node) => {
+      const isSelected = selectedAdr?.id === n.id;
+      const isImpacted = impactedIds.includes(n.id) || activeData.impacted.includes(n.id);
+      const isDimmed = (selectedAdr || impactedIds.length > 0) && !isSelected && !isImpacted;
+      const isOrphaned = activeData.orphaned.includes(n.id);
+
+      return {
+        ...n,
+        type: 'decisionNode',
+        data: {
+          ...n.data,
+          isSelected,
+          isHighlighted: isImpacted,
+          isDimmed,
+          isOrphaned,
+          isSimulationMode
+        },
+      };
+    });
+
+    const enrichedEdges = layoutedEdges.map((e: any) => ({
+      ...e,
+      type: 'glowEdge',
+      animated: impactedIds.includes(e.source) || activeData.impacted.includes(e.source),
+      selected: selectedAdr?.id === e.target || selectedAdr?.id === e.source,
+      style: {
+        stroke: (impactedIds.includes(e.source) || activeData.impacted.includes(e.source)) ? 'var(--glow-tyakta)' : undefined,
       }
     }));
 
-    const finalEdges = edges.map(e => ({
-      ...e,
-      selected: selectedAdr?.id === e.source || selectedAdr?.id === e.target,
-    }));
+    setNodes(enrichedNodes);
+    setEdges(enrichedEdges);
+  }, [activeData, selectedAdr, impactedIds, setNodes, setEdges, isSimulationMode]);
 
-    return { nodes: finalNodes, edges: finalEdges };
-  }, [selectedAdr, impactedIds]);
-
-  const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
-
-  // Sync state manually because useNodesState initial values aren't reactive after mount
-  useMemo(() => {
-    setNodes(layoutedNodes);
-    setEdges(layoutedEdges);
-  }, [layoutedNodes, layoutedEdges, setNodes, setEdges]);
-
-  const handleNodeClick = (_: any, node: Node) => {
-    const targetAdr = SAMPLE_ADRS.find((a) => a.id === node.id) || null;
-    setSelectedAdr(targetAdr);
-    if (targetAdr) {
-      setImpactedIds(calculateBlastRadius(targetAdr.id));
-    } else {
-      setImpactedIds([]);
+  const onNodeClick = useCallback((_: any, node: Node) => {
+    const adr = activeData.adrs.find((a) => a.id === node.id);
+    if (adr) {
+      setSelectedAdr(adr);
+      if (!isSimulationMode) {
+        setImpactedIds(calculateBlastRadius(adr.id));
+      } else {
+        setImpactedIds([]);
+      }
     }
-  };
+  }, [activeData.adrs, calculateBlastRadius, isSimulationMode]);
 
-  const handlePaneClick = () => {
+  const onPaneClick = useCallback(() => {
     setSelectedAdr(null);
     setImpactedIds([]);
-  };
+  }, []);
 
   return (
-    <div className="relative w-full h-screen bg-[#07090e] text-slate-100 overflow-hidden font-sans">
-      {/* Top Floating Glass HUD */}
-      <header className="absolute top-5 left-6 z-20 flex items-center gap-4 px-5 py-3 rounded-2xl bg-[#0d111a]/80 border border-white/[0.08] backdrop-blur-xl shadow-2xl">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
-            <GitBranch className="w-5 h-5" />
+    <div className={`w-full h-screen bg-[var(--bg-deep-obsidian)] relative transition-colors duration-500 ${isSimulationMode ? 'shadow-[inset_0_0_100px_rgba(245,158,11,0.15)]' : ''}`}>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/10 via-[var(--bg-deep-obsidian)]/80 to-[var(--bg-deep-obsidian)] pointer-events-none z-0" />
+      
+      <div className="absolute top-6 left-6 z-10 flex items-center gap-4 bg-[var(--bg-surface-glass)] backdrop-blur-xl border border-[var(--border-subtle)] px-6 py-3 rounded-2xl shadow-2xl">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+            <Layers className="text-white" size={20} />
           </div>
           <div>
-            <h1 className="text-sm font-bold tracking-tight text-white flex items-center gap-2">
+            <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
               NirnayDAG
-              <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-cyan-400/10 border border-cyan-400/20 text-cyan-300">
-                v0.1
-              </span>
             </h1>
-            <p className="text-[11px] text-slate-400 font-mono">Architecture Decision Topology</p>
+            <p className="text-xs text-slate-500 font-medium tracking-wide">
+              {isSimulationMode ? 'SIMULATION SANDBOX' : 'ARCHITECTURE GRAPH'}
+            </p>
           </div>
         </div>
-      </header>
+        <div className="h-8 w-px bg-[var(--border-subtle)] mx-2" />
+        <div className="flex items-center gap-6">
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Total Nodes</span>
+            <span className="text-sm font-semibold text-slate-200">{activeData.adrs.length} Decisions</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Health</span>
+            <span className="text-sm font-semibold text-[var(--glow-siddha)] flex items-center gap-1">
+              <ShieldAlert size={14} /> Zero Cycles
+            </span>
+          </div>
+        </div>
+      </div>
 
-      {/* Interactive ReactFlow Graph Canvas */}
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onNodeClick={handleNodeClick}
-        onPaneClick={handlePaneClick}
+        onNodeClick={onNodeClick}
+        onPaneClick={onPaneClick}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
-        className="h-full w-full"
+        className="z-0"
+        minZoom={0.2}
+        maxZoom={1.5}
       >
-        <Background variant={BackgroundVariant.Dots} gap={24} size={1.2} color="#1f293d" />
-        <Controls className="!bg-[#0d111a]/90 !border-white/[0.08] !text-slate-300 [&>button]:!border-white/[0.06] rounded-xl overflow-hidden shadow-2xl" />
-        <MiniMap
-          nodeStrokeWidth={3}
-          nodeColor="#1e293b"
-          maskColor="rgba(7, 9, 14, 0.85)"
-          className="!bg-[#0d111a]/90 !border !border-white/[0.08] !rounded-xl"
+        <Background 
+          color={isSimulationMode ? "var(--glow-vichar)" : "#475569"} 
+          variant={BackgroundVariant.Dots} 
+          gap={24} 
+          size={1.5} 
+          style={{ opacity: isSimulationMode ? 0.3 : 0.5 }} 
         />
+        <Controls className="!bg-[#12141c]/80 !border-white/10 !backdrop-blur-md !fill-slate-300" />
       </ReactFlow>
 
-      {/* Right-Side Decision Inspector Drawer */}
-      {selectedAdr && (
-        <aside className="absolute top-5 right-6 bottom-5 w-96 z-20 flex flex-col rounded-2xl bg-[#0d111a]/90 border border-white/[0.08] backdrop-blur-2xl p-6 shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-300">
-          <div className="flex items-center justify-between pb-4 border-b border-white/[0.06]">
-            <span className="font-mono text-xs font-bold text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded border border-cyan-400/20">
-              {selectedAdr.id}
-            </span>
-            <button
-              onClick={() => setSelectedAdr(null)}
-              className="text-slate-400 hover:text-white text-xs font-mono uppercase tracking-wider"
-            >
-              Close
-            </button>
-          </div>
-
-          <div className="mt-4 space-y-4">
-            <div>
-              <h2 className="text-base font-semibold text-white leading-snug">{selectedAdr.title}</h2>
-              <p className="text-xs text-slate-400 font-mono mt-1">{selectedAdr.timestamp} • {selectedAdr.category}</p>
-            </div>
-
-            {/* Blast Radius Warning Card */}
-            {impactedIds.length > 0 && (
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5">
-                <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                <div className="text-xs">
-                  <span className="font-semibold text-amber-300">Blast Radius Alert: </span>
-                  <span className="text-amber-200/80">
-                    Modifying this decision directly impacts {impactedIds.length} downstream node(s): {impactedIds.join(', ')}.
-                  </span>
-                </div>
-              </div>
-            )}
-
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono mb-1">Context</h4>
-              <p className="text-xs text-slate-300 leading-relaxed bg-white/[0.02] p-3 rounded-lg border border-white/[0.04]">
-                {selectedAdr.context}
-              </p>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono mb-1">Resolution</h4>
-              <p className="text-xs text-slate-200 leading-relaxed bg-cyan-500/[0.03] p-3 rounded-lg border border-cyan-500/10">
-                {selectedAdr.decision}
-              </p>
-            </div>
-
-            {/* Trade-offs & Consequences Matrix */}
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono mb-2">Trade-Offs</h4>
-              <div className="grid grid-cols-1 gap-2">
-                <div className="p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
-                  <span className="text-[11px] font-semibold text-emerald-400 flex items-center gap-1 mb-1">
-                    <Zap className="w-3 h-3" /> Positive Impacts
-                  </span>
-                  <ul className="text-xs text-slate-300 list-disc list-inside space-y-0.5">
-                    {selectedAdr.consequences.pros.map((p, i) => (
-                      <li key={i}>{p}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="p-2.5 rounded-lg bg-rose-500/5 border border-rose-500/20">
-                  <span className="text-[11px] font-semibold text-rose-400 flex items-center gap-1 mb-1">
-                    <Layers className="w-3 h-3" /> Technical Debt / Trade-Offs
-                  </span>
-                  <ul className="text-xs text-slate-300 list-disc list-inside space-y-0.5">
-                    {selectedAdr.consequences.cons.map((c, i) => (
-                      <li key={i}>{c}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </aside>
-      )}
+      <SimulatorHUD />
     </div>
   );
 };

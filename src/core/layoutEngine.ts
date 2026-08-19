@@ -1,6 +1,6 @@
 import dagre from 'dagre';
 import type { Node, Edge, Position } from '@xyflow/react';
-import type { NirnayADR } from './types';
+import type { NirnayADR } from './types.js';
 
 const NODE_WIDTH = 300;
 const NODE_HEIGHT = 160;

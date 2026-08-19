@@ -1,4 +1,4 @@
-import type { NirnayADR } from './types';
+import type { NirnayADR } from './types.js';
 
 export interface DAGValidationResult {
   isValid: boolean;

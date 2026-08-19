@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { parseADRMarkdown } from '../parser/adrParser';
-import type { NirnayADR } from '../core/types';
+import { parseADRMarkdown } from '../parser/adrParser.js';
+import type { NirnayADR } from '../core/types.js';
 
 export async function loadADRs(dirPath: string): Promise<NirnayADR[]> {
   try {

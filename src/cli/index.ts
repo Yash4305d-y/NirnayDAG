@@ -1,10 +1,10 @@
 #!/usr/bin/env tsx
 import { Command } from 'commander';
-import { initCommand } from './commands/init';
-import { validateCommand } from './commands/validate';
-import { blastCommand } from './commands/blast';
-import { serveCommand } from './commands/serve';
-import { mcpCommand } from './commands/mcp';
+import { initCommand } from './commands/init.js';
+import { validateCommand } from './commands/validate.js';
+import { blastCommand } from './commands/blast.js';
+import { serveCommand } from './commands/serve.js';
+import { mcpCommand } from './commands/mcp.js';
 
 const program = new Command();
 

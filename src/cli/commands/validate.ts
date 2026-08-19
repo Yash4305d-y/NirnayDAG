@@ -5,8 +5,8 @@ import ora from 'ora';
 import glob from 'fast-glob';
 import fs from 'fs-extra';
 import Table from 'cli-table3';
-import { DAGEngine } from '../../core/dagEngine';
-import { parseADRMarkdown } from '../../parser/adrParser';
+import { DAGEngine } from '../../core/dagEngine.js';
+import { parseADRMarkdown } from '../../parser/adrParser.js';
 
 export const validateCommand = new Command('validate')
   .description('Validates the ADR graph for cycles and missing dependencies')
@@ -21,7 +21,7 @@ export const validateCommand = new Command('validate')
         return;
       }
 
-      const adrs = [];
+      const adrs: NirnayADR[] = [];
       for (const file of files) {
         const content = await fs.readFile(file, 'utf-8');
         adrs.push(parseADRMarkdown(content));

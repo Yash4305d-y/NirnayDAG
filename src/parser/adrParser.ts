@@ -1,5 +1,5 @@
 import * as yaml from 'js-yaml';
-import type { NirnayADR, DecisionStatus } from '../core/types';
+import type { NirnayADR, DecisionStatus } from '../core/types.js';
 
 interface ADRFrontmatter {
   id: string;
@@ -52,15 +52,5 @@ function extractSection(content: string, headerName: string): string | null {
   const regex = new RegExp(`##\\s*${headerName}[\\r\\n]+([\\s\\S]*?)(?=(##\\s*|$))`, 'i');
   const match = content.match(regex);
   return match ? match[1].trim() : null;
-}
-
-function extractBulletItems(content: string, subHeaderPattern: string): string[] {
-  const subSectionRegex = new RegExp(`###?\\s*(${subHeaderPattern})[\\r\\n]+([\\s\\S]*?)(?=(###?\\s*|$))`, 'i');
-  const match = content.match(subSectionRegex);
-  const targetText = match ? match[2] : content;
-
-  return targetText
-    .split(/[\r\n]+/)
-    .filter((line) => /^\s*[-*+]\s+/.test(line))
     .map((line) => line.replace(/^\s*[-*+]\s+/, '').trim());
 }

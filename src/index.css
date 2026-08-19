@@ -1,37 +1,21 @@
 @import "tailwindcss";
-@config "../tailwind.config.js";
 
-@layer base {
-  body {
-    @apply bg-obsidian text-white m-0 p-0 overflow-hidden;
-    font-family: 'Geist Mono', 'JetBrains Mono', monospace;
-  }
+@theme {
+  --color-primary: #10b981;
 }
 
-.react-flow__node {
-  border-radius: 0.75rem;
-}
+@config "../../tailwind.config.js";
 
-.react-flow__edge-path {
-  stroke-width: 2;
-}
-
-.react-flow__edge.animated .react-flow__edge-path {
-  stroke-dasharray: 5;
-  animation: dashdraw 1s linear infinite;
-}
-
-@keyframes dashdraw {
-  from {
-    stroke-dashoffset: 10;
-  }
-}
-
-/* Hide scrollbar for the drawer */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+:root {
+  --bg-deep-obsidian: #05070B;
+  --bg-surface-glass: rgba(14, 18, 28, 0.65);
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-highlight: rgba(255, 255, 255, 0.18);
+  
+  /* Status Glow Channels (Tailwind + CSS Custom Properties) */
+  --glow-siddha: #10B981;    /* Accepted - Neon Emerald */
+  --glow-vichar: #F59E0B;    /* Proposed - Electric Amber */
+  --glow-parivartan: #818CF8;/* Superseded - Muted Indigo */
+  --glow-tyakta: #F43F5E;    /* Deprecated - Crimson Flame */
+  --glow-active: #06B6D4;    /* Selected Node - Cyber Cyan */
 }

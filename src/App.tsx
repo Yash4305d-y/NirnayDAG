@@ -1,4 +1,4 @@
-import { NirnayCanvas } from './components/NirnayCanvas';
+import { NirnayCanvas } from './components/NirnayCanvas.js';
 
 function App() {
   return <NirnayCanvas />;

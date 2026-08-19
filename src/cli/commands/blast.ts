@@ -4,8 +4,8 @@ import chalk from 'chalk';
 import ora from 'ora';
 import glob from 'fast-glob';
 import fs from 'fs-extra';
-import { DAGEngine } from '../../core/dagEngine';
-import { parseADRMarkdown } from '../../parser/adrParser';
+import { DAGEngine } from '../../core/dagEngine.js';
+import { parseADRMarkdown } from '../../parser/adrParser.js';
 
 export const blastCommand = new Command('blast')
   .argument('<adr-id>', 'The ID of the decision to calculate blast radius for (e.g., ADR-002)')
@@ -16,7 +16,7 @@ export const blastCommand = new Command('blast')
 
     try {
       const files = await glob('**/*.md', { cwd: adrsDir, absolute: true });
-      const adrs = [];
+      const adrs: NirnayADR[] = [];
       for (const file of files) {
         const content = await fs.readFile(file, 'utf-8');
         adrs.push(parseADRMarkdown(content));

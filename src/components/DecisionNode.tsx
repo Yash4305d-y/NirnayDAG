@@ -1,103 +1,120 @@
-import { memo } from 'react';
-import { Handle, Position } from '@xyflow/react';
-import type { Node, NodeProps } from '@xyflow/react';
+import React, { memo } from 'react';
+import { Handle, Position, NodeProps } from '@xyflow/react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, HelpCircle, RefreshCcw, XCircle, Sparkles } from 'lucide-react';
-import type { NirnayADR, DecisionStatus } from '../core/types';
+import { CheckCircle2, HelpCircle, RefreshCcw, XCircle, AlertTriangle } from 'lucide-react';
+import type { NirnayADR, DecisionStatus } from '../core/types.js';
+import { useSimulationStore } from '../store/useSimulationStore.js';
 
-interface NodeDataProps extends NirnayADR {
+export interface NodeDataProps extends NirnayADR {
   isSelected?: boolean;
   isHighlighted?: boolean;
   isDimmed?: boolean;
+  isOrphaned?: boolean;
+  isSimulationMode?: boolean;
 }
-
-export type DecisionNodeType = Node<NodeDataProps, 'decision'>;
 
 const statusConfig: Record<DecisionStatus, { label: string; color: string; border: string; glow: string; icon: any }> = {
   accepted: {
     label: 'Accepted',
-    color: 'text-emerald-400 bg-emerald-500/10',
-    border: 'border-emerald-500/30',
-    glow: 'group-hover:border-emerald-400/60 shadow-[0_0_20px_rgba(16,185,129,0.15)]',
+    color: 'text-[var(--glow-siddha)] bg-[#10b981]/10',
+    border: 'border-[#10b981]/30',
+    glow: 'group-hover:border-[#10b981]/60 shadow-[0_0_20px_rgba(16,185,129,0.15)]',
     icon: CheckCircle2,
   },
   proposed: {
     label: 'Proposed',
-    color: 'text-amber-400 bg-amber-500/10',
-    border: 'border-amber-500/30',
-    glow: 'group-hover:border-amber-400/60 shadow-[0_0_20px_rgba(245,158,11,0.15)]',
+    color: 'text-[var(--glow-vichar)] bg-[#f59e0b]/10',
+    border: 'border-[#f59e0b]/30',
+    glow: 'group-hover:border-[#f59e0b]/60 shadow-[0_0_20px_rgba(245,158,11,0.15)]',
     icon: HelpCircle,
   },
   superseded: {
     label: 'Superseded',
-    color: 'text-indigo-400 bg-indigo-500/10',
-    border: 'border-indigo-500/30',
-    glow: 'group-hover:border-indigo-400/60 shadow-[0_0_20px_rgba(99,102,241,0.15)]',
+    color: 'text-[var(--glow-parivartan)] bg-[#818cf8]/10',
+    border: 'border-[#818cf8]/30',
+    glow: 'group-hover:border-[#818cf8]/60 shadow-[0_0_20px_rgba(129,140,248,0.15)]',
     icon: RefreshCcw,
   },
   deprecated: {
     label: 'Deprecated',
-    color: 'text-rose-400 bg-rose-500/10',
-    border: 'border-rose-500/30',
-    glow: 'group-hover:border-rose-400/60 shadow-[0_0_20px_rgba(244,63,94,0.15)]',
+    color: 'text-[var(--glow-tyakta)] bg-[#f43f5e]/10',
+    border: 'border-[#f43f5e]/30',
+    glow: 'group-hover:border-[#f43f5e]/60 shadow-[0_0_20px_rgba(244,63,94,0.15)]',
     icon: XCircle,
   },
 };
 
-export const DecisionNode = memo(({ data, selected }: NodeProps<DecisionNodeType>) => {
-  const currentStatus = statusConfig[data.status] || statusConfig.proposed;
-  const StatusIcon = currentStatus.icon;
+export const DecisionNode = memo(({ data }: NodeProps<NodeDataProps>) => {
+  const { setOverride } = useSimulationStore();
+  const config = statusConfig[data.status];
+  const Icon = config.icon;
+
+  const handleSimulateDeprecate = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setOverride(data.id, { status: data.status === 'deprecated' ? 'accepted' : 'deprecated' });
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ 
-        opacity: data.isDimmed ? 0.25 : 1, 
-        scale: selected ? 1.04 : 1 
-      }}
-      transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-      className={`group relative min-w-[280px] max-w-[320px] rounded-2xl border backdrop-blur-2xl p-4 transition-all duration-300
-        ${selected ? 'border-cyan-400/80 shadow-[0_0_30px_rgba(6,182,212,0.3)] bg-[#0e121e]/90 z-50' : `${currentStatus.border} ${currentStatus.glow} bg-[#0b0e17]/80 z-0`}
-        ${data.isHighlighted ? 'ring-2 ring-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : ''}`}
+      animate={{ opacity: data.isDimmed ? 0.3 : 1, scale: data.isSelected ? 1.05 : 1 }}
+      className={`group relative w-[320px] rounded-2xl bg-[var(--bg-surface-glass)] backdrop-blur-xl border ${
+        data.isSelected ? 'border-[var(--glow-active)] shadow-[0_0_30px_rgba(6,182,212,0.3)]' : config.border
+      } p-5 transition-all duration-300 ${config.glow} ${
+        data.isHighlighted || data.isOrphaned ? 'ring-2 ring-[var(--glow-tyakta)] shadow-[0_0_40px_rgba(244,63,94,0.4)] animate-pulse' : ''
+      }`}
     >
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="!h-2.5 !w-2.5 !bg-cyan-400 !border-2 !border-[#090a0f] transition-transform group-hover:scale-125"
-      />
+      <Handle type="target" position={Position.Top} className="!w-3 !h-3 !bg-slate-700 !border-slate-500 transition-colors group-hover:!bg-[var(--glow-active)]" />
 
-      {/* Card Header */}
-      <div className="flex items-center justify-between gap-2 mb-2.5">
-        <span className="font-mono text-xs font-semibold tracking-wider text-slate-400 uppercase bg-white/[0.04] px-2 py-0.5 rounded-md border border-white/[0.05]">
-          {data.id}
-        </span>
-        <div className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${currentStatus.color} ${currentStatus.border}`}>
-          <StatusIcon className="w-3 h-3" />
-          <span>{currentStatus.label}</span>
+      {/* Header */}
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex flex-col">
+          <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">{data.category}</span>
+          <span className="text-xs font-mono text-slate-400 bg-black/40 px-2 py-0.5 rounded-md w-fit border border-white/5">
+            {data.id}
+          </span>
+        </div>
+        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${config.color}`}>
+          <Icon size={12} strokeWidth={3} />
+          <span className="text-[10px] font-bold uppercase tracking-wide">{config.label}</span>
         </div>
       </div>
 
-      {/* Card Title */}
-      <h3 className="font-sans text-sm font-semibold text-slate-100 leading-snug tracking-tight line-clamp-2 mb-3">
+      {/* Title */}
+      <h3 className="text-base font-semibold text-slate-100 leading-snug mb-4 line-clamp-2">
         {data.title}
       </h3>
 
-      {/* Category & Metadata Footer */}
-      <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-[11px] text-slate-400">
-        <span className="flex items-center gap-1 font-mono text-slate-400">
-          <Sparkles className="w-3 h-3 text-cyan-400" />
-          {data.category}
-        </span>
-        <span className="font-mono text-slate-500">{data.timestamp}</span>
+      {data.isSimulationMode && (
+        <button
+          onClick={handleSimulateDeprecate}
+          className="absolute -top-3 -right-3 bg-slate-800 text-xs px-2 py-1 rounded-lg border border-slate-600 hover:bg-slate-700 z-10 text-white shadow-lg"
+        >
+          {data.status === 'deprecated' ? 'Restore' : 'Deprecate'}
+        </button>
+      )}
+
+      {/* Simulation Warning Badge */}
+      {data.isOrphaned && (
+        <div className="mt-2 text-xs font-medium text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-1 rounded-md flex items-center gap-1">
+          <AlertTriangle size={12} />
+          Downstream Impact Detected
+        </div>
+      )}
+
+      {/* Footer Meta */}
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5">
+        <span className="text-[10px] text-slate-500 font-medium">{data.timestamp}</span>
+        <div className="flex gap-2">
+          {data.dependencies.length > 0 && (
+            <span className="text-[10px] text-slate-400 bg-white/5 px-1.5 py-0.5 rounded flex items-center gap-1">
+              <RefreshCcw size={10} /> {data.dependencies.length} deps
+            </span>
+          )}
+        </div>
       </div>
 
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="!h-2.5 !w-2.5 !bg-emerald-400 !border-2 !border-[#090a0f] transition-transform group-hover:scale-125"
-      />
+      <Handle type="source" position={Position.Bottom} className="!w-3 !h-3 !bg-slate-700 !border-slate-500 transition-colors group-hover:!bg-[var(--glow-active)]" />
     </motion.div>
   );
 });
-
-DecisionNode.displayName = 'DecisionNode';

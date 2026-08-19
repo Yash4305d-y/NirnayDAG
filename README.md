@@ -142,3 +142,17 @@ Implement an asynchronous event bus using Kafka...
 ### Negative
 - Eventual consistency complexity
 \`\`\`
+
+---
+
+## 🤖 GitHub Actions CI/CD Integration
+
+NirnayDAG comes with a built-in CI workflow that ensures your architecture stays clean and cycle-free. 
+
+The included workflow (`.github/workflows/nirnay-ci.yml`) automatically:
+1. Runs `ndag validate` on every Pull Request targeting the main branch.
+2. Generates a **Blast Radius Impact Analysis** via a custom script (`scripts/pr-blast-radius.ts`).
+3. Posts a rich markdown comment with a Mermaid graph directly to your PR, identifying which downstream services might break due to your changes.
+
+To enable this, the workflow and scripts are automatically configured in the repository. No further setup is required beyond pushing to GitHub!
+
