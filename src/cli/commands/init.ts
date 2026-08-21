@@ -5,64 +5,48 @@ import chalk from 'chalk';
 import ora from 'ora';
 
 export const initCommand = new Command('init')
-  .description('Scaffolds a .nirnay/ configuration directory and an adrs/ folder')
+  .description('Initialize NirnayDAG in the current directory')
   .action(async () => {
-    const spinner = ora('Initializing NirnayDAG workspace...').start();
-    const adrsDir = path.resolve(process.cwd(), 'adrs');
-    const configDir = path.resolve(process.cwd(), '.nirnay');
-    const configFile = path.join(process.cwd(), '.nirnayrc.json');
+    const spinner = ora('Initializing NirnayDAG...').start();
+    const cwd = process.cwd();
+    const adrDir = path.join(cwd, 'adrs');
+    const rcFile = path.join(cwd, '.nirnayrc.json');
+    const firstAdr = path.join(adrDir, 'ADR-001-initial-architecture.md');
 
     try {
-      await fs.ensureDir(configDir);
-      await fs.ensureDir(adrsDir);
+      if (!fs.existsSync(adrDir)) {
+        fs.mkdirSync(adrDir, { recursive: true });
+      }
 
-      const starterAdR = path.join(adrsDir, 'ADR-001-init.md');
-      
-      const exists = await fs.pathExists(starterAdR);
-      if (!exists) {
-        await fs.writeFile(
-          starterAdR,
-          `---
+      if (!fs.existsSync(rcFile)) {
+        fs.writeFileSync(rcFile, JSON.stringify({ version: "1.0", adrDir: "./adrs" }, null, 2));
+      }
+
+      if (!fs.existsSync(firstAdr)) {
+        const adrContent = `---
 id: ADR-001
-title: Initial Project Scaffold
-category: Infrastructure
-status: accepted
-timestamp: ${new Date().toISOString().split('T')[0]}
-dependencies: []
+title: Initial Architecture
+date: ${new Date().toISOString().split('T')[0]}
+status: proposed
+category: Architecture
+context: We need to define the initial architecture for the system.
+decision: We will adopt NirnayDAG to track architectural decisions.
 ---
+# Initial Architecture
 
-## Context
-We need a structured way to track architectural decisions for this project.
+## Pros
+- Standardized documentation
+- Blast radius visualization
 
-## Decision
-Adopt NirnayDAG to maintain our ADRs as a topological graph.
-
-## Consequences
-
-### Positive
-- Unified decision log
-- Traceable blast radius for future changes
-
-### Negative
-- Slight overhead for documenting decisions
-`
-        );
+## Cons
+- Small learning curve
+`;
+        fs.writeFileSync(firstAdr, adrContent);
       }
 
-      if (!(await fs.pathExists(configFile))) {
-        await fs.writeJson(configFile, {
-          version: "0.1.0",
-          adrsDir: "./adrs"
-        }, { spaces: 2 });
-      }
-
-      spinner.succeed(chalk.green('Workspace initialized successfully.'));
-      console.log(chalk.cyan(`Created ${adrsDir}`));
-      console.log(chalk.cyan(`Created ${configDir}`));
-      console.log(chalk.cyan(`Created ${configFile}`));
+      spinner.succeed(chalk.green('NirnayDAG initialized successfully. Created /adrs and .nirnayrc.json'));
     } catch (err: any) {
-      spinner.fail(chalk.red('Failed to initialize workspace.'));
-      console.error(chalk.red(err.message));
+      spinner.fail(chalk.red(`Initialization failed: ${err.message}`));
       process.exit(1);
     }
   });

@@ -2,8 +2,8 @@ import dagre from 'dagre';
 import type { Node, Edge, Position } from '@xyflow/react';
 import type { NirnayADR } from './types.js';
 
-const NODE_WIDTH = 300;
-const NODE_HEIGHT = 160;
+const NODE_WIDTH = 340;
+const NODE_HEIGHT = 220;
 
 /**
  * Calculates hierarchical top-to-bottom layout coordinates for any dynamic set of ADRs

@@ -1,20 +1,17 @@
 import { Command } from 'commander';
 import { spawn } from 'child_process';
 import chalk from 'chalk';
+import path from 'path';
 
 export const serveCommand = new Command('serve')
-  .description('Launches local fastify/vite development server serving the interactive visualizer')
-  .option('-p, --port <number>', 'Port to run the server on', '3000')
-  .action((options) => {
-    console.log(chalk.cyan('Starting NirnayDAG visualizer...'));
+  .description('Launch the local NirnayDAG visualizer')
+  .action(() => {
+    console.log(chalk.cyan('Starting NirnayDAG Visualizer...'));
+    const vitePath = path.resolve(process.cwd(), 'node_modules/.bin/vite');
+    const child = spawn(vitePath, ['preview'], { stdio: 'inherit', shell: true });
     
-    const child = spawn('npx', ['vite', '--port', options.port], {
-      stdio: 'inherit',
-      shell: true
-    });
-
     child.on('error', (err) => {
-      console.error(chalk.red('Failed to start Vite server:'), err);
+      console.error(chalk.red(`Failed to start visualizer: ${err.message}`));
       process.exit(1);
     });
   });

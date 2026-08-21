@@ -16,7 +16,8 @@
     "start": "vite preview",
     "cli:validate": "node ./bin/ndag.js validate",
     "cli:blast": "node ./bin/ndag.js blast",
-    "mcp:start": "node ./dist/mcp.js"
+    "mcp:start": "tsx src/mcp/server.ts",
+    "mcp:inspect": "npx @modelcontextprotocol/inspector tsx src/mcp/server.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

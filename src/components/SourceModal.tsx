@@ -1,91 +1,157 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, FolderOpen, GitBranch, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
-import type { NirnayADR } from '../core/types.js';
-import { loadViaDirectoryPicker, loadViaFileInput } from '../utils/localFolderLoader.js';
-import { fetchAdrsFromGitHub } from '../utils/githubLoader.js';
-import type { ToastConfig } from './Toast.js';
+import { X, FolderOpen, GitBranch, Loader2, UploadCloud, AlertCircle } from 'lucide-react';
+import { loadFromDirectoryPicker, readFilesFromInput, isFileSystemAccessSupported } from '../utils/localFolderLoader.js';
+import { fetchGitHubADRs } from '../utils/githubLoader.js';
 
 interface SourceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onImport: (adrs: NirnayADR[], count: number, errors: any[]) => void;
-  showToast: (toast: ToastConfig) => void;
+  onLoadSuccess: (files: Array<{ name: string; content: string }>) => void;
 }
 
-export const SourceModal: React.FC<SourceModalProps> = ({ isOpen, onClose, onImport, showToast }) => {
+export const SourceModal: React.FC<SourceModalProps> = ({ isOpen, onClose, onLoadSuccess }) => {
   const [activeTab, setActiveTab] = useState<'local' | 'github'>('local');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  // Local State
-  const [isLocalLoading, setIsLocalLoading] = useState(false);
+  // GitHub Form State
+  const [repoStr, setRepoStr] = useState('');
+  const [branch, setBranch] = useState('main');
+  const [pathStr, setPathStr] = useState('docs/adr');
+  const [token, setToken] = useState('');
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // GitHub State
-  const [isGithubLoading, setIsGithubLoading] = useState(false);
-  const [repoUrl, setRepoUrl] = useState('');
-  const [branch, setBranch] = useState('main');
-  const [path, setPath] = useState('adrs');
-  const [token, setToken] = useState('');
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  useEffect(() => {
+    if (isOpen) {
+      setError(null);
+      setIsLoading(false);
+    }
+  }, [isOpen]);
 
-  const handleLocalImport = async () => {
-    setIsLocalLoading(true);
+  const handleLocalDirectory = async () => {
+    if (!isFileSystemAccessSupported()) {
+      fileInputRef.current?.click();
+      return;
+    }
+    setError(null);
+    setIsLoading(true);
     try {
-      const res = await loadViaDirectoryPicker();
-      if (res.adrs.length > 0) {
-        onImport(res.adrs, res.count, res.errors);
-      } else if (res.errors.length > 0) {
-        showToast({ type: 'error', title: 'Import Failed', subtitle: res.errors[0].message });
+      const { files, errors } = await loadFromDirectoryPicker();
+      if (errors.length > 0) {
+        setError(errors[0]);
+      } else if (files.length > 0) {
+        onLoadSuccess(files);
+      } else {
+        setError('No Markdown files found.');
       }
     } catch (e: any) {
-      if (e.message && e.message.includes('supported')) {
-         fileInputRef.current?.click();
-      } else {
-         showToast({ type: 'error', title: 'Import Error', subtitle: e.message });
-      }
+      setError(e.message || 'Failed to load local directory');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLocalLoading(false);
   };
 
   const handleFallbackInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
-    setIsLocalLoading(true);
-    const res = await loadViaFileInput(e.target.files);
-    if (res.adrs.length > 0) {
-      onImport(res.adrs, res.count, res.errors);
-    } else if (res.errors.length > 0) {
-      showToast({ type: 'error', title: 'Import Failed', subtitle: res.errors[0].message });
+    setError(null);
+    setIsLoading(true);
+    try {
+      const files = await readFilesFromInput(e.target.files);
+      if (files.length > 0) {
+        onLoadSuccess(files);
+      } else {
+        setError('No Markdown files found.');
+      }
+    } catch (err: any) {
+       setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLocalLoading(false);
   };
 
-  const handleGithubImport = async () => {
-    if (!repoUrl.trim()) {
-      showToast({ type: 'warning', title: 'Missing URL', subtitle: 'Please enter a valid GitHub repository URL.' });
+  const handleDragOver = (e: React.DragEvent) => e.preventDefault();
+  
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    if (!e.dataTransfer.files?.length) return;
+    setError(null);
+    setIsLoading(true);
+    try {
+      const files = await readFilesFromInput(e.dataTransfer.files as any);
+      if (files.length > 0) {
+        onLoadSuccess(files);
+      } else {
+        setError('No Markdown files found.');
+      }
+    } catch (err: any) {
+       setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGithubSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!repoStr.trim()) {
+      setError("Please enter a valid GitHub repository");
       return;
     }
-    setIsGithubLoading(true);
-    const res = await fetchAdrsFromGitHub({ repoUrl, branch, path, token });
-    setIsGithubLoading(false);
     
-    if (res.adrs.length > 0) {
-      onImport(res.adrs, res.adrs.length, res.errors);
-    } else if (res.errors.length > 0) {
-      showToast({ type: 'error', title: 'GitHub Fetch Failed', subtitle: res.errors[0] });
+    let owner = '';
+    let repo = '';
+    
+    if (repoStr.includes('github.com/')) {
+       const parts = repoStr.split('github.com/')[1].split('/');
+       owner = parts[0];
+       repo = parts[1];
     } else {
-      showToast({ type: 'warning', title: 'No ADRs Found', subtitle: 'Could not find any .md files in the specified path.' });
+       const parts = repoStr.split('/');
+       owner = parts[0];
+       repo = parts[1];
+    }
+    
+    if (!owner || !repo) {
+      setError("Invalid repository format. Use 'owner/repo' or a full URL.");
+      return;
+    }
+
+    setError(null);
+    setIsLoading(true);
+    
+    try {
+      const { files, errors } = await fetchGitHubADRs({
+        owner,
+        repo,
+        branch: branch || 'main',
+        path: pathStr || '',
+        token: token || undefined
+      });
+      
+      if (errors.length > 0) {
+        setError(errors[0]);
+      } else if (files.length > 0) {
+        onLoadSuccess(files);
+      } else {
+        setError("No Markdown files found in the specified repository/path.");
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch from GitHub');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-auto">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/70 backdrop-blur-md"
             onClick={onClose}
           />
           
@@ -93,130 +159,181 @@ export const SourceModal: React.FC<SourceModalProps> = ({ isOpen, onClose, onImp
             initial={{ scale: 0.95, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 10 }}
-            className="relative w-full max-w-md bg-[#0b0e17] border border-white/[0.1] rounded-2xl shadow-2xl overflow-hidden font-sans text-slate-200"
+            className="relative w-full max-w-xl bg-[#0b0f19]/80 backdrop-blur-md rounded-xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col max-h-[90vh]"
           >
-            <div className="flex items-center justify-between p-4 border-b border-white/[0.08]">
-              <h3 className="text-sm font-bold tracking-wide uppercase text-white">Connect Source</h3>
-              <button onClick={onClose} className="p-1 text-slate-400 hover:text-white transition-colors">
-                <X size={18} />
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-white/5 shrink-0">
+              <h2 className="text-xl font-medium tracking-wide flex items-center gap-2 text-white">
+                <span className="text-cyan-400 font-semibold drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]">Load</span> Source
+              </h2>
+              <button 
+                onClick={onClose}
+                className="p-1.5 rounded-md hover:bg-white/10 text-white/50 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+              >
+                <X size={20} />
               </button>
             </div>
 
-            <div className="flex p-2 gap-2 border-b border-white/[0.04]">
+            {/* Tabs */}
+            <div className="flex border-b border-white/5 shrink-0">
               <button
+                className={`flex-1 p-4 font-medium text-sm transition-all duration-200 border-b-2 flex items-center justify-center gap-2 outline-none ${
+                  activeTab === 'local' 
+                    ? 'border-cyan-400 text-cyan-300 bg-cyan-900/10' 
+                    : 'border-transparent text-white/40 hover:text-white/80 hover:bg-white/[0.02]'
+                }`}
                 onClick={() => setActiveTab('local')}
-                className={`flex-1 py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors ${
-                  activeTab === 'local' ? 'bg-cyan-500/20 text-cyan-300' : 'hover:bg-white/5 text-slate-400'
-                }`}
               >
-                <FolderOpen size={14} /> Local Folder
+                <FolderOpen size={18} />
+                Local Directory
               </button>
               <button
-                onClick={() => setActiveTab('github')}
-                className={`flex-1 py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors ${
-                  activeTab === 'github' ? 'bg-cyan-500/20 text-cyan-300' : 'hover:bg-white/5 text-slate-400'
+                className={`flex-1 p-4 font-medium text-sm transition-all duration-200 border-b-2 flex items-center justify-center gap-2 outline-none ${
+                  activeTab === 'github' 
+                    ? 'border-purple-500 text-purple-300 bg-purple-900/10' 
+                    : 'border-transparent text-white/40 hover:text-white/80 hover:bg-white/[0.02]'
                 }`}
+                onClick={() => setActiveTab('github')}
               >
-                <GitBranch size={14} /> GitHub Repo
+                <GitBranch size={18} />
+                Remote GitHub
               </button>
             </div>
 
-            <div className="p-6">
+            {/* Content Area */}
+            <div className="p-6 overflow-y-auto">
+              {error && (
+                <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex gap-3 text-red-200 text-sm items-start">
+                  <AlertCircle size={18} className="text-red-400 shrink-0 mt-0.5" />
+                  <p>{error}</p>
+                </div>
+              )}
+
               {activeTab === 'local' ? (
-                <div className="flex flex-col items-center justify-center gap-4">
+                <div className="flex flex-col gap-4">
+                  <div 
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="cursor-pointer border-2 border-dashed border-cyan-500/30 rounded-xl p-12 text-center bg-cyan-950/10 hover:bg-cyan-950/20 hover:border-cyan-500/50 transition-all flex flex-col items-center justify-center gap-4 group shadow-[inset_0_0_20px_rgba(6,182,212,0.02)]"
+                  >
+                    <div className="p-4 rounded-full bg-cyan-500/10 text-cyan-400 group-hover:scale-110 group-hover:shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all">
+                      <UploadCloud size={32} />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-cyan-100">Drag & drop your ADR folder here</h3>
+                      <p className="text-sm text-cyan-100/50 mt-1">Accepts multiple .md or .markdown files</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 w-full my-2">
+                    <div className="h-px bg-white/10 flex-1"></div>
+                    <span className="text-xs font-semibold tracking-wider text-white/40 uppercase">OR</span>
+                    <div className="h-px bg-white/10 flex-1"></div>
+                  </div>
+                  
                   <input
                     type="file"
-                    // @ts-ignore
-                    webkitdirectory=""
-                    directory=""
-                    multiple
-                    className="hidden"
                     ref={fileInputRef}
                     onChange={handleFallbackInput}
+                    className="hidden"
+                    multiple
+                    {...{ webkitdirectory: "", directory: "" } as any}
                   />
-                  <div
-                    onClick={handleLocalImport}
-                    className="w-full h-32 border-2 border-dashed border-cyan-500/30 rounded-xl bg-cyan-500/5 hover:bg-cyan-500/10 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors"
+                  
+                  <button 
+                    onClick={handleLocalDirectory}
+                    disabled={isLoading}
+                    className="w-full h-10 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 font-medium transition-all hover:shadow-[0_0_20px_rgba(6,182,212,0.25)] flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    {isLocalLoading ? (
-                      <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+                    {isLoading ? (
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee] animate-ping" />
+                        <span className="font-mono text-xs tracking-wider uppercase text-cyan-200">
+                          {`> Reading local files...`}
+                        </span>
+                      </div>
                     ) : (
                       <>
-                        <FolderOpen className="w-8 h-8 text-cyan-400" />
-                        <span className="text-sm font-semibold text-cyan-200">Click to Browse Local Folder</span>
+                        <FolderOpen size={16} /> 
+                        {isFileSystemAccessSupported() ? 'Pick Local Folder' : 'Pick Local Folder (Fallback)'}
                       </>
                     )}
-                  </div>
-                  <p className="text-xs text-slate-400 text-center">
-                    Select a directory containing .md ADRs. Supported formats will be recursively parsed.
-                  </p>
+                  </button>
+                  
+                  {!isFileSystemAccessSupported() && (
+                    <p className="text-[10px] text-center mt-2 text-cyan-200/50">
+                      Using Standard Directory Picker (Browser Fallback)
+                    </p>
+                  )}
                 </div>
               ) : (
-                <div className="flex flex-col gap-4">
+                <form onSubmit={handleGithubSubmit} className="flex flex-col gap-5">
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Repository URL or Slug</label>
-                    <input
-                      type="text"
-                      value={repoUrl}
-                      onChange={(e) => setRepoUrl(e.target.value)}
-                      placeholder="e.g. facebook/react"
-                      className="w-full bg-[#131926] border border-white/[0.1] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500/50"
+                    <label className="block text-xs font-medium text-purple-200/60 uppercase tracking-wide mb-2">Repository</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. facebook/react or https://github.com/..." 
+                      value={repoStr}
+                      onChange={e => setRepoStr(e.target.value)}
+                      className="w-full bg-black/40 border border-purple-500/30 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-all text-white placeholder-white/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]"
                     />
                   </div>
-
-                  <div className="border border-white/[0.08] rounded-lg overflow-hidden">
-                    <button
-                      onClick={() => setShowAdvanced(!showAdvanced)}
-                      className="w-full px-3 py-2 bg-[#131926] flex items-center justify-between text-xs font-semibold text-slate-300 hover:bg-white/5 transition-colors"
-                    >
-                      Advanced Settings
-                      {showAdvanced ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                    </button>
-                    {showAdvanced && (
-                      <div className="p-3 bg-[#0b0e17] flex flex-col gap-3 border-t border-white/[0.08]">
-                        <div className="flex gap-3">
-                          <div className="flex-1">
-                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Branch</label>
-                            <input
-                              type="text"
-                              value={branch}
-                              onChange={(e) => setBranch(e.target.value)}
-                              className="w-full bg-[#131926] border border-white/[0.1] rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500/50"
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Path</label>
-                            <input
-                              type="text"
-                              value={path}
-                              onChange={(e) => setPath(e.target.value)}
-                              className="w-full bg-[#131926] border border-white/[0.1] rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500/50"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Personal Access Token (Optional)</label>
-                          <input
-                            type="password"
-                            value={token}
-                            onChange={(e) => setToken(e.target.value)}
-                            placeholder="ghp_xxxxxxxxxxxx"
-                            className="w-full bg-[#131926] border border-white/[0.1] rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500/50"
-                          />
-                        </div>
-                      </div>
-                    )}
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-purple-200/60 uppercase tracking-wide mb-2">Branch</label>
+                      <input 
+                        type="text" 
+                        placeholder="main" 
+                        value={branch}
+                        onChange={e => setBranch(e.target.value)}
+                        className="w-full bg-black/40 border border-purple-500/30 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-all text-white placeholder-white/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-purple-200/60 uppercase tracking-wide mb-2">Path</label>
+                      <input 
+                        type="text" 
+                        placeholder="docs/adr" 
+                        value={pathStr}
+                        onChange={e => setPathStr(e.target.value)}
+                        className="w-full bg-black/40 border border-purple-500/30 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-all text-white placeholder-white/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]"
+                      />
+                    </div>
                   </div>
 
-                  <button
-                    onClick={handleGithubImport}
-                    disabled={isGithubLoading}
-                    className="w-full py-2.5 mt-2 bg-cyan-500 text-cyan-950 font-bold text-sm rounded-lg flex items-center justify-center gap-2 hover:bg-cyan-400 transition-colors disabled:opacity-50"
+                  <div>
+                    <label className="block text-xs font-medium text-purple-200/60 uppercase tracking-wide mb-2">Personal Access Token <span className="lowercase normal-case text-white/30 tracking-normal">(Optional)</span></label>
+                    <input 
+                      type="password" 
+                      placeholder="ghp_..." 
+                      value={token}
+                      onChange={e => setToken(e.target.value)}
+                      className="w-full bg-black/40 border border-purple-500/30 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-all text-white placeholder-white/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]"
+                    />
+                    <p className="text-xs text-white/40 mt-2">Required for private repositories or to avoid rate limits.</p>
+                  </div>
+
+                  <button 
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full mt-2 h-10 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-300 font-medium transition-all hover:shadow-[0_0_20px_rgba(168,85,247,0.25)] flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    {isGithubLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <GitBranch className="w-4 h-4" />}
-                    {isGithubLoading ? 'Fetching Graph...' : 'Fetch & Build DAG'}
+                    {isLoading ? (
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-purple-400 shadow-[0_0_8px_#c084fc] animate-ping" />
+                        <span className="font-mono text-xs tracking-wider uppercase text-purple-200">
+                          {`> Fetching ADR tree...`}
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <GitBranch size={16} /> Fetch ADRs
+                      </>
+                    )}
                   </button>
-                </div>
+                </form>
               )}
             </div>
           </motion.div>

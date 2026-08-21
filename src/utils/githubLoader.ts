@@ -1,105 +1,104 @@
-import { parseADRMarkdown } from '../parser/adrParser.js';
-import type { NirnayADR } from '../core/types.js';
-
-export function parseGitHubUrl(input: string): { owner: string; repo: string; branch?: string; path?: string } {
-  let cleanInput = input.trim().replace(/\/$/, '');
-  
-  if (cleanInput.startsWith('http')) {
-    const url = new URL(cleanInput);
-    const parts = url.pathname.split('/').filter(Boolean);
-    if (parts.length >= 2) {
-      const owner = parts[0];
-      const repo = parts[1];
-      let branch: string | undefined;
-      let path: string | undefined;
-      
-      if (parts.length >= 4 && parts[2] === 'tree') {
-        branch = parts[3];
-        path = parts.slice(4).join('/');
-      }
-      return { owner, repo, branch, path };
-    }
-  } else {
-    const parts = cleanInput.split('/').filter(Boolean);
-    if (parts.length === 2) {
-      return { owner: parts[0], repo: parts[1] };
-    }
-  }
-  
-  throw new Error('Invalid GitHub URL or format. Use owner/repo or a full GitHub URL.');
-}
-
-export async function fetchAdrsFromGitHub(options: {
-  repoUrl: string;
+export interface GitHubRepoConfig {
+  owner: string;
+  repo: string;
   branch?: string;
   path?: string;
   token?: string;
-}): Promise<{ adrs: NirnayADR[]; repoName: string; errors: string[] }> {
-  const parsed = parseGitHubUrl(options.repoUrl);
-  
-  const owner = parsed.owner;
-  const repo = parsed.repo;
-  const branch = options.branch || parsed.branch || 'main';
-  const path = options.path || parsed.path || 'adrs';
-  
-  const repoName = `${owner}/${repo}`;
-  const result: { adrs: NirnayADR[]; repoName: string; errors: string[] } = { adrs: [], repoName, errors: [] };
-  
-  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`;
+}
+
+export async function fetchGitHubADRs(config: GitHubRepoConfig): Promise<{ files: Array<{ name: string; content: string }>; errors: string[] }> {
+  const { owner, repo, branch = 'main', path = '', token } = config;
+  const errors: string[] = [];
+  const files: Array<{ name: string; content: string }> = [];
+
   const headers: Record<string, string> = {
     'Accept': 'application/vnd.github.v3+json',
   };
-  if (options.token) {
-    headers['Authorization'] = `Bearer ${options.token}`;
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
   }
   
+  // Clean up path
+  const urlPath = path.replace(/^\/|\/$/g, '');
+  // Build URL with ref query parameter for branch
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${urlPath}?ref=${branch}`;
+
   try {
-    const res = await fetch(apiUrl, { headers });
+    const response = await fetch(url, { headers });
     
-    if (res.status === 404) {
-      result.errors.push("Repository, branch, or folder path not found.");
-      return result;
-    }
-    if (res.status === 403) {
-      result.errors.push("GitHub API rate limit exceeded. Please provide a Personal Access Token (PAT).");
-      return result;
-    }
-    if (!res.ok) {
-      result.errors.push(`GitHub API returned ${res.status}: ${res.statusText}`);
-      return result;
-    }
-    
-    const data = await res.json();
-    if (!Array.isArray(data)) {
-      result.errors.push("Target path is not a directory.");
-      return result;
-    }
-    
-    for (const item of data) {
-      if (item.type === 'file' && (item.name.endsWith('.md') || item.name.endsWith('.markdown'))) {
-        try {
-          let fileContent = '';
-          if (item.content) {
-             // atob can throw if content is not properly encoded
-             fileContent = decodeURIComponent(escape(atob(item.content)));
-          } else if (item.download_url) {
-             const rawRes = await fetch(item.download_url, { headers });
-             if (!rawRes.ok) throw new Error(`Failed to fetch raw content from ${item.download_url}`);
-             fileContent = await rawRes.text();
-          }
-          
-          if (fileContent) {
-            result.adrs.push(parseADRMarkdown(fileContent, item.name));
-          }
-        } catch (e: any) {
-          result.errors.push(`Failed to parse ${item.name}: ${e.message}`);
-        }
+    if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error('GitHub API rate limit exceeded or forbidden (403).');
+      } else if (response.status === 404) {
+        throw new Error(`Repository or path not found (404): ${owner}/${repo}/${urlPath}`);
+      } else if (response.status === 401) {
+        throw new Error('Bad credentials: The provided GitHub token is invalid (401).');
+      } else {
+        throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
       }
     }
+
+    const data = await response.json();
+    let items: any[] = [];
     
-  } catch (e: any) {
-    result.errors.push(`Network or parsing error: ${e.message}`);
+    // If it's a directory, GitHub returns an array. If it's a file, it returns an object.
+    if (Array.isArray(data)) {
+      items = data;
+    } else if (typeof data === 'object' && data !== null) {
+      items = [data];
+    }
+    
+    // Filter for markdown files
+    const mdItems = items.filter(item => 
+      item.type === 'file' && 
+      (item.name.toLowerCase().endsWith('.md') || item.name.toLowerCase().endsWith('.markdown'))
+    );
+    
+    // Fetch raw contents sequentially (or could be Promise.all to optimize)
+    // We'll use Promise.all to fetch them in parallel.
+    await Promise.all(mdItems.map(async (item) => {
+      if (item.download_url) {
+        try {
+          // Fetch raw file
+          // IMPORTANT: Need to be careful to pass the auth token for download urls too
+          // Some download URLs (like on private repos) require it.
+          const contentResponse = await fetch(item.download_url, { headers });
+          if (!contentResponse.ok) {
+            errors.push(`Failed to download ${item.name}: ${contentResponse.statusText}`);
+            return;
+          }
+          const content = await contentResponse.text();
+          files.push({ name: item.name, content });
+        } catch (downloadErr: any) {
+          errors.push(`Error downloading ${item.name}: ${downloadErr.message}`);
+        }
+      } else if (item.content) {
+        // Fallback for when the file content is returned directly in base64
+        try {
+          const encoding = item.encoding || 'base64';
+          let decodedContent = '';
+          if (encoding === 'base64') {
+            if (typeof Buffer !== 'undefined') {
+              decodedContent = Buffer.from(item.content, 'base64').toString('utf-8');
+            } else {
+              decodedContent = atob(item.content);
+            }
+          } else {
+            decodedContent = item.content;
+          }
+          files.push({ name: item.name, content: decodedContent });
+        } catch (decodeErr: any) {
+          errors.push(`Error decoding ${item.name}: ${decodeErr.message}`);
+        }
+      } else {
+        errors.push(`No download URL or content found for ${item.name}`);
+      }
+    }));
+
+  } catch (err: any) {
+    errors.push(err.message || String(err));
   }
-  
-  return result;
+
+  return { files, errors };
 }

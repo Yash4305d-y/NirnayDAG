@@ -1,18 +1,22 @@
 import { Command } from 'commander';
 import { spawn } from 'child_process';
-import chalk from 'chalk';
 import path from 'path';
 
 export const mcpCommand = new Command('mcp')
-  .description('Launches the MCP stdio server for Claude Desktop / Cursor / Antigravity integration')
+  .description('Start the Model Context Protocol (MCP) server')
   .action(() => {
-    const serverPath = path.resolve(__dirname, '../../mcp/server.ts');
-    const child = spawn('npx', ['tsx', serverPath], {
-      stdio: 'inherit',
-    });
+    // Determine path based on compiled output or running via tsx
+    const ext = process.argv[1].endsWith('.js') ? 'js' : 'ts';
+    const serverPath = ext === 'js' 
+      ? path.resolve(process.cwd(), 'dist/mcp.js')
+      : path.resolve(process.cwd(), 'src/mcp/server.ts');
+      
+    const cmd = ext === 'js' ? 'node' : 'tsx';
+    
+    const child = spawn(cmd, [serverPath], { stdio: 'inherit', shell: true });
     
     child.on('error', (err) => {
-      console.error(chalk.red('Failed to start MCP server:'), err);
+      console.error(`Failed to start MCP server: ${err.message}`);
       process.exit(1);
     });
   });

@@ -159,3 +159,30 @@ export class DAGEngine {
     return Array.from(impacted);
   }
 }
+
+import type { ParsedADR } from '../types/adr.js';
+
+export function mapParsedToNirnay(parsed: ParsedADR): NirnayADR {
+  return {
+    id: parsed.frontmatter.id,
+    title: parsed.frontmatter.title,
+    category: 'Infrastructure', // fallback
+    status: parsed.frontmatter.status as any,
+    timestamp: parsed.frontmatter.date,
+    context: parsed.context,
+    decision: parsed.decision,
+    consequences: {
+      pros: parsed.consequences.positive,
+      cons: parsed.consequences.negative,
+    },
+    dependencies: parsed.frontmatter.depends_on || [],
+    supersedes: parsed.frontmatter.supersedes?.[0],
+  };
+}
+
+export function validateAndComputeDAG(parsedADRs: ParsedADR[]): { validationResult: DAGValidationResult, engine: DAGEngine, mappedAdrs: NirnayADR[] } {
+  const mappedAdrs = parsedADRs.map(mapParsedToNirnay);
+  const engine = new DAGEngine(mappedAdrs);
+  const validationResult = engine.validate();
+  return { validationResult, engine, mappedAdrs };
+}

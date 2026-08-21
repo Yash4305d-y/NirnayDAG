@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/mcp-settings.json",
+  "mcpServers": {
+    "nirnay-dag": {
+      "command": "npx",
+      "args": ["-y", "tsx", "src/mcp/server.ts"],
+      "env": {
+        "ADR_DIR": "./docs/adr"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "list_adrs",
+        "get_adr_context",
+        "query_blast_radius",
+        "validate_architecture"
+      ]
+    }
+  }
+}

@@ -1,68 +1,95 @@
-import { parseADRMarkdown } from '../parser/adrParser.js';
-import type { NirnayADR } from '../core/types.js';
+export const isFileSystemAccessSupported = (): boolean => {
+  return typeof window !== 'undefined' && 'showDirectoryPicker' in window;
+};
 
-export interface FolderLoadResult {
-  adrs: NirnayADR[];
-  errors: Array<{ file: string; message: string }>;
-  count: number;
+export async function readFilesFromInput(fileList: FileList | File[]): Promise<Array<{ name: string; content: string }>> {
+  const files: Array<{ name: string; content: string }> = [];
+  const fileArray = Array.from(fileList);
+  
+  const mdFiles = fileArray.filter(f => 
+    f.name.toLowerCase().endsWith('.md') || f.name.toLowerCase().endsWith('.markdown')
+  );
+  
+  await Promise.all(mdFiles.map(async (file) => {
+    try {
+      const content = await file.text();
+      files.push({ name: file.name, content });
+    } catch (err: any) {
+      console.warn(`Failed to read file ${file.name}: ${err.message}`);
+    }
+  }));
+
+  return files;
 }
 
-export async function loadViaDirectoryPicker(): Promise<FolderLoadResult> {
-  const result: FolderLoadResult = { adrs: [], errors: [], count: 0 };
-  
-  try {
-    if (!('showDirectoryPicker' in window)) {
-      throw new Error("Directory picker not supported");
-    }
+export async function loadFromDirectoryPicker(): Promise<{ files: Array<{ name: string; content: string }>; errors: string[] }> {
+  const errors: string[] = [];
+  const files: Array<{ name: string; content: string }> = [];
 
-    // @ts-ignore
-    const dirHandle = await window.showDirectoryPicker();
+  if (!('showDirectoryPicker' in window)) {
+    errors.push('Your browser does not support the File System Access API. Please use the fallback method.');
+    return { files, errors };
+  }
+
+  try {
+    const dirHandle = await window.showDirectoryPicker({ mode: 'read' });
     
-    // @ts-ignore
-    async function walkDirectory(dirHandle: any, path: string = '') {
-      for await (const entry of dirHandle.values()) {
-        if (entry.kind === 'file' && (entry.name.endsWith('.md') || entry.name.endsWith('.markdown'))) {
-          const file = await entry.getFile();
-          const content = await file.text();
-          try {
-            result.adrs.push(parseADRMarkdown(content, entry.name));
-            result.count++;
-          } catch (e: any) {
-            result.errors.push({ file: `${path}${entry.name}`, message: e.message });
+    async function traverse(handle: FileSystemDirectoryHandle) {
+      for await (const entry of handle.values()) {
+        if (entry.kind === 'file') {
+          if (entry.name.toLowerCase().endsWith('.md') || entry.name.toLowerCase().endsWith('.markdown')) {
+            try {
+              const file = await entry.getFile();
+              const content = await file.text();
+              files.push({ name: entry.name, content });
+            } catch (err: any) {
+              errors.push(`Failed to read file ${entry.name}: ${err.message}`);
+            }
           }
         } else if (entry.kind === 'directory') {
-          await walkDirectory(entry, `${path}${entry.name}/`);
+          if (!entry.name.startsWith('.') && entry.name !== 'node_modules') {
+            await traverse(entry);
+          }
         }
       }
     }
-    
-    await walkDirectory(dirHandle);
-    
-  } catch (e: any) {
-    if (e.name !== 'AbortError') {
-      console.error("Folder access failed", e);
-      result.errors.push({ file: 'System', message: `Access Error: ${e.message}` });
+
+    await traverse(dirHandle);
+
+  } catch (err: any) {
+    if (err.name === 'AbortError') {
+      // User aborted selection, not an error
+      console.log('User aborted directory selection.');
+    } else {
+      errors.push(`Directory selection failed: ${err.message}`);
     }
   }
-  
-  return result;
+
+  return { files, errors };
 }
 
-export async function loadViaFileInput(fileList: FileList): Promise<FolderLoadResult> {
-  const result: FolderLoadResult = { adrs: [], errors: [], count: 0 };
+export async function loadFromFileInput(inputFiles: FileList | File[]): Promise<{ files: Array<{ name: string; content: string }>; errors: string[] }> {
+  const errors: string[] = [];
+  const files: Array<{ name: string; content: string }> = [];
+
+  const fileArray = Array.from(inputFiles);
   
-  for (let i = 0; i < fileList.length; i++) {
-    const file = fileList[i];
-    if (file.name.endsWith('.md') || file.name.endsWith('.markdown')) {
+  const mdFiles = fileArray.filter(f => 
+    f.name.toLowerCase().endsWith('.md') || f.name.toLowerCase().endsWith('.markdown')
+  );
+  
+  await Promise.all(mdFiles.map(async (file) => {
+    try {
       const content = await file.text();
-      try {
-        result.adrs.push(parseADRMarkdown(content, file.name));
-        result.count++;
-      } catch (err: any) {
-        result.errors.push({ file: file.webkitRelativePath || file.name, message: err.message });
-      }
+      files.push({ name: file.name, content });
+    } catch (err: any) {
+      errors.push(`Failed to read file ${file.name}: ${err.message}`);
     }
-  }
-  
-  return result;
+  }));
+
+  return { files, errors };
 }
+
+// Keep existing names exported for backward compatibility if needed by other files, or just alias them.
+export const loadViaDirectoryPicker = loadFromDirectoryPicker;
+export const loadViaFileInput = loadFromFileInput;

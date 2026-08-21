@@ -1,155 +1,195 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
-import * as fs from 'fs';
-import * as path from 'path';
-import { parseADRMarkdown } from '../parser/adrParser.js';
-import { DAGEngine } from '../core/dagEngine.js';
-import type { NirnayADR } from '../core/types.js';
-
-const ADR_DIR = path.resolve(process.cwd(), 'adrs');
-
-function loadLocalADRs(): NirnayADR[] {
-  if (!fs.existsSync(ADR_DIR)) return [];
-  const files = fs.readdirSync(ADR_DIR).filter((f) => f.endsWith('.md'));
-  return files.map((file) => {
-    const raw = fs.readFileSync(path.join(ADR_DIR, file), 'utf-8');
-    return parseADRMarkdown(raw);
-  });
-}
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import fs from 'fs-extra';
+import path from 'path';
+import glob from 'fast-glob';
+import { parseADRContent } from '../core/adrParser.js';
+import { validateAndComputeDAG } from '../core/dagEngine.js';
+import type { ParsedADR } from '../types/adr.js';
 
 const server = new Server(
-  { name: 'nirnay-dag-mcp', version: '0.1.0' },
-  { capabilities: { tools: {} } }
+  { name: "nirnay-dag-mcp", version: "1.0.0" },
+  { capabilities: { tools: {}, resources: {} } }
 );
+
+function loadAdrs(): ParsedADR[] {
+  const adrDir = process.env.ADR_DIR || process.argv[2] || './docs/adr';
+  let resolvedDir = adrDir;
+  
+  if (!path.isAbsolute(adrDir)) {
+    resolvedDir = path.join(process.cwd(), adrDir);
+    if (!fs.existsSync(resolvedDir)) {
+       resolvedDir = path.join(process.cwd(), './sample-adrs');
+    }
+  }
+
+  if (!fs.existsSync(resolvedDir)) {
+    return [];
+  }
+
+  const files = glob.sync("**/*.{md,markdown}", { cwd: resolvedDir, absolute: true });
+  const adrs: ParsedADR[] = [];
+  
+  for (const file of files) {
+    const content = fs.readFileSync(file, "utf8");
+    try {
+      const baseNameMatch = path.basename(file).match(/^(\d+)/);
+      let fallbackId = path.basename(file).replace(/\.mdx?$/, '');
+      if (baseNameMatch) {
+        fallbackId = `ADR-${baseNameMatch[1]}`;
+      }
+      adrs.push(parseADRContent(content, fallbackId));
+    } catch (e) {
+      console.error(`Failed to parse ${file}`, e);
+    }
+  }
+  return adrs;
+}
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
-        name: 'get_decision_graph',
-        description: 'Returns all architectural decisions and dependency edges from the project DAG.',
-        inputSchema: { type: 'object', properties: {} },
-      },
-      {
-        name: 'get_blast_radius',
-        description: 'Calculates all downstream decisions impacted if a target ADR is modified or deprecated.',
+        name: 'list_adrs',
+        description: 'List Architecture Decision Records (ADRs).',
         inputSchema: {
           type: 'object',
           properties: {
-            adrId: { type: 'string', description: 'The unique ADR ID, e.g. ADR-001' },
-          },
-          required: ['adrId'],
-        },
+            status: { type: 'string', description: 'Filter by status (e.g. accepted, proposed)' },
+            tag: { type: 'string', description: 'Filter by tag' }
+          }
+        }
       },
       {
-        name: 'validate_architecture_dag',
-        description: 'Checks the decision graph for circular dependencies and missing prerequisite nodes.',
-        inputSchema: { type: 'object', properties: {} },
-      },
-      {
-        name: 'create_adr',
-        description: 'Creates a new ADR markdown file with frontmatter and structured trade-offs.',
+        name: 'get_adr_context',
+        description: 'Get full Markdown details including Context, Decision, Consequences, and Deciders.',
         inputSchema: {
           type: 'object',
           properties: {
-            id: { type: 'string', description: 'e.g. ADR-006' },
-            title: { type: 'string' },
-            category: { type: 'string', enum: ['Infrastructure', 'Database', 'AI / Engine', 'Security'] },
-            status: { type: 'string', enum: ['proposed', 'accepted', 'superseded', 'deprecated'] },
-            context: { type: 'string' },
-            decision: { type: 'string' },
-            pros: { type: 'array', items: { type: 'string' } },
-            cons: { type: 'array', items: { type: 'string' } },
-            dependencies: { type: 'array', items: { type: 'string' } },
+            id: { type: 'string', description: 'ADR ID (e.g. ADR-0001)' }
           },
-          required: ['id', 'title', 'category', 'status', 'context', 'decision'],
-        },
+          required: ['id']
+        }
       },
-    ],
+      {
+        name: 'query_blast_radius',
+        description: 'Query downstream cascading dependencies for an ADR.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', description: 'ADR ID' }
+          },
+          required: ['id']
+        }
+      },
+      {
+        name: 'validate_architecture',
+        description: 'Validate the DAG for cycles and retrieve topological order.',
+        inputSchema: {
+          type: 'object',
+          properties: {}
+        }
+      }
+    ]
   };
 });
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  const adrs = loadLocalADRs();
-  const engine = new DAGEngine(adrs);
+  const adrs = loadAdrs();
+  const { name, arguments: args } = request.params;
 
-  switch (request.params.name) {
-    case 'get_decision_graph': {
+  try {
+    if (name === 'list_adrs') {
+      let filtered = adrs;
+      if (args?.status) {
+        filtered = filtered.filter(a => a.frontmatter.status === args.status);
+      }
+      if (args?.tag) {
+        filtered = filtered.filter(a => a.frontmatter.tags?.includes(args.tag as string));
+      }
+      const result = filtered.map(a => ({
+        id: a.frontmatter.id,
+        title: a.frontmatter.title,
+        status: a.frontmatter.status,
+        tags: a.frontmatter.tags || []
+      }));
+      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+    }
+
+    if (name === 'get_adr_context') {
+      const id = args?.id as string;
+      const adr = adrs.find(a => a.frontmatter.id === id);
+      if (!adr) {
+        return { content: [{ type: 'text', text: `ADR not found: ${id}` }] };
+      }
+      
+      const details = {
+        id: adr.frontmatter.id,
+        title: adr.frontmatter.title,
+        status: adr.frontmatter.status,
+        date: adr.frontmatter.date,
+        tags: adr.frontmatter.tags,
+        deciders: adr.frontmatter.deciders,
+        context: adr.context,
+        decision: adr.decision,
+        consequences: adr.consequences
+      };
+      
+      return { content: [{ type: 'text', text: JSON.stringify(details, null, 2) }] };
+    }
+
+    if (name === 'query_blast_radius') {
+      const id = args?.id as string;
+      const { engine } = validateAndComputeDAG(adrs);
+      const deps = engine.getBlastRadius(id);
+      const direct = adrs.find(a => a.frontmatter.id === id)?.frontmatter.depends_on || [];
+      const score = deps.length * 10 + direct.length * 5;
       return {
-        content: [{ type: 'text', text: JSON.stringify(adrs, null, 2) }],
+        content: [{
+          type: 'text', text: JSON.stringify({
+            directDependents: direct,
+            totalCascadingDownstream: deps,
+            maxDepth: deps.length > 0 ? Math.ceil(deps.length / 2) : 0,
+            architectureRiskScore: Math.min(100, score)
+          }, null, 2)
+        }]
       };
     }
 
-    case 'get_blast_radius': {
-      const { adrId } = request.params.arguments as { adrId: string };
-      const impacted = engine.getBlastRadius(adrId);
+    if (name === 'validate_architecture') {
+      const { validationResult, engine } = validateAndComputeDAG(adrs);
+      const rootNodes = Object.keys(engine['adjacencyList']).filter(id => {
+        const hasIncoming = Object.values(engine['adjacencyList']).some(deps => deps.includes(id));
+        return !hasIncoming;
+      });
+      
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({ targetNode: adrId, totalImpacted: impacted.length, impactedNodes: impacted }, null, 2),
-          },
-        ],
+        content: [{
+          type: 'text', text: JSON.stringify({
+            hasCycles: validationResult.hasCycle,
+            cyclePath: validationResult.cyclePath,
+            missingDependencies: validationResult.missingDependencies,
+            rootDecisions: rootNodes,
+            topologicalOrder: validationResult.topologicalOrder
+          }, null, 2)
+        }]
       };
     }
 
-    case 'validate_architecture_dag': {
-      const validation = engine.validate();
-      return {
-        content: [{ type: 'text', text: JSON.stringify(validation, null, 2) }],
-      };
-    }
-
-    case 'create_adr': {
-      const args = request.params.arguments as any;
-      if (!fs.existsSync(ADR_DIR)) fs.mkdirSync(ADR_DIR, { recursive: true });
-
-      const fileName = `${args.id}-${args.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.md`;
-      const filePath = path.join(ADR_DIR, fileName);
-
-      const content = `---
-id: ${args.id}
-title: "${args.title}"
-category: ${args.category}
-status: ${args.status}
-timestamp: ${new Date().toISOString().split('T')[0]}
-dependencies: ${JSON.stringify(args.dependencies || [])}
----
-
-## Context
-${args.context}
-
-## Decision
-${args.decision}
-
-## Consequences
-
-### Positive
-${(args.pros || []).map((p: string) => `- ${p}`).join('\n')}
-
-### Negative
-${(args.cons || []).map((c: string) => `- ${c}`).join('\n')}
-`;
-
-      fs.writeFileSync(filePath, content, 'utf-8');
-      return {
-        content: [{ type: 'text', text: `Successfully generated ${fileName} at ${filePath}` }],
-      };
-    }
-
-    default:
-      throw new Error(`Unknown tool: ${request.params.name}`);
+    throw new Error(`Unknown tool: ${name}`);
+  } catch (error: any) {
+    return {
+      content: [{ type: 'text', text: `Error: ${error.message}` }],
+      isError: true
+    };
   }
 });
 
-async function run() {
+async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error('NirnayDAG MCP Server running on stdio');
 }
 
-run().catch((err) => console.error(err));
+main().catch(console.error);
