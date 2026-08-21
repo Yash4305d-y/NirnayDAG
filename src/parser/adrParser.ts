@@ -30,7 +30,7 @@ export function parseADRMarkdown(fileContent: string, filename?: string): Nirnay
 
   const extractListMultiple = (content: string, subheaders: string[]): string[] => {
     for (const subheader of subheaders) {
-      const regex = new RegExp(`### ${subheader}\\s*[\\r\\n]+([\\s\\S]*?)(?=\\n### |$)`, 'i');
+      const regex = new RegExp(`### ${subheader}\\s*[\\r\\n]+([\\s\\S]*?)(?=\\r?\\n### |$)`, 'i');
       const match = content.match(regex);
       if (match) {
         return match[1]
@@ -63,7 +63,7 @@ export function parseADRMarkdown(fileContent: string, filename?: string): Nirnay
 }
 
 function extractSection(content: string, headerName: string): string | null {
-  const regex = new RegExp(`##\\s*${headerName}[\\r\\n]+([\\s\\S]*?)(?=(##\\s*|$))`, 'i');
+  const regex = new RegExp(`##\\s+${headerName}[\\r\\n]+([\\s\\S]*?)(?=(?:\\r?\\n##\\s+(?!#)|$))`, 'i');
   const match = content.match(regex);
   return match ? match[1].trim() : null;
 }

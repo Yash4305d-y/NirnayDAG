@@ -11,6 +11,7 @@
     "ndag": "tsx src/cli/index.ts",
     "mcp": "tsx src/mcp/server.ts",
     "typecheck": "tsc --noEmit",
+    "lint:adrs": "tsx src/cli/lint.ts",
     "test": "vitest run",
     "prepublishOnly": "npm run typecheck && npm run build",
     "start": "vite preview",

@@ -3,7 +3,7 @@ import { ParsedADR, ADRFrontmatter, ADRStatus, ADRConsequences } from '../types/
 
 function extractSection(content: string, headings: string[]): string {
   const headingsRe = headings.map(h => h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-  const regex = new RegExp(`(?:^|\\r?\\n)##[ \\t]+(?:${headingsRe})[ \\t]*\\r?\\n([\\s\\S]*?)(?=\\r?\\n##[ \\t]|(?![\\s\\S]))`, 'i');
+  const regex = new RegExp(`(?:^|\\r?\\n)##\\s+(?:${headingsRe})[ \\t]*\\r?\\n([\\s\\S]*?)(?=\\r?\\n##\\s+(?!#)|$)`, 'i');
   const match = content.match(regex);
   return match ? match[1].trim() : '';
 }
@@ -75,15 +75,61 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
   // Determine ID
   const id = frontmatterData.id || fallbackId || `ADR-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
+  // Process Status with Aliases and Normalization
+  let rawStatus = frontmatterData.status || frontmatterData.stage || frontmatterData.state || 'proposed';
+  rawStatus = String(rawStatus).toLowerCase();
+  
+  let status: ADRStatus = 'proposed';
+  if (['accepted', 'implemented', 'done', 'approved', 'active'].includes(rawStatus)) {
+    status = 'accepted';
+  } else if (['deprecated', 'obsolete', 'retired'].includes(rawStatus)) {
+    status = 'deprecated';
+  } else if (['superseded', 'replaced'].includes(rawStatus)) {
+    status = 'superseded';
+  }
+
+  // Process Dependencies with Aliases
+  let dependsOn: string[] = frontmatterData.depends_on || frontmatterData['depends-on'] || frontmatterData.dependencies || frontmatterData.requires || [];
+  if (!Array.isArray(dependsOn)) {
+    dependsOn = [dependsOn];
+  }
+
+  // Process Supersedes with Aliases
+  let supersedes: string[] = frontmatterData.supersedes || frontmatterData.replaces || frontmatterData['superseded-by'] || [];
+  if (!Array.isArray(supersedes)) {
+    supersedes = [supersedes];
+  }
+
+  // Fallback: Infer dependencies from markdown body links if frontmatter is empty
+  if (dependsOn.length === 0 && bodyContent) {
+    const linkRegex = /(?:\[ADR-\d+\]|\(\.\/\d+[^)]+\))/g;
+    const matches = bodyContent.match(linkRegex);
+    if (matches) {
+      matches.forEach(m => {
+        // extract the actual ADR-XXXX or 000X from the match
+        if (m.startsWith('[ADR-')) {
+          dependsOn.push(m.substring(1, m.length - 1));
+        } else if (m.startsWith('(./')) {
+          const numMatch = m.match(/\(\.\/(\d+)/);
+          if (numMatch) {
+            dependsOn.push(`ADR-${numMatch[1]}`);
+          }
+        }
+      });
+      // Deduplicate
+      dependsOn = Array.from(new Set(dependsOn));
+    }
+  }
+
   const frontmatter: ADRFrontmatter = {
     id: id,
     title: title,
-    status: (frontmatterData.status as ADRStatus) || 'proposed',
+    status: status,
     date: frontmatterData.date || new Date().toISOString().split('T')[0],
     deciders: frontmatterData.deciders,
     tags: frontmatterData.tags,
-    depends_on: frontmatterData.depends_on,
-    supersedes: frontmatterData.supersedes,
+    depends_on: dependsOn,
+    supersedes: supersedes,
     conflicts_with: frontmatterData.conflicts_with,
   };
 
