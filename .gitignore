@@ -23,3 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 file_structure.txt
+
+node_modules/
+dist/
+.tmp/
+*.log
+nirnay-pr-summary.md
