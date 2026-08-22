@@ -48,10 +48,12 @@ program
   .command('validate [dir]')
   .description('Validate the ADR DAG structure')
   .option('--strict', 'fail on warnings', false)
-  .action(async (dir = './adrs', options) => {
+  .option('-d, --dir <path>', 'Directory containing ADR markdown files')
+  .action(async (positionalDir, options) => {
+    const targetDir = options.dir || positionalDir || process.env.ADR_DIR || './docs/adr';
     const isStrict = options.strict;
     if (isStrict) console.debug(chalk.gray('Strict mode enabled'));
-    const { validationResult, parsedADRs } = await loadAndValidate(dir);
+    const { validationResult, parsedADRs } = await loadAndValidate(targetDir);
 
     if (validationResult.isValid) {
       const rootNodes = parsedADRs.filter(adr => !adr.frontmatter.depends_on || adr.frontmatter.depends_on.length === 0);
@@ -82,8 +84,10 @@ program
   .description('Computes and prints the blast radius for an ADR')
   .option('--json', 'Outputs raw JSON')
   .option('--depth <number>', 'Limits traversal depth', parseInt)
-  .action(async (adrId, dir = './adrs', options) => {
-    const { engine, mappedAdrs } = await loadAndValidate(dir);
+  .option('-d, --dir <path>', 'Directory containing ADR markdown files')
+  .action(async (adrId, positionalDir, options) => {
+    const targetDir = options.dir || positionalDir || process.env.ADR_DIR || './docs/adr';
+    const { engine, mappedAdrs } = await loadAndValidate(targetDir);
     
     const downstreamIds = engine.getBlastRadius(adrId);
     const direct = mappedAdrs.find(a => a.id === adrId)?.dependencies || [];
@@ -113,11 +117,13 @@ program
   .description('Spins up the local web UI to visualize the interactive DAG canvas')
   .option('-p, --port <port>', 'Port to run the server on', '5173')
   .option('--open', 'Automatically open browser')
-  .action((dir = './adrs', options) => {
-    console.log(chalk.cyan(`Starting NirnayDAG UI on port ${options.port} for ADRs in ${dir}...`));
+  .option('-d, --dir <path>', 'Directory containing ADR markdown files')
+  .action((positionalDir, options) => {
+    const targetDir = options.dir || positionalDir || process.env.ADR_DIR || './docs/adr';
+    console.log(chalk.cyan(`Starting NirnayDAG UI on port ${options.port} for ADRs in ${targetDir}...`));
     const args = ['run', 'dev', '--', '--port', options.port];
     if (options.open) args.push('--open');
-    spawn('npm', args, { stdio: 'inherit', shell: true, env: { ...process.env, ADR_DIR: dir } });
+    spawn('npm', args, { stdio: 'inherit', shell: true, env: { ...process.env, ADR_DIR: targetDir } });
   });
 
 // 4. mcp
@@ -140,15 +146,17 @@ program
 program
   .command('report [dir]')
   .description('Generates nirnay-pr-summary.md directly from the terminal for CI workflows')
-  .action((dir = './adrs') => {
+  .option('-d, --dir <path>', 'Directory containing ADR markdown files')
+  .action((positionalDir, options) => {
+    const targetDir = options.dir || positionalDir || process.env.ADR_DIR || './docs/adr';
     const isDist = __dirname.endsWith('dist');
     const projectRoot = isDist ? path.resolve(__dirname, '..') : path.resolve(__dirname, '../../');
     const scriptPath = path.join(projectRoot, 'scripts/pr-blast-radius.ts');
     
-    spawnSync('npx', ['tsx', scriptPath, dir], { 
+    spawnSync('npx', ['tsx', scriptPath, targetDir], { 
       stdio: 'inherit', 
       shell: true, 
-      env: { ...process.env, ADR_DIR: dir } 
+      env: { ...process.env, ADR_DIR: targetDir } 
     });
   });
 

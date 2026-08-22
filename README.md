@@ -1,143 +1,98 @@
-# NirnayDAG ⚡️
+# NirnayDAG ⚡
 
-**Interactive Architecture Decision Record Engine & MCP Server**
+> **Computational Architecture Decision Graph Engine, Linter & MCP Server**
 
-Transform your static Markdown Architecture Decision Records (ADRs) into an interactive, computational Directed Acyclic Graph (DAG). NirnayDAG provides automated cycle validation via Kahn's algorithm, blast-radius cascade calculations, a What-If simulation mode, and a robust Model Context Protocol (MCP) server to integrate seamlessly with AI coding assistants.
+NirnayDAG converts static Markdown ADRs into an interactive, computational Directed Acyclic Graph (DAG) with real-time Kahn cycle detection, What-If blast radius simulation, CI/CD PR gating, and native AI assistant integration via Model Context Protocol (MCP).
 
 ---
 
 ## 🚀 Quickstart
 
-Clone the repository and install dependencies:
-
 ```bash
-git clone <repo-url>
-cd nirnaydag
-npm install
+# Clone & install
+git clone https://github.com/your-username/nirnaydag.git
+cd nirnaydag && npm install
+
+# Build & link global CLI
+npm run build && npm link
+
+# Start the interactive UI
+ndag serve ./sample-adrs --open
 ```
 
-### Running the Ecosystem
+## 🛠️ CLI Cheat Sheet (`ndag`)
 
-**Launch the Interactive Web Canvas:**
 ```bash
-npm run dev
+ndag validate ./adrs             # Check for circular loops & broken links
+ndag blast ADR-0001 -d ./adrs    # Calculate cascading blast radius & risk score
+ndag serve ./adrs --open         # Launch the visual canvas dashboard
+ndag report ./adrs               # Generate PR summary markdown for CI
+ndag mcp                         # Start stdio MCP server for AI assistants
 ```
 
-**Run Pipeline Tests:**
-```bash
-npm test
-```
-
-**Start the MCP Server for AI Assistants:**
-```bash
-npm run mcp:start
-```
-
-**Test MCP Tools (Interactive Inspector):**
-```bash
-npm run mcp:inspect
-```
-
----
-
-## 📖 How to Use
-
-### 1. ADR Markdown Format
-NirnayDAG parses standard Markdown files enriched with YAML frontmatter. Here is an example of what the engine expects:
+## 📄 Sample ADR Format (`docs/adr/ADR-0002.md`)
 
 ```markdown
 ---
-id: ADR-0001
-title: Adopt Event-Driven Architecture
-status: accepted
-date: 2026-08-21
-tags: [architecture, core]
-depends_on: []
-supersedes: []
+id: ADR-0002
+title: Event-Driven Message Broker
+status: accepted # accepted | proposed | deprecated | superseded
+depends_on:
+  - ADR-0001
+tags:
+  - backend
+  - infrastructure
 ---
-## Context
-We need to decouple our microservices.
-## Decision
-We will adopt an event-driven architecture using Kafka.
-## Consequences
+
+# Context
+Need asynchronous communication between microservices.
+
+# Decision
+Adopt Apache Kafka for high-throughput event streaming.
+
+# Consequences
 ### Positive
-- High scalability and decoupling.
+* Loose coupling and persistent replay logs.
+
 ### Negative
-- Operational complexity.
+* Operational overhead of cluster management.
 ```
 
-### 2. Ingestion
-Load your ADRs seamlessly into the web canvas:
-- **Local Directory Picker**: Use the built-in File System Access API to pick your local `docs/adr` folder.
-- **Drag-and-Drop**: Drop multiple `.md` files or folders directly onto the upload zone (includes a transparent fallback for stricter browsers).
-- **Remote GitHub**: Fetch your ADRs dynamically by supplying a GitHub repository URL, branch, and path.
+## 🤖 Google Antigravity / MCP Integration
 
-### 3. Graph Navigation & Inspector
-- **Interactive Canvas**: Pan, zoom, and explore your architecture visually.
-- **Node Inspection**: Click any node to open the side drawer, revealing full context, decisions, and exact downstream blast radiuses.
-- **Filtering**: Use the sleek top toolbar to filter by `ACCEPTED`, `PROPOSED`, `DEPRECATED`, and `SUPERSEDED` statuses, or use the search bar to locate specific decisions.
-
-### 4. What-If Simulation Mode
-Click the **"What-If Sim"** button in the toolbar to open the Simulation Dock. Toggle the deprecation of critical systems to visualize the cascading blast corridor in real-time. Target nodes glow amber, affected downstream systems pulse red, and unaffected nodes gracefully fade out.
-
-### 5. Multi-Format Export
-Export your architecture graph effortlessly for presentations and documentation:
-- **High-DPI PNG**: Crisp 2x resolution exports retaining the dark-mode aesthetic.
-- **Vector SVG**: Fully scalable vector graphs.
-- **JSON Schema**: Export the raw computational DAG state, including topological sorting and precomputed blast radiuses.
-
----
-
-## 🤖 Antigravity & AI Assistant Integration (MCP)
-
-NirnayDAG ships with a fully compliant Model Context Protocol (MCP) Server, allowing AI coding assistants (like Google Antigravity or Claude) to reason about your architecture natively.
-
-### Configuration
-Add this snippet to your `antigravity.config.json` or `mcp_servers.json` to link the server:
+Add this to `antigravity.config.json` or your MCP server settings:
 
 ```json
 {
   "mcpServers": {
     "nirnay-dag": {
-      "command": "npx",
-      "args": ["-y", "tsx", "src/mcp/server.ts"],
-      "env": {
-        "ADR_DIR": "./docs/adr"
-      },
-      "disabled": false,
+      "command": "ndag",
+      "args": ["mcp"],
+      "env": { "ADR_DIR": "./docs/adr" },
       "autoApprove": [
-        "list_adrs",
-        "get_adr_context",
-        "query_blast_radius",
-        "validate_architecture"
+        "get_decision_graph",
+        "get_blast_radius",
+        "validate_architecture_dag"
       ]
     }
   }
 }
 ```
 
-### Available MCP Tools & Prompt Examples
+**Example AI Prompts:**
+- *"Run `validate_architecture_dag` to check for circular dependency loops."*
+- *"What is the blast radius and risk score if we deprecate ADR-0001?"*
 
-NirnayDAG exposes 4 powerful tools to the AI:
-1. `list_adrs`: Fetches all decisions, filterable by status and tag.
-2. `get_adr_context`: Retrieves full context, decisions, consequences, and deciders for a specific ID.
-3. `query_blast_radius`: Computes cascading downstream risks and architecture risk scores.
-4. `validate_architecture`: Checks the entire DAG for cyclic dependencies and returns the topological order.
+## 🧪 Test & Verify
 
-**Try these natural-language queries in your AI Assistant:**
-- *"Run `validate_architecture` with NirnayDAG to check for cycles."*
-- *"What is the blast radius and downstream risk score if we deprecate ADR-0001?"*
-- *"Show me all accepted decisions related to the database."*
+```bash
+npm test            # Run Vitest test suite
+npm run demo        # Interactive end-to-end CLI walkthrough
+npm run mcp:inspect # Test MCP tools inside the visual MCP inspector
+```
 
----
+## 🧱 Stack
 
-## 🛠 Tech Stack
-
-| Component | Technology |
-| :--- | :--- |
-| **Frontend Framework** | React (Vite) |
-| **Graph Visualization** | React Flow & Dagre |
-| **Styling** | Tailwind CSS (v4) |
-| **Icons** | Lucide React |
-| **Markdown Parsing** | js-yaml & custom Regex parsers |
-| **AI Integration** | @modelcontextprotocol/sdk |
+- **Engine**: Kahn's Topological Sort, Transitive Closures, Dagre
+- **Canvas**: @xyflow/react, Tailwind CSS, Framer Motion, Lucide
+- **CLI & AI Protocol**: @modelcontextprotocol/sdk, Commander, tsup
