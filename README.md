@@ -2,35 +2,58 @@
 
 > **Computational Architecture Decision Graph Engine, Linter & MCP Server**
 
-NirnayDAG converts static Markdown ADRs into an interactive, computational Directed Acyclic Graph (DAG) with real-time Kahn cycle detection, What-If blast radius simulation, CI/CD PR gating, and native AI assistant integration via Model Context Protocol (MCP).
+NirnayDAG converts static Markdown Architecture Decision Records (ADRs) into an interactive, computational Directed Acyclic Graph (DAG) with real-time Kahn cycle detection, What-If blast radius simulation, CI/CD PR gating, and native AI coding assistant integration via the Model Context Protocol (MCP).
 
 ---
 
-## 🚀 Quickstart
+## ⚡ The Simplest Ways to Use NirnayDAG
 
+### 🌐 1. View & Interact with Your Graph (Zero Install)
+Spins up the interactive visual canvas in your default browser immediately:
 ```bash
-# Clone & install
-git clone https://github.com/your-username/nirnaydag.git
-cd nirnaydag && npm install
+npx nirnay-dag serve ./docs/adr --open
+```
+- **Search decisions** and filter by status (`ACCEPTED`, `PROPOSED`, `DEPRECATED`, `SUPERSEDED`).
+- **Click any node** to slide open its Context, Decision, and Consequences matrix.
+- **Click ⚗ Simulate** to test deprecating decisions and view cascading blast corridors.
 
-# Build & link global CLI
-npm run build && npm link
+### 🤖 2. Connect to AI Assistants (Google Antigravity / Cursor)
+Add this to your `antigravity.config.json` or `mcp_servers.json`:
+```json
+{
+  "mcpServers": {
+    "nirnay-dag": {
+      "command": "npx",
+      "args": ["-y", "nirnay-dag", "mcp"],
+      "env": { "ADR_DIR": "./docs/adr" }
+    }
+  }
+}
+```
+**Ask your AI in plain English:**
+- *"What downstream systems break if we deprecate ADR-0001?"*
+- *"Validate our architecture graph and report any circular loops."*
+- *"List all accepted infrastructure decisions."*
 
-# Start the interactive UI
-ndag serve ./sample-adrs --open
+### 💻 3. Terminal Checks (CLI Linter & Blast Radius)
+```bash
+# Check for circular loops & broken dependencies
+npx nirnay-dag validate ./docs/adr
+
+# Calculate cascading blast radius and risk score (0-100)
+npx nirnay-dag blast ADR-0001 ./docs/adr
 ```
 
-## 🛠️ CLI Cheat Sheet (`ndag`)
+### 🛡️ 4. Automated CI/CD Gate (GitHub Actions)
+Copy `.github/workflows/adr-lint.yml` into your repository. Whenever a Pull Request modifies an ADR, GitHub Actions automatically:
+- Runs Kahn's algorithm to **block any circular dependency loops**.
+- Posts a **formatted blast-radius risk summary table** directly as a PR comment.
 
-```bash
-ndag validate ./adrs             # Check for circular loops & broken links
-ndag blast ADR-0001 -d ./adrs    # Calculate cascading blast radius & risk score
-ndag serve ./adrs --open         # Launch the visual canvas dashboard
-ndag report ./adrs               # Generate PR summary markdown for CI
-ndag mcp                         # Start stdio MCP server for AI assistants
-```
+---
 
-## 📄 Sample ADR Format (`docs/adr/ADR-0002.md`)
+## 📄 Supported ADR Format (`docs/adr/ADR-0002.md`)
+
+NirnayDAG works with MADR, RFCs, Kubernetes KEPs, and custom frontmatter:
 
 ```markdown
 ---
@@ -45,10 +68,10 @@ tags:
 ---
 
 # Context
-Need asynchronous communication between microservices.
+We need asynchronous communication between microservices.
 
 # Decision
-Adopt Apache Kafka for high-throughput event streaming.
+We will adopt Apache Kafka for high-throughput event streaming.
 
 # Consequences
 ### Positive
@@ -57,42 +80,35 @@ Adopt Apache Kafka for high-throughput event streaming.
 ### Negative
 * Operational overhead of cluster management.
 ```
+*(If frontmatter is omitted, NirnayDAG automatically infers edges from markdown links like `[ADR-0001]` in the body).*
 
-## 🤖 Google Antigravity / MCP Integration
+---
 
-Add this to `antigravity.config.json` or your MCP server settings:
+## 🛠️ CLI Reference (`ndag`)
 
-```json
-{
-  "mcpServers": {
-    "nirnay-dag": {
-      "command": "ndag",
-      "args": ["mcp"],
-      "env": { "ADR_DIR": "./docs/adr" },
-      "autoApprove": [
-        "get_decision_graph",
-        "get_blast_radius",
-        "validate_architecture_dag"
-      ]
-    }
-  }
-}
-```
+If installed globally (`npm install -g nirnay-dag` or `npm link`):
 
-**Example AI Prompts:**
-- *"Run `validate_architecture_dag` to check for circular dependency loops."*
-- *"What is the blast radius and risk score if we deprecate ADR-0001?"*
+| Command | Description | Example |
+| :--- | :--- | :--- |
+| `ndag validate [dir]` | Validates DAG integrity and flags cycles | `ndag validate ./sample-adrs` |
+| `ndag blast <id> [dir]` | Calculates blast radius and risk score | `ndag blast ADR-0001 ./sample-adrs` |
+| `ndag serve [dir]` | Launches the interactive browser canvas | `ndag serve ./adrs --open` |
+| `ndag report [dir]` | Generates `nirnay-pr-summary.md` for CI | `ndag report ./adrs` |
+| `ndag mcp` | Starts stdio MCP server for AI assistants | `ndag mcp` |
 
-## 🧪 Test & Verify
+---
+
+## 🧪 Testing & Verification
 
 ```bash
 npm test            # Run Vitest test suite
-npm run demo        # Interactive end-to-end CLI walkthrough
-npm run mcp:inspect # Test MCP tools inside the visual MCP inspector
+npm run demo        # Interactive end-to-end walkthrough
+npm run mcp:inspect # Test tools in official MCP Web Inspector
 ```
 
-## 🧱 Stack
+---
 
-- **Engine**: Kahn's Topological Sort, Transitive Closures, Dagre
-- **Canvas**: @xyflow/react, Tailwind CSS, Framer Motion, Lucide
-- **CLI & AI Protocol**: @modelcontextprotocol/sdk, Commander, tsup
+## 🧱 Tech Stack
+- **Graph Computation:** Kahn's Algorithm, Transitive Closure Matrices, Dagre Layout
+- **Canvas Dashboard:** React Flow (`@xyflow/react`), Tailwind CSS, Framer Motion, Lucide Icons
+- **Protocol & Packaging:** `@modelcontextprotocol/sdk`, Commander, `js-yaml`, `tsup`
