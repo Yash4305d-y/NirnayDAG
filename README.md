@@ -1029,8 +1029,9 @@ Open a pull request once your changes are ready.
 
 # 📜 License
 
-Add your project's license here.
+NirnayDAG is licensed under the [MIT License](LICENSE).
 
+Copyright © 2026 Yash Vinay Kalyani.
 ---
 
 <p align="center">
