@@ -76,11 +76,13 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
   const id = frontmatterData.id || fallbackId || `ADR-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
   // Process Status with Aliases and Normalization
-  let rawStatus = frontmatterData.status || frontmatterData.stage || frontmatterData.state || 'proposed';
+  let rawStatus = frontmatterData.status || frontmatterData.stage || frontmatterData.state || 'accepted';
   rawStatus = String(rawStatus).toLowerCase();
   
-  let status: ADRStatus = 'proposed';
-  if (['accepted', 'implemented', 'done', 'approved', 'active'].includes(rawStatus)) {
+  let status: ADRStatus = 'accepted';
+  if (['proposed', 'draft'].includes(rawStatus)) {
+    status = 'proposed';
+  } else if (['accepted', 'implemented', 'done', 'approved', 'active'].includes(rawStatus)) {
     status = 'accepted';
   } else if (['deprecated', 'obsolete', 'retired'].includes(rawStatus)) {
     status = 'deprecated';
@@ -102,7 +104,7 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
 
   // Fallback: Infer dependencies from markdown body links if frontmatter is empty
   if (dependsOn.length === 0 && bodyContent) {
-    const linkRegex = /(?:\[ADR-\d+\]|\(\.\/\d+[^)]+\))/g;
+    const linkRegex = /(?:\[ADR-[\w-]+\]|\(\.\/[\w-]+[^)]*\))/g;
     const matches = bodyContent.match(linkRegex);
     if (matches) {
       matches.forEach(m => {
@@ -110,7 +112,7 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
         if (m.startsWith('[ADR-')) {
           dependsOn.push(m.substring(1, m.length - 1));
         } else if (m.startsWith('(./')) {
-          const numMatch = m.match(/\(\.\/(\d+)/);
+          const numMatch = m.match(/\(\.\/([^\/.)]+)/);
           if (numMatch) {
             dependsOn.push(`ADR-${numMatch[1]}`);
           }

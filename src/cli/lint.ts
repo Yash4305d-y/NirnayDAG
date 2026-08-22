@@ -64,10 +64,7 @@ function main() {
     process.exit(1);
   }
 
-  const rootNodes = Object.keys(engine['adjacencyList']).filter(id => {
-    const hasIncoming = Object.values(engine['adjacencyList']).some(deps => deps.includes(id));
-    return !hasIncoming;
-  });
+  const rootNodes = parsedADRs.filter(adr => !adr.frontmatter.depends_on || adr.frontmatter.depends_on.length === 0);
 
   console.log(chalk.green(`\n✅ Architecture DAG validated successfully.`));
   console.log(chalk.green(`   - Total ADRs: ${parsedADRs.length}`));
