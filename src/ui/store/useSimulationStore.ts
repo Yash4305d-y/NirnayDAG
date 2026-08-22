@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { NirnayADR } from '../core/types.js';
+import type { NirnayADR } from '../../core/types.js';
 
 export interface SimulationState {
   isSimulationMode: boolean;

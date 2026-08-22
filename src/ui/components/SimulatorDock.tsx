@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Activity, RefreshCw, Download, ChevronDown, ShieldAlert, X } from 'lucide-react';
-import type { ParsedADR } from '../types/adr.js';
+import type { ParsedADR } from '../../types/adr.js';
 
 interface SimulatorDockProps {
   isOpen: boolean;

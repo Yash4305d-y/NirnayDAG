@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, FolderOpen, GitBranch, Loader2, UploadCloud, AlertCircle } from 'lucide-react';
-import { loadFromDirectoryPicker, readFilesFromInput, isFileSystemAccessSupported } from '../utils/localFolderLoader.js';
-import { fetchGitHubADRs } from '../utils/githubLoader.js';
+import { loadFromDirectoryPicker, readFilesFromInput, isFileSystemAccessSupported } from '../../utils/localFolderLoader.js';
+import { fetchGitHubADRs } from '../../utils/githubLoader.js';
 
 interface SourceModalProps {
   isOpen: boolean;

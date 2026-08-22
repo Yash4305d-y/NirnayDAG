@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search, Filter, Layers, FolderGit2, Activity } from 'lucide-react';
-import type { DecisionStatus } from '../core/types.js';
+import type { DecisionStatus } from '../../core/types.js';
 
 export interface FilterState {
   search: string;

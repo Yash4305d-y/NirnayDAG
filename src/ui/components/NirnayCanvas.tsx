@@ -15,11 +15,11 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { parseBatchADRs } from '../core/adrParser.js';
-import { validateAndComputeDAG, type DAGValidationResult, mapParsedToNirnay } from '../core/dagEngine.js';
-import { getLayoutedGraph } from '../core/layoutEngine.js';
-import type { ParsedADR } from '../types/adr.js';
-import type { NirnayADR } from '../core/types.js';
+import { parseBatchADRs } from '../../core/adrParser.js';
+import { validateAndComputeDAG, type DAGValidationResult, mapParsedToNirnay } from '../../core/dagEngine.js';
+import { getLayoutedGraph } from '../../core/layoutEngine.js';
+import type { ParsedADR } from '../../types/adr.js';
+import type { NirnayADR } from '../../core/types.js';
 
 import { DecisionNode } from './DecisionNode.js';
 import { GlowEdge } from './GlowEdge.js';
@@ -29,7 +29,7 @@ import { GraphToolbar, type FilterState } from './GraphToolbar.js';
 import { ExportMenu } from './ExportMenu.js';
 import { Toast, type ToastConfig } from './Toast.js';
 import { AlertCircle, FileWarning, FolderGit2, Database, X } from 'lucide-react';
-import { exportCanvasToPNG, exportCanvasToSVG, exportGraphAsJSON } from '../utils/exportEngine.js';
+import { exportCanvasToPNG, exportCanvasToSVG, exportGraphAsJSON } from '../../utils/exportEngine.js';
 import { useSimulationStore } from '../store/useSimulationStore.js';
 import { SimulatorDock } from './SimulatorDock.js';
 

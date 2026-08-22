@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, HelpCircle, RefreshCcw, XCircle, AlertTriangle } from 'lucide-react';
-import type { NirnayADR, DecisionStatus } from '../../core/types.js';
+import type { NirnayADR, DecisionStatus } from '../../../core/types.js';
 import { useSimulationStore } from '../../store/useSimulationStore.js';
 
 export interface StitchNodeDataProps extends NirnayADR {
