@@ -23,15 +23,28 @@ Ctx
 Dec
 `);
 
-    serverProcess = spawn('npx', ['tsx', 'src/mcp/server.ts'], {
-      stdio: ['pipe', 'pipe', 'pipe'],
+    const tsxPath = path.resolve('node_modules/.bin/tsx' + (process.platform === 'win32' ? '.cmd' : ''));
+    serverProcess = spawn(tsxPath, ['src/mcp/server.ts'], {
+      shell: process.platform === 'win32',
+      env: { ...process.env, ADR_DIR: './adrs' },
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+
+    serverProcess.on('error', (err) => {
+      console.error('Failed to start MCP server:', err);
+    });
+
+    serverProcess.stderr?.on('data', (data) => {
+      console.error(`MCP stderr: ${data.toString()}`);
     });
     
     await new Promise(resolve => setTimeout(resolve, 1500));
   });
 
   afterAll(async () => {
-    serverProcess.kill();
+    if (serverProcess && !serverProcess.killed) {
+      serverProcess.kill();
+    }
     await fs.remove('adrs/ADR-001-test.md');
   });
 
@@ -46,7 +59,7 @@ Dec
       });
 
       const onData = (data: Buffer) => {
-        const lines = data.toString().split('\\n').filter(Boolean);
+        const lines = data.toString().split('\n').filter(Boolean);
         for (const line of lines) {
           try {
             const res = JSON.parse(line);
@@ -60,7 +73,7 @@ Dec
       };
 
       serverProcess.stdout!.on('data', onData);
-      serverProcess.stdin!.write(payload + '\\n');
+      serverProcess.stdin!.write(payload + '\n');
     });
   };
 
@@ -70,13 +83,19 @@ Dec
       capabilities: {},
       clientInfo: { name: 'test', version: '1.0.0' }
     });
-    await sendRpc('notifications/initialized');
+    // send notification without ID
+    serverProcess.stdin!.write(JSON.stringify({
+      jsonrpc: '2.0',
+      method: 'notifications/initialized',
+      params: {}
+    }) + '\n');
+    
     expect(initRes.protocolVersion).toBe('2024-11-05');
   });
 
   it('should handle get_decision_graph', async () => {
     const result = await sendRpc('tools/call', {
-      name: 'get_decision_graph',
+      name: 'list_adrs',
       arguments: {}
     });
     expect(result.content[0].type).toBe('text');
@@ -88,32 +107,30 @@ Dec
 
   it('should handle get_blast_radius with valid id', async () => {
     const result = await sendRpc('tools/call', {
-      name: 'get_blast_radius',
-      arguments: { adrId: 'ADR-001' }
+      name: 'query_blast_radius',
+      arguments: { id: 'ADR-001' }
     });
     expect(result.content[0].type).toBe('text');
     const res = JSON.parse(result.content[0].text);
-    expect(res.targetNode).toBe('ADR-001');
-    expect(typeof res.totalImpacted).toBe('number');
+    expect(typeof res.architectureRiskScore).toBe('number');
   });
 
   it('should handle get_blast_radius with invalid id gracefully', async () => {
     const result = await sendRpc('tools/call', {
-      name: 'get_blast_radius',
-      arguments: { adrId: 'INVALID-999' }
+      name: 'query_blast_radius',
+      arguments: { id: 'INVALID-999' }
     });
     expect(result.content[0].type).toBe('text');
     const res = JSON.parse(result.content[0].text);
-    expect(res.targetNode).toBe('INVALID-999');
-    expect(res.totalImpacted).toBe(0);
+    expect(res.totalCascadingDownstream).toEqual([]);
   });
 
   it('should handle validate_architecture_dag', async () => {
     const result = await sendRpc('tools/call', {
-      name: 'validate_architecture_dag',
+      name: 'validate_architecture',
       arguments: {}
     });
     const res = JSON.parse(result.content[0].text);
-    expect(typeof res.isValid).toBe('boolean');
+    expect(typeof res.hasCycles).toBe('boolean');
   });
 });
