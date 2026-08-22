@@ -18,7 +18,8 @@
     "cli:validate": "node ./bin/ndag.js validate",
     "cli:blast": "node ./bin/ndag.js blast",
     "mcp:start": "tsx src/mcp/server.ts",
-    "mcp:inspect": "npx @modelcontextprotocol/inspector tsx src/mcp/server.ts"
+    "mcp:inspect": "npx @modelcontextprotocol/inspector tsx src/mcp/server.ts",
+    "pr:report": "tsx scripts/pr-blast-radius.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

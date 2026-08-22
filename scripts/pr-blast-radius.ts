@@ -1,115 +1,125 @@
-import { execSync } from 'child_process';
 import fs from 'fs-extra';
-import * as path from 'path';
-import { DAGEngine } from '../src/core/dagEngine.js';
-import { parseADRMarkdown } from '../src/parser/adrParser.js';
+import path from 'path';
+import { execSync } from 'child_process';
+import fg from 'fast-glob';
+import { parseBatchADRs } from '../src/core/adrParser.js';
+import { validateAndComputeDAG } from '../src/core/dagEngine.js';
 
-const ADRS_DIR = path.resolve(process.cwd(), 'adrs');
-const OUTPUT_FILE = path.resolve(process.cwd(), 'nirnay-pr-summary.md');
+async function main() {
+  const adrDir = process.env.ADR_DIR || process.argv[2] || './adrs';
+  const fullPath = path.resolve(process.cwd(), adrDir);
+  const summaryFile = path.resolve(process.cwd(), 'nirnay-pr-summary.md');
 
-// 1. Find changed files
-let changedFiles: string[] = [];
-try {
-  // Uses target base branch from GitHub actions, fallback to origin/main
-  const baseRef = process.env.GITHUB_BASE_REF ? `origin/${process.env.GITHUB_BASE_REF}` : 'origin/main';
-  const diffOutput = execSync(`git diff ${baseRef}...HEAD --name-only adrs/`, { encoding: 'utf8' });
-  changedFiles = diffOutput.split('\n').filter(Boolean).filter(f => f.endsWith('.md'));
-} catch (e) {
-  console.warn('Could not run git diff (maybe not in a git repo or missing origin/main). Defaulting to scanning all adrs/ for demo.');
-  // Fallback for local testing or initial commits
-  if (fs.existsSync(ADRS_DIR)) {
-    changedFiles = fs.readdirSync(ADRS_DIR).filter(f => f.endsWith('.md')).map(f => `adrs/${f}`);
-  }
-}
-
-// 2. Load current ADRs and build DAGEngine
-const adrs = [];
-if (fs.existsSync(ADRS_DIR)) {
-  const allFiles = fs.readdirSync(ADRS_DIR).filter(f => f.endsWith('.md'));
-  for (const file of allFiles) {
-    const raw = fs.readFileSync(path.join(ADRS_DIR, file), 'utf-8');
-    adrs.push(parseADRMarkdown(raw));
-  }
-}
-
-const engine = new DAGEngine(adrs);
-const validation = engine.validate();
-
-const changedAdrIds: string[] = [];
-for (const file of changedFiles) {
-  const fullPath = path.resolve(process.cwd(), file);
-  if (fs.existsSync(fullPath)) {
-    const raw = fs.readFileSync(fullPath, 'utf-8');
-    const parsed = parseADRMarkdown(raw);
-    changedAdrIds.push(parsed.id);
-  }
-}
-
-// 3. Build Markdown Report
-let markdown = `## ☸️ NirnayDAG Architecture Review\n\n`;
-
-markdown += `| Status | Validation Check | Result |\n`;
-markdown += `|---|---|---|\n`;
-markdown += `| ${validation.hasCycle ? '🔴' : '🟢'} | **DAG Cycle Detection** | ${validation.hasCycle ? `Failed (Cycle: ${validation.cyclePath?.join(' -> ')})` : 'Passed (No circular dependencies)'} |\n`;
-markdown += `| ${validation.missingDependencies.length > 0 ? '🔴' : '🟢'} | **Schema & Frontmatter** | ${validation.missingDependencies.length > 0 ? `Failed (${validation.missingDependencies.length} missing refs)` : 'Passed (All references valid)'} |\n\n`;
-
-if (changedAdrIds.length > 0) {
-  markdown += `### 💥 Blast Radius Impact Analysis\n`;
-  markdown += `The following ADRs were modified in this PR:\n\n`;
-  markdown += `| Modified Decision | Status | Direct / Transitive Downstream Impact |\n`;
-  markdown += `|---|---|---|\n`;
-
-  const impactedGlobal = new Set<string>();
-
-  for (const adrId of changedAdrIds) {
-    const adr = adrs.find(a => a.id === adrId);
-    if (!adr) continue;
-    
-    const impacted = engine.getBlastRadius(adrId);
-    impacted.forEach(i => impactedGlobal.add(i));
-    
-    if (impacted.length > 0) {
-      markdown += `| **${adrId}** (${adr.title}) | \`${adr.status}\` | ⚠️ **${impacted.length} nodes affected:** ${impacted.map(i => '\`' + i + '\`').join(', ')} |\\n`;
-    } else {
-      markdown += `| **${adrId}** (${adr.title}) | \`${adr.status}\` | 🟢 No downstream nodes affected. |\n`;
+  // 1. Git Diff & Change Detection
+  const baseRef = process.env.GITHUB_BASE_REF || 'origin/main';
+  let changedFilesList: string[] = [];
+  
+  if (process.env.MOCK_CHANGED_FILES) {
+    changedFilesList = process.env.MOCK_CHANGED_FILES.split(',');
+  } else {
+    try {
+      const diffOut = execSync(`git diff --name-only ${baseRef}...HEAD`, { encoding: 'utf-8' });
+      changedFilesList = diffOut.split('\n').filter(Boolean);
+    } catch (e: any) {
+      console.warn(`⚠️ Could not detect changed files via git (${e.message}). Proceeding with all ADRs for report.`);
     }
   }
 
-  // Generate Mermaid Graph
-  if (impactedGlobal.size > 0 || changedAdrIds.length > 0) {
-    markdown += `\n\`\`\`mermaid\ngraph TD\n`;
-    
-    const nodesToRender = new Set<string>([...changedAdrIds, ...impactedGlobal]);
-    
-    adrs.forEach(adr => {
-      adr.dependencies.forEach(dep => {
-        if (nodesToRender.has(adr.id) || nodesToRender.has(dep)) {
-          nodesToRender.add(adr.id);
-          nodesToRender.add(dep);
-          
-          let targetClass = '';
-          if (changedAdrIds.includes(adr.id)) targetClass = ':::modified';
-          else if (impactedGlobal.has(adr.id)) targetClass = ':::impacted';
-          
-          let sourceClass = '';
-          if (changedAdrIds.includes(dep)) sourceClass = ':::modified';
-          else if (impactedGlobal.has(dep)) sourceClass = ':::impacted';
-
-          markdown += `  ${dep}[${dep}]${sourceClass} --> ${adr.id}[${adr.id}]${targetClass}\n`;
-        }
-      });
-    });
-
-    markdown += `\n  classDef modified fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#fff;\n`;
-    markdown += `  classDef impacted fill:#ef4444,stroke:#b91c1c,stroke-width:2px,color:#fff;\n`;
-    markdown += `\`\`\`\n`;
+  // 2. Parse ADRs
+  if (!fs.existsSync(fullPath)) {
+    console.warn(`Directory not found: ${fullPath}`);
+    await fs.writeFile(summaryFile, `*ADR directory not found.*`, 'utf-8');
+    process.exit(0);
   }
 
-} else {
-  markdown += `### 💥 Blast Radius Impact Analysis\n`;
-  markdown += `No ADRs were modified in this PR.\n`;
+  const files = await fg('**/*.{md,mdx}', { cwd: fullPath, absolute: true });
+  const fileData = await Promise.all(
+    files.map(async (file) => ({
+      name: path.basename(file),
+      content: await fs.readFile(file, 'utf-8'),
+      absPath: file.replace(/\\/g, '/')
+    }))
+  );
+
+  const parsedADRs = parseBatchADRs(fileData);
+  const { validationResult, engine, mappedAdrs } = validateAndComputeDAG(parsedADRs);
+
+  // Identify changed ADRs
+  let changedAdrs = parsedADRs;
+  if (changedFilesList.length > 0) {
+    changedAdrs = parsedADRs.filter((adr, idx) => {
+      const fileObj = fileData[idx];
+      return changedFilesList.some(cf => fileObj.absPath.endsWith(cf.replace(/\\/g, '/')) || cf.replace(/\\/g, '/').endsWith(fileObj.name));
+    });
+  }
+
+  // 3. Generate Markdown PR Comment
+  let md = `# Architecture Decision Graph (ADR) Blast Radius\n\n`;
+
+  if (!validationResult.isValid) {
+    md += `> [!CAUTION]\n`;
+    md += `> **Architecture DAG Validation Failed!**\n`;
+    if (validationResult.hasCycle && validationResult.cyclePath) {
+      md += `> \n> **Circular Dependency Detected:**\n`;
+      md += `> \`${validationResult.cyclePath.join(' -> ')}\`\n`;
+    }
+    if (validationResult.missingDependencies.length > 0) {
+      md += `> \n> **Broken Links Detected:**\n`;
+      validationResult.missingDependencies.forEach(dep => {
+        md += `> - ${dep.adrId} requires missing parent ${dep.missingId}\n`;
+      });
+    }
+    md += `\n`;
+  } else {
+    md += `> [!NOTE]\n> **Architecture DAG Validated Successfully** (0 Cycles, ${parsedADRs.length} Total ADRs)\n\n`;
+  }
+
+  if (changedAdrs.length === 0) {
+    md += `*No ADR files were modified in this PR.*\n`;
+  } else {
+    md += `### Modified ADRs Impact Analysis\n\n`;
+    md += `| ADR ID | Title | Status | Cascade Count | Max Depth | Risk Level |\n`;
+    md += `|--------|-------|--------|---------------|-----------|------------|\n`;
+
+    const impactDetails: { id: string; title: string; downstream: string[] }[] = [];
+
+    changedAdrs.forEach(adr => {
+      const id = adr.frontmatter.id;
+      const title = adr.frontmatter.title || 'Untitled';
+      const status = adr.frontmatter.status;
+      
+      const downstreamIds = engine.getBlastRadius(id);
+      const direct = mappedAdrs.find(a => a.id === id)?.dependencies || [];
+      const score = Math.min(100, downstreamIds.length * 10 + direct.length * 5);
+      const maxDepth = downstreamIds.length > 0 ? Math.ceil(downstreamIds.length / 2) : 0; 
+
+      let riskLevel = '🟢 Low';
+      if (score > 60) riskLevel = '🔴 High';
+      else if (score > 30) riskLevel = '🟡 Medium';
+
+      md += `| **${id}** | ${title} | ${status} | ${downstreamIds.length} | ${maxDepth} | ${riskLevel} (${score}) |\n`;
+
+      if (downstreamIds.length > 0) {
+        impactDetails.push({ id, title, downstream: downstreamIds });
+      }
+    });
+
+    if (impactDetails.length > 0) {
+      md += `\n### Downstream Impact Details\n\n`;
+      impactDetails.forEach(detail => {
+        md += `<details>\n`;
+        md += `<summary><strong>${detail.id} (${detail.title})</strong> cascades to ${detail.downstream.length} decisions</summary>\n\n`;
+        md += `- ` + detail.downstream.join('\n- ') + `\n\n`;
+        md += `</details>\n`;
+      });
+    }
+  }
+
+  await fs.writeFile(summaryFile, md, 'utf-8');
+  console.log(`Successfully wrote PR blast radius summary to ${summaryFile}`);
 }
 
-// 4. Write to temp file
-fs.writeFileSync(OUTPUT_FILE, markdown, 'utf-8');
-console.log(`Successfully generated PR summary at ${OUTPUT_FILE}`);
+main().catch(err => {
+  console.error("Failed to generate PR blast radius report", err);
+  process.exit(1);
+});
