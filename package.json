@@ -3,9 +3,14 @@
   "private": false,
   "version": "0.1.0",
   "type": "module",
+  "files": [
+    "dist",
+    "bin",
+    "README.md"
+  ],
   "scripts": {
     "dev": "vite",
-    "build": "tsup && vite build",
+    "build": "vite build && tsup",
     "lint": "oxlint",
     "preview": "vite preview",
     "ndag": "tsx src/cli/index.ts",
