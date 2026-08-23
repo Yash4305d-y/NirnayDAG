@@ -42,11 +42,11 @@
     "ndag": "./dist/cli.js"
   },
   "scripts": {
-    "build": "npm run build:web && npm run build:cli",
+    "build": "vite build && tsup",
     "build:cli": "tsup",
     "build:web": "vite build",
-    "dev": "tsx watch src/cli/index.ts",
-    "dev:web": "vite",
+    "dev": "vite",
+    "dev:cli": "tsx watch src/cli/index.ts",
     "test": "vitest run",
     "lint": "eslint .",
     "demo": "tsx scripts/demo.ts",
