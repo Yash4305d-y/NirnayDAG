@@ -6,7 +6,6 @@ NirnayDAG transforms static Markdown **Architecture Decision Records (ADRs)** in
 
 It automatically detects circular dependencies using **Kahn’s algorithm**, simulates **blast radii** for architectural deprecation, gates pull requests in CI/CD, and integrates directly with AI coding assistants such as **Cursor, Claude Desktop, and Google Antigravity** through the **Model Context Protocol (MCP)**.
 
-> ⚡ **Completely vibe coded.**
 
 ---
 
