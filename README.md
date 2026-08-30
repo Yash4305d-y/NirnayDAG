@@ -202,7 +202,23 @@ requirements defined in [ADR-0001](./ADR-0001-microservices-core.md).
 
 Run NirnayDAG directly inside any project using `npx` — **no global installation required**.
 
-## 1. Interactive Canvas
+## 1. Interactive CLI Mode
+
+Launch a fully interactive terminal session to explore ADRs, visualize neighborhood graphs, and simulate blast radii directly from your CLI:
+
+```bash
+npx nirnay-dag interactive ./docs/adr
+```
+
+Shortcuts:
+- `↑ / ↓` and `Enter`: Navigate and select ADRs
+- `b`: Inline blast radius simulation
+- `v`: Re-run cycle detection validation
+- `:`: Command palette
+
+---
+
+## 2. Interactive Canvas
 
 Visualize your architecture decision graph in your browser:
 
@@ -218,7 +234,7 @@ npx nirnay-dag serve ./sample-adrs --open
 
 ---
 
-## 2. Graph Validation & Cycle Detection
+## 3. Graph Validation & Cycle Detection
 
 Validate graph integrity, detect circular references, and identify missing dependency IDs:
 
@@ -235,7 +251,7 @@ Exit codes:
 
 ---
 
-## 3. Blast Radius Simulation
+## 4. Blast Radius Simulation
 
 Simulate the cascading downstream impact of deprecating or changing a decision:
 
@@ -252,7 +268,7 @@ Output includes:
 
 ---
 
-## 4. CI/CD PR Gating & Markdown Reports
+## 5. CI/CD PR Gating & Markdown Reports
 
 Generate a structured Markdown report for CI/CD pipelines or pull request comments:
 
@@ -296,7 +312,18 @@ jobs:
 
 ---
 
-## 5. AI Assistant Integration (MCP)
+## 6. AI Assistant Integration (MCP & Antigravity)
+
+### Google Antigravity Skill Setup
+
+NirnayDAG includes a native Antigravity skill descriptor to automatically assist with ADR validation and blast radius checks during Agent planning.
+
+To install the skill for your workspace:
+1. Ensure the `.agents/skills/nirnaydag/SKILL.md` descriptor is in your repository.
+2. Antigravity will now automatically invoke NirnayDAG when discussing architecture changes, validating ADRs, or assessing blast radius.
+3. NirnayDAG will intelligently export reports as artifacts to `.antigravity/artifacts/` when run non-interactively by agents.
+
+### Standard MCP Server
 
 NirnayDAG runs as a standard **Model Context Protocol (MCP) server over stdio**.
 
@@ -347,6 +374,7 @@ After global installation, use the `ndag` binary:
 | Command                                    | Description                                      | Example                          |
 | ------------------------------------------ | ------------------------------------------------ | -------------------------------- |
 | `ndag serve [dir] [--open] [--port <num>]` | Launch interactive React Flow web canvas         | `ndag serve ./docs/adr --open`   |
+| `ndag interactive [dir]`                   | Launch interactive terminal UI (TUI)             | `ndag interactive ./docs/adr`    |
 | `ndag validate [dir]`                      | Check DAG for circular loops and broken links    | `ndag validate ./docs/adr`       |
 | `ndag blast <id> [dir]`                    | Calculate downstream blast radius and risk score | `ndag blast ADR-0001 ./docs/adr` |
 | `ndag report [dir]`                        | Generate Markdown blast-radius report            | `ndag report ./docs/adr`         |

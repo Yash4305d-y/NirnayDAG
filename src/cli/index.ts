@@ -9,6 +9,7 @@ import glob from 'fast-glob';
 import Table from 'cli-table3';
 import { parseBatchADRs } from '../core/adrParser.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
+import { runInteractiveSession } from './interactive.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,6 +49,7 @@ program
   .command('validate [dir]')
   .description('Validate the ADR DAG structure')
   .option('--strict', 'fail on warnings', false)
+  .option('--json', 'Outputs raw JSON')
   .option('-d, --dir <path>', 'Directory containing ADR markdown files')
   .action(async (positionalDir, options) => {
     const targetDir = options.dir || positionalDir || process.env.ADR_DIR || './docs/adr';
@@ -56,6 +58,10 @@ program
     const { validationResult, parsedADRs } = await loadAndValidate(targetDir);
 
     if (validationResult.isValid) {
+      if (options.json || process.env.NDAG_OUTPUT === 'json') {
+        console.log(JSON.stringify({ valid: true, nodes: parsedADRs.length }, null, 2));
+        process.exit(0);
+      }
       const rootNodes = parsedADRs.filter(adr => !adr.frontmatter.depends_on || adr.frontmatter.depends_on.length === 0);
       console.log(chalk.green(`✅ Architecture DAG validated successfully.`));
       console.log(chalk.green(`   - Total ADRs: ${parsedADRs.length}`));
@@ -63,6 +69,10 @@ program
       console.log(chalk.green(`   - Zero Cycles: Verified`));
       process.exit(0);
     } else {
+      if (options.json || process.env.NDAG_OUTPUT === 'json') {
+        console.log(JSON.stringify(validationResult, null, 2));
+        process.exit(1);
+      }
       console.error(chalk.red(`\n❌ Architecture DAG validation failed.`));
       if (validationResult.hasCycle && validationResult.cyclePath) {
         console.error(chalk.red(`   Circular Dependency Detected!`));
@@ -93,7 +103,7 @@ program
     const direct = mappedAdrs.find(a => a.id === adrId)?.dependencies || [];
     const score = Math.min(100, downstreamIds.length * 10 + direct.length * 5);
     
-    if (options.json) {
+    if (options.json || process.env.NDAG_OUTPUT === 'json') {
       console.log(JSON.stringify({ adrId, directDependents: direct.length, cascadeCount: downstreamIds.length, riskScore: score }, null, 2));
       process.exit(0);
     }
@@ -158,6 +168,44 @@ program
       shell: true, 
       env: { ...process.env, ADR_DIR: targetDir } 
     });
+
+    if (process.env.ANTIGRAVITY_SESSION) {
+      const reportPath = path.resolve(process.cwd(), 'nirnay-pr-summary.md');
+      if (fs.existsSync(reportPath)) {
+        const artifactsDir = path.resolve(process.cwd(), '.antigravity', 'artifacts');
+        fs.ensureDirSync(artifactsDir);
+        fs.copyFileSync(reportPath, path.join(artifactsDir, 'nirnay-pr-summary.md'));
+        console.log(chalk.green(`\nArtifact saved to .antigravity/artifacts/nirnay-pr-summary.md`));
+      }
+    }
+  });
+
+// 6. interactive
+program
+  .command('interactive [dir]')
+  .alias('i')
+  .description('Launch interactive TUI session')
+  .option('--json', 'Outputs raw JSON instead of TUI')
+  .option('-d, --dir <path>', 'Directory containing ADR markdown files')
+  .action(async (positionalDir, options) => {
+    const targetDir = options.dir || positionalDir || process.env.ADR_DIR || './docs/adr';
+    
+    const isJson = options.json || process.env.NDAG_OUTPUT === 'json';
+    const isTTY = process.stdout.isTTY;
+    const isAntigravity = !!process.env.ANTIGRAVITY_SESSION;
+    
+    if (isJson || !isTTY || isAntigravity) {
+      // Graceful fallback to JSON output
+      const { engine, mappedAdrs } = await loadAndValidate(targetDir);
+      const output = {
+        adrs: mappedAdrs,
+        validation: engine.validate()
+      };
+      console.log(JSON.stringify(output, null, 2));
+      process.exit(0);
+    }
+    
+    await runInteractiveSession(targetDir);
   });
 
 program.parse(process.argv);
