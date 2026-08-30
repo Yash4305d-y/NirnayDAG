@@ -31,3 +31,5 @@ dist/
 nirnay-pr-summary.md
 smoke-test-env/
 test-mcp.ts
+.antigravity/
+.env
