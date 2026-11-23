@@ -115,6 +115,10 @@ Dec
     expect(result.content[0].type).toBe('text');
     const res = JSON.parse(result.content[0].text);
     expect(typeof res.architectureRiskScore).toBe('number');
+    expect(res.affectedSystems).toBeDefined();
+    expect(typeof res.affectedSystems).toBe('object');
+    expect(res.riskBreakdown).toBeDefined();
+    expect(res.riskLevel).toBeDefined();
   });
 
   it('should handle get_blast_radius with invalid id gracefully', async () => {
@@ -134,5 +138,8 @@ Dec
     });
     const res = JSON.parse(result.content[0].text);
     expect(typeof res.hasCycles).toBe('boolean');
+    expect(Array.isArray(res.rootDecisions)).toBe(true);
+    expect(res.rootDecisions.length).toBeGreaterThan(0);
+    expect(res.rootDecisions).toContain('ADR-001');
   });
 });

@@ -4,6 +4,7 @@ import { execSync } from 'child_process';
 import fg from 'fast-glob';
 import { parseBatchADRs } from '../src/core/adrParser.js';
 import { validateAndComputeDAG } from '../src/core/dagEngine.js';
+import { calculateArchitectureRisk } from '../src/core/risk.js';
 
 async function main() {
   const adrDir = process.env.ADR_DIR || process.argv[2] || './adrs';
@@ -42,7 +43,7 @@ async function main() {
   );
 
   const parsedADRs = parseBatchADRs(fileData);
-  const { validationResult, engine, mappedAdrs } = validateAndComputeDAG(parsedADRs);
+  const { validationResult, engine } = validateAndComputeDAG(parsedADRs);
 
   // Identify changed ADRs
   let changedAdrs = parsedADRs;
@@ -78,8 +79,8 @@ async function main() {
     md += `*No ADR files were modified in this PR.*\n`;
   } else {
     md += `### Modified ADRs Impact Analysis\n\n`;
-    md += `| ADR ID | Title | Status | Cascade Count | Max Depth | Risk Level |\n`;
-    md += `|--------|-------|--------|---------------|-----------|------------|\n`;
+    md += `| ADR ID | Title | Status | Cascade Count | Max Depth | Affected Systems | Risk Level |\n`;
+    md += `|--------|-------|--------|---------------|-----------|------------------|------------|\n`;
 
     const impactDetails: { id: string; title: string; downstream: string[] }[] = [];
 
@@ -89,15 +90,15 @@ async function main() {
       const status = adr.frontmatter.status;
       
       const downstreamIds = engine.getBlastRadius(id);
-      const direct = mappedAdrs.find(a => a.id === id)?.dependencies || [];
-      const score = Math.min(100, downstreamIds.length * 10 + direct.length * 5);
-      const maxDepth = downstreamIds.length > 0 ? Math.ceil(downstreamIds.length / 2) : 0; 
+      const direct = engine.getDirectDependents(id);
+      const maxDepth = engine.getDepth(id); 
+      const affectedSystems = engine.getAffectedSystems(id);
+      const affectedSummary = Object.keys(affectedSystems).join(', ') || 'None';
+      const risk = calculateArchitectureRisk({ directDependentsCount: direct.length, cascadeCount: downstreamIds.length, depth: maxDepth });
 
-      let riskLevel = '🟢 Low';
-      if (score > 60) riskLevel = '🔴 High';
-      else if (score > 30) riskLevel = '🟡 Medium';
+      const riskLevel = risk.level === 'High' ? '🔴 High' : risk.level === 'Medium' ? '🟡 Medium' : '🟢 Low';
 
-      md += `| **${id}** | ${title} | ${status} | ${downstreamIds.length} | ${maxDepth} | ${riskLevel} (${score}) |\n`;
+      md += `| **${id}** | ${title} | ${status} | ${downstreamIds.length} | ${maxDepth} | ${affectedSummary} | ${riskLevel} (${risk.score}) |\n`;
 
       if (downstreamIds.length > 0) {
         impactDetails.push({ id, title, downstream: downstreamIds });

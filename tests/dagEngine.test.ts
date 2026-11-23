@@ -109,5 +109,135 @@ describe('DAGEngine', () => {
       const impacted = engine.getBlastRadius('ISLAND-1');
       expect(impacted).toEqual(['ISLAND-2']);
     });
+
+    it('regression: a root ADR with 3 dependents and 0 dependencies must report 3 direct dependents; a leaf with 5 dependencies must report 0', () => {
+      const testAdrs = [
+        createMockAdr({ id: 'ROOT', dependencies: [] }),
+        createMockAdr({ id: 'DEP-1', dependencies: ['ROOT'] }),
+        createMockAdr({ id: 'DEP-2', dependencies: ['ROOT'] }),
+        createMockAdr({ id: 'DEP-3', dependencies: ['ROOT'] }),
+        createMockAdr({ id: 'EXT-1', dependencies: [] }),
+        createMockAdr({ id: 'EXT-2', dependencies: [] }),
+        createMockAdr({ id: 'LEAF', dependencies: ['DEP-1', 'DEP-2', 'DEP-3', 'EXT-1', 'EXT-2'] }),
+      ];
+      const testEngine = new DAGEngine(testAdrs);
+
+      // Root ADR has 3 dependents and 0 dependencies
+      expect(testEngine.getDirectDependents('ROOT')).toEqual(['DEP-1', 'DEP-2', 'DEP-3']);
+      expect(testEngine.getDirectDependencies('ROOT')).toEqual([]);
+
+      // Leaf ADR has 5 dependencies and 0 dependents
+      expect(testEngine.getDirectDependents('LEAF')).toEqual([]);
+      expect(testEngine.getDirectDependencies('LEAF')).toEqual(['DEP-1', 'DEP-2', 'DEP-3', 'EXT-1', 'EXT-2']);
+    });
+  });
+
+  describe('Graph Depth & Cascade Level Computation', () => {
+    it('should compute depth and levels for a linear chain graph', () => {
+      // Chain: A -> B -> C -> D (D depends on C, C depends on B, B depends on A)
+      const adrs = [
+        createMockAdr({ id: 'A', dependencies: [] }),
+        createMockAdr({ id: 'B', dependencies: ['A'] }),
+        createMockAdr({ id: 'C', dependencies: ['B'] }),
+        createMockAdr({ id: 'D', dependencies: ['C'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      expect(engine.getDepth('A')).toBe(3);
+      expect(engine.getCascadeLevels('A')).toEqual({ B: 1, C: 2, D: 3 });
+      expect(engine.getDepth('B')).toBe(2);
+      expect(engine.getCascadeLevels('B')).toEqual({ C: 1, D: 2 });
+      expect(engine.getDepth('D')).toBe(0);
+      expect(engine.getCascadeLevels('D')).toEqual({});
+    });
+
+    it('should compute depth and levels for a diamond graph', () => {
+      // Diamond: A -> B -> D, A -> C -> D
+      const adrs = [
+        createMockAdr({ id: 'A', dependencies: [] }),
+        createMockAdr({ id: 'B', dependencies: ['A'] }),
+        createMockAdr({ id: 'C', dependencies: ['A'] }),
+        createMockAdr({ id: 'D', dependencies: ['B', 'C'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      expect(engine.getDepth('A')).toBe(2);
+      expect(engine.getCascadeLevels('A')).toEqual({ B: 1, C: 1, D: 2 });
+    });
+
+    it('should compute depth and levels for a wide fan-out graph', () => {
+      // Wide fan-out: A -> B, A -> C, A -> D, A -> E
+      const adrs = [
+        createMockAdr({ id: 'A', dependencies: [] }),
+        createMockAdr({ id: 'B', dependencies: ['A'] }),
+        createMockAdr({ id: 'C', dependencies: ['A'] }),
+        createMockAdr({ id: 'D', dependencies: ['A'] }),
+        createMockAdr({ id: 'E', dependencies: ['A'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      expect(engine.getDepth('A')).toBe(1);
+      expect(engine.getCascadeLevels('A')).toEqual({ B: 1, C: 1, D: 1, E: 1 });
+    });
+
+    it('should terminate safely and compute depth without infinite recursion on a cyclic graph', () => {
+      // Cycle: A -> B -> C -> A
+      const adrs = [
+        createMockAdr({ id: 'A', dependencies: ['C'] }),
+        createMockAdr({ id: 'B', dependencies: ['A'] }),
+        createMockAdr({ id: 'C', dependencies: ['B'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      // Traversal must terminate safely and not throw RangeError (Maximum call stack size exceeded)
+      const depth = engine.getDepth('A');
+      expect(typeof depth).toBe('number');
+      expect(depth).toBeGreaterThanOrEqual(1);
+      const levels = engine.getCascadeLevels('A');
+      expect(levels).toBeDefined();
+    });
+  });
+
+  describe('Root Nodes (getRoots)', () => {
+    it('should identify all root decisions that have no upstream dependencies', () => {
+      const adrs = [
+        createMockAdr({ id: 'ROOT-1', dependencies: [] }),
+        createMockAdr({ id: 'ROOT-2', dependencies: [] }),
+        createMockAdr({ id: 'MID', dependencies: ['ROOT-1'] }),
+        createMockAdr({ id: 'LEAF', dependencies: ['MID', 'ROOT-2'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      expect(engine.getRoots()).toEqual(['ROOT-1', 'ROOT-2']);
+    });
+
+    it('should return empty roots array if graph has only self-referential or closed cycles', () => {
+      const adrs = [
+        createMockAdr({ id: 'CYC-1', dependencies: ['CYC-2'] }),
+        createMockAdr({ id: 'CYC-2', dependencies: ['CYC-1'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      expect(engine.getRoots()).toEqual([]);
+    });
+
+    it('should return roots for valid island when another island is cyclic', () => {
+      const adrs = [
+        createMockAdr({ id: 'ISLAND-ROOT', dependencies: [] }),
+        createMockAdr({ id: 'ISLAND-LEAF', dependencies: ['ISLAND-ROOT'] }),
+        createMockAdr({ id: 'CYC-1', dependencies: ['CYC-2'] }),
+        createMockAdr({ id: 'CYC-2', dependencies: ['CYC-1'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      expect(engine.getRoots()).toEqual(['ISLAND-ROOT']);
+    });
+  });
+
+  describe('DAGEngine Defensive Edge Cases', () => {
+    it('should return empty arrays for getDirectDependents and getDirectDependencies with unknown ID', () => {
+      const engine = new DAGEngine([]);
+      expect(engine.getDirectDependents('NONEXISTENT')).toEqual([]);
+      expect(engine.getDirectDependencies('NONEXISTENT')).toEqual([]);
+    });
+
+    it('should return 0 depth and empty cascade levels for unknown ID', () => {
+      const engine = new DAGEngine([]);
+      expect(engine.getDepth('NONEXISTENT')).toBe(0);
+      expect(engine.getCascadeLevels('NONEXISTENT')).toEqual({});
+    });
   });
 });

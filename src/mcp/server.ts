@@ -6,6 +6,7 @@ import path from 'path';
 import glob from 'fast-glob';
 import { parseADRContent } from '../core/adrParser.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
+import { calculateArchitectureRisk } from '../core/risk.js';
 import type { ParsedADR } from '../core/types.js';
 
 const server = new Server(
@@ -143,15 +144,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const id = args?.id as string;
       const { engine } = validateAndComputeDAG(adrs);
       const deps = engine.getBlastRadius(id);
-      const direct = adrs.find(a => a.frontmatter.id === id)?.frontmatter.depends_on || [];
-      const score = deps.length * 10 + direct.length * 5;
+      const direct = engine.getDirectDependents(id);
+      const depth = engine.getDepth(id);
+      const affectedSystems = engine.getAffectedSystems(id);
+      const risk = calculateArchitectureRisk({ directDependentsCount: direct.length, cascadeCount: deps.length, depth });
       return {
         content: [{
           type: 'text', text: JSON.stringify({
             directDependents: direct,
             totalCascadingDownstream: deps,
-            maxDepth: deps.length > 0 ? Math.ceil(deps.length / 2) : 0,
-            architectureRiskScore: Math.min(100, score)
+            maxDepth: depth,
+            affectedSystems,
+            architectureRiskScore: risk.score,
+            riskLevel: risk.level,
+            riskBreakdown: risk.breakdown
           }, null, 2)
         }]
       };
@@ -159,10 +165,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     if (name === 'validate_architecture') {
       const { validationResult, engine } = validateAndComputeDAG(adrs);
-      const rootNodes = Object.keys(engine['adjacencyList']).filter(id => {
-        const hasIncoming = Object.values(engine['adjacencyList']).some(deps => deps.includes(id));
-        return !hasIncoming;
-      });
+      const rootNodes = engine.getRoots();
       
       return {
         content: [{

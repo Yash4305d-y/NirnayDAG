@@ -139,6 +139,34 @@ export class DAGEngine {
   }
 
   /**
+   * Returns direct dependents (nodes that depend ON this node)
+   */
+  public getDirectDependents(id: string): string[] {
+    return [...(this.adjacencyList.get(id) || [])];
+  }
+
+  /**
+   * Returns direct dependencies (nodes that this node depends on)
+   */
+  public getDirectDependencies(id: string): string[] {
+    return [...(this.reverseAdjacencyList.get(id) || [])];
+  }
+
+  /**
+   * Returns all root decisions (nodes with no dependencies on existing graph nodes)
+   */
+  public getRoots(): string[] {
+    const roots: string[] = [];
+    this.adrs.forEach((adr, id) => {
+      const activeDeps = adr.dependencies.filter((depId) => this.adrs.has(depId));
+      if (activeDeps.length === 0) {
+        roots.push(id);
+      }
+    });
+    return roots;
+  }
+
+  /**
    * Computes transitive blast radius for any ADR node
    */
   public getBlastRadius(rootId: string): string[] {
@@ -157,6 +185,77 @@ export class DAGEngine {
     }
 
     return Array.from(impacted);
+  }
+
+  /**
+   * Computes per-node level (longest path distance from rootId) for each reachable dependent.
+   * Terminates safely even if graph contains cycles.
+   */
+  public getCascadeLevels(rootId: string): Record<string, number> {
+    const levels: Record<string, number> = {};
+    if (!this.adrs.has(rootId)) return levels;
+
+    const currentPath = new Set<string>([rootId]);
+
+    const dfs = (currentId: string, currentLevel: number) => {
+      const dependents = this.adjacencyList.get(currentId) || [];
+      for (const childId of dependents) {
+        if (currentPath.has(childId)) {
+          // Cycle detected along current path - safely skip to avoid infinite recursion
+          continue;
+        }
+        const nextLevel = currentLevel + 1;
+        if (!levels[childId] || nextLevel > levels[childId]) {
+          levels[childId] = nextLevel;
+        }
+        currentPath.add(childId);
+        dfs(childId, nextLevel);
+        currentPath.delete(childId);
+      }
+    };
+
+    dfs(rootId, 0);
+    return levels;
+  }
+
+  /**
+   * Computes the maximum depth of the blast radius (longest path from rootId through its dependents).
+   * Returns 0 if node has no dependents.
+   */
+  public getDepth(rootId: string): number {
+    const levels = this.getCascadeLevels(rootId);
+    const values = Object.values(levels);
+    if (values.length === 0) return 0;
+    return Math.max(...values);
+  }
+
+  /**
+   * Groups any list of node IDs by their ADR tags.
+   * ADRs with no tags are grouped under 'untagged'.
+   */
+  public groupNodesBySystem(nodeIds: string[]): Record<string, string[]> {
+    const systems: Record<string, string[]> = {};
+    nodeIds.forEach((id) => {
+      const adr = this.adrs.get(id);
+      const tags = adr?.tags && adr.tags.length > 0 ? adr.tags : ['untagged'];
+      tags.forEach((tag) => {
+        if (!systems[tag]) systems[tag] = [];
+        if (!systems[tag].includes(id)) {
+          systems[tag].push(id);
+        }
+      });
+    });
+    return systems;
+  }
+
+  /**
+   * Groups the blast cascade of a target ADR by system tags.
+   * Returns an empty record if the cascade is empty.
+   */
+  public getAffectedSystems(rootId: string): Record<string, string[]> {
+    const cascade = this.getBlastRadius(rootId);
+    if (cascade.length === 0) return {};
+    return this.groupNodesBySystem(cascade);
   }
 }
 
@@ -177,6 +276,7 @@ export function mapParsedToNirnay(parsed: ParsedADR): NirnayADR {
     },
     dependencies: parsed.frontmatter.depends_on || [],
     supersedes: parsed.frontmatter.supersedes?.[0],
+    tags: parsed.frontmatter.tags || [],
   };
 }
 
