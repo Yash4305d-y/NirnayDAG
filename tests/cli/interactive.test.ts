@@ -1,10 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { execSync } from 'child_process';
 import path from 'path';
 
 describe('Interactive CLI Mode Fallback', () => {
-  const cliPath = path.resolve(__dirname, '../../dist/cli.js');
-  
   // Note: we run these integration tests assuming 'npm run build' has been completed.
   // Alternatively we can use tsx for direct TS execution. Let's use tsx.
   const srcCliPath = path.resolve(__dirname, '../../src/cli/index.ts');

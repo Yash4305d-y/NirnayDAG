@@ -1,3 +1,4 @@
+/* oxlint-disable react/only-export-components, react/set-state-in-effect */
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { render, Text, Box, useInput, useApp } from 'ink';
 import TextInput from 'ink-text-input';

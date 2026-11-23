@@ -68,7 +68,9 @@ Dec
               if (res.error) reject(res.error);
               else resolve(res.result);
             }
-          } catch (e) {}
+          } catch {
+            // Ignore non-JSON log lines or partial chunks from server stdout
+          }
         }
       };
 
