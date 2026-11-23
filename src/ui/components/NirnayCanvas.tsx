@@ -17,8 +17,7 @@ import '@xyflow/react/dist/style.css';
 import { parseBatchADRs } from '../../core/adrParser.js';
 import { validateAndComputeDAG, type DAGValidationResult } from '../../core/dagEngine.js';
 import { getLayoutedGraph } from '../../core/layoutEngine.js';
-import type { ParsedADR, BlastRadiusMap } from '../../types/adr.js';
-import type { NirnayADR } from '../../core/types.js';
+import type { ParsedADR, BlastRadiusMap, NirnayADR } from '../../core/types.js';
 
 import { DecisionNode } from './DecisionNode.js';
 import { GlowEdge } from './GlowEdge.js';

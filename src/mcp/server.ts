@@ -6,7 +6,7 @@ import path from 'path';
 import glob from 'fast-glob';
 import { parseADRContent } from '../core/adrParser.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
-import type { ParsedADR } from '../types/adr.js';
+import type { ParsedADR } from '../core/types.js';
 
 const server = new Server(
   { name: "nirnay-dag-mcp", version: "1.0.0" },

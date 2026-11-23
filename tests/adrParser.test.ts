@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseADRMarkdown } from '../src/parser/adrParser.js';
+import { parseADRMarkdown } from '../src/core/adrParser.js';
 
 describe('ADR Parser', () => {
   it('should parse a standard Markdown ADR correctly', () => {
