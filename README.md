@@ -105,11 +105,11 @@ Computes the downstream impact of changing or deprecating an architectural decis
 
 Includes:
 
-* Direct dependencies
-* Transitive dependencies
-* Dependency hierarchy depth
-* Affected systems
-* Architectural risk score from **0–100**
+* **Direct dependents**: Nodes that directly depend on the target decision
+* **Transitive cascade**: Complete list of downstream nodes impacted across the dependency graph
+* **Hierarchy depth**: Real longest-path traversal through dependents (cycle-safe)
+* **Affected systems**: Downstream decisions grouped by frontmatter `tags` (with `untagged` fallback)
+* **Architectural risk score (0–100)**: Explainable heuristic calculation (`v1, heuristic`) weighting direct dependents (5 pts each) and cascading descendants (10 pts each), categorized into Low, Medium, and High risk with full factor breakdown
 
 ### 🖥️ Zero-Install Web Canvas
 
@@ -261,10 +261,11 @@ npx nirnay-dag blast ADR-0001 ./docs/adr
 
 Output includes:
 
-* Direct dependencies
-* Transitive dependencies
-* Impact hierarchy depth
-* Overall architectural risk score from 0–100
+* **Direct dependents**: Count of decisions directly depending on this ADR
+* **Cascade count & list**: Total number and IDs of cascading downstream decisions
+* **Impact hierarchy depth**: Longest path through dependents from this node
+* **Affected systems**: Tag-based system grouping of affected decisions
+* **Architectural risk score**: Score from 0–100, risk level (Low / Medium / High), and explainable factor breakdown
 
 ---
 
