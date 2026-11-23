@@ -146,6 +146,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const deps = engine.getBlastRadius(id);
       const direct = engine.getDirectDependents(id);
       const depth = engine.getDepth(id);
+      const affectedSystems = engine.getAffectedSystems(id);
       const risk = calculateArchitectureRisk({ directDependentsCount: direct.length, cascadeCount: deps.length, depth });
       return {
         content: [{
@@ -153,6 +154,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             directDependents: direct,
             totalCascadingDownstream: deps,
             maxDepth: depth,
+            affectedSystems,
             architectureRiskScore: risk.score,
             riskLevel: risk.level,
             riskBreakdown: risk.breakdown

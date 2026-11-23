@@ -79,8 +79,8 @@ async function main() {
     md += `*No ADR files were modified in this PR.*\n`;
   } else {
     md += `### Modified ADRs Impact Analysis\n\n`;
-    md += `| ADR ID | Title | Status | Cascade Count | Max Depth | Risk Level |\n`;
-    md += `|--------|-------|--------|---------------|-----------|------------|\n`;
+    md += `| ADR ID | Title | Status | Cascade Count | Max Depth | Affected Systems | Risk Level |\n`;
+    md += `|--------|-------|--------|---------------|-----------|------------------|------------|\n`;
 
     const impactDetails: { id: string; title: string; downstream: string[] }[] = [];
 
@@ -92,11 +92,13 @@ async function main() {
       const downstreamIds = engine.getBlastRadius(id);
       const direct = engine.getDirectDependents(id);
       const maxDepth = engine.getDepth(id); 
+      const affectedSystems = engine.getAffectedSystems(id);
+      const affectedSummary = Object.keys(affectedSystems).join(', ') || 'None';
       const risk = calculateArchitectureRisk({ directDependentsCount: direct.length, cascadeCount: downstreamIds.length, depth: maxDepth });
 
       const riskLevel = risk.level === 'High' ? '🔴 High' : risk.level === 'Medium' ? '🟡 Medium' : '🟢 Low';
 
-      md += `| **${id}** | ${title} | ${status} | ${downstreamIds.length} | ${maxDepth} | ${riskLevel} (${risk.score}) |\n`;
+      md += `| **${id}** | ${title} | ${status} | ${downstreamIds.length} | ${maxDepth} | ${affectedSummary} | ${riskLevel} (${risk.score}) |\n`;
 
       if (downstreamIds.length > 0) {
         impactDetails.push({ id, title, downstream: downstreamIds });

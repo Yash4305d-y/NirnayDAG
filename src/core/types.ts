@@ -14,6 +14,7 @@ export interface NirnayADR extends Record<string, unknown> {
   };
   dependencies: string[];
   supersedes?: string;
+  tags?: string[];
 }
 
 export interface NirnayEdge {

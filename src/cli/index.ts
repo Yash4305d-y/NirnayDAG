@@ -104,6 +104,8 @@ program
     const direct = engine.getDirectDependents(adrId);
     const depth = engine.getDepth(adrId);
     const risk = calculateArchitectureRisk({ directDependentsCount: direct.length, cascadeCount: downstreamIds.length, depth });
+    const affectedSystems = engine.getAffectedSystems(adrId);
+    const affectedSystemsSummary = Object.keys(affectedSystems).map(tag => `${tag} (${affectedSystems[tag].length})`).join(', ') || 'None';
     
     if (options.json || process.env.NDAG_OUTPUT === 'json') {
       console.log(JSON.stringify({
@@ -111,6 +113,8 @@ program
         directDependents: direct.length,
         cascadeCount: downstreamIds.length,
         depth,
+        affectedSystems,
+        affectedSystemsCount: Object.keys(affectedSystems).length,
         riskScore: risk.score,
         riskLevel: risk.level,
         riskBreakdown: risk.breakdown
@@ -123,6 +127,7 @@ program
     table.push(['Direct Dependents', direct.length]);
     table.push(['Cascade Count', downstreamIds.length]);
     table.push(['Max Depth', depth]);
+    table.push(['Affected Systems', affectedSystemsSummary]);
     table.push(['Risk Score', `${risk.score}/100 (${risk.level})`]);
     table.push(['Risk Explanation', risk.explanation]);
     

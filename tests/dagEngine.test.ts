@@ -205,5 +205,39 @@ describe('DAGEngine', () => {
       const engine = new DAGEngine(adrs);
       expect(engine.getRoots()).toEqual(['ROOT-1', 'ROOT-2']);
     });
+
+    it('should return empty roots array if graph has only self-referential or closed cycles', () => {
+      const adrs = [
+        createMockAdr({ id: 'CYC-1', dependencies: ['CYC-2'] }),
+        createMockAdr({ id: 'CYC-2', dependencies: ['CYC-1'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      expect(engine.getRoots()).toEqual([]);
+    });
+
+    it('should return roots for valid island when another island is cyclic', () => {
+      const adrs = [
+        createMockAdr({ id: 'ISLAND-ROOT', dependencies: [] }),
+        createMockAdr({ id: 'ISLAND-LEAF', dependencies: ['ISLAND-ROOT'] }),
+        createMockAdr({ id: 'CYC-1', dependencies: ['CYC-2'] }),
+        createMockAdr({ id: 'CYC-2', dependencies: ['CYC-1'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      expect(engine.getRoots()).toEqual(['ISLAND-ROOT']);
+    });
+  });
+
+  describe('DAGEngine Defensive Edge Cases', () => {
+    it('should return empty arrays for getDirectDependents and getDirectDependencies with unknown ID', () => {
+      const engine = new DAGEngine([]);
+      expect(engine.getDirectDependents('NONEXISTENT')).toEqual([]);
+      expect(engine.getDirectDependencies('NONEXISTENT')).toEqual([]);
+    });
+
+    it('should return 0 depth and empty cascade levels for unknown ID', () => {
+      const engine = new DAGEngine([]);
+      expect(engine.getDepth('NONEXISTENT')).toBe(0);
+      expect(engine.getCascadeLevels('NONEXISTENT')).toEqual({});
+    });
   });
 });

@@ -228,6 +228,35 @@ export class DAGEngine {
     if (values.length === 0) return 0;
     return Math.max(...values);
   }
+
+  /**
+   * Groups any list of node IDs by their ADR tags.
+   * ADRs with no tags are grouped under 'untagged'.
+   */
+  public groupNodesBySystem(nodeIds: string[]): Record<string, string[]> {
+    const systems: Record<string, string[]> = {};
+    nodeIds.forEach((id) => {
+      const adr = this.adrs.get(id);
+      const tags = adr?.tags && adr.tags.length > 0 ? adr.tags : ['untagged'];
+      tags.forEach((tag) => {
+        if (!systems[tag]) systems[tag] = [];
+        if (!systems[tag].includes(id)) {
+          systems[tag].push(id);
+        }
+      });
+    });
+    return systems;
+  }
+
+  /**
+   * Groups the blast cascade of a target ADR by system tags.
+   * Returns an empty record if the cascade is empty.
+   */
+  public getAffectedSystems(rootId: string): Record<string, string[]> {
+    const cascade = this.getBlastRadius(rootId);
+    if (cascade.length === 0) return {};
+    return this.groupNodesBySystem(cascade);
+  }
 }
 
 // (ParsedADR imported at top if needed or directly)
@@ -247,6 +276,7 @@ export function mapParsedToNirnay(parsed: ParsedADR): NirnayADR {
     },
     dependencies: parsed.frontmatter.depends_on || [],
     supersedes: parsed.frontmatter.supersedes?.[0],
+    tags: parsed.frontmatter.tags || [],
   };
 }
 
