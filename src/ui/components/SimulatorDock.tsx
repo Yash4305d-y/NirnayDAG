@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Activity, RefreshCw, Download, ChevronDown, ShieldAlert } from 'lucide-react';
 import type { ParsedADR, BlastRadiusMap } from '../../core/types.js';
+import { calculateArchitectureRisk } from '../../core/risk.js';
 
 interface SimulatorDockProps {
   isOpen: boolean;
@@ -33,11 +34,27 @@ export const SimulatorDock: React.FC<SimulatorDockProps> = ({
     });
     return corridor.size;
   }, [simulatedDeprecatedIds, blastRadiusMap]);
+
+  const directDependentsCount = useMemo(() => {
+    const directSet = new Set<string>();
+    simulatedDeprecatedIds.forEach(id => {
+      if (blastRadiusMap[id]) {
+        blastRadiusMap[id].directDependents.forEach(depId => directSet.add(depId));
+      }
+    });
+    return directSet.size;
+  }, [simulatedDeprecatedIds, blastRadiusMap]);
   
-  // Calculate a mock risk score (0-100)
-  const riskScore = Math.min(100, Math.round((overrideCount * 15) + (affectedCount * 10)));
-  
-  const riskLevel = riskScore > 60 ? 'High' : riskScore > 30 ? 'Moderate' : 'Low';
+  // Unified architecture risk calculation (v1, heuristic)
+  const risk = useMemo(() => {
+    return calculateArchitectureRisk({
+      directDependentsCount,
+      cascadeCount: affectedCount,
+    });
+  }, [directDependentsCount, affectedCount]);
+
+  const riskScore = risk.score;
+  const riskLevel = risk.level;
   const riskColor = riskScore > 60 ? 'text-rose-400 border-rose-500/30 bg-rose-500/10' 
                   : riskScore > 30 ? 'text-amber-400 border-amber-500/30 bg-amber-500/10'
                   : 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10';

@@ -9,6 +9,7 @@ import fs from 'fs-extra';
 import glob from 'fast-glob';
 import { parseBatchADRs } from '../core/adrParser.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
+import { calculateArchitectureRisk } from '../core/risk.js';
 
 // Shared utility function for loading ADRs
 export async function loadGraph(dir: string) {
@@ -131,7 +132,8 @@ const BlastRadiusView = ({ adr, engine, onBack }: any) => {
 
   const downstreamIds = engine.getBlastRadius(adr.id);
   const direct = engine.getDirectDependents(adr.id);
-  const score = Math.min(100, downstreamIds.length * 10 + direct.length * 5);
+  const depth = engine.getDepth(adr.id);
+  const risk = calculateArchitectureRisk({ directDependentsCount: direct.length, cascadeCount: downstreamIds.length, depth });
 
   return (
     <Box flexDirection="column">
@@ -139,9 +141,10 @@ const BlastRadiusView = ({ adr, engine, onBack }: any) => {
         <Text color="redBright" bold>Blast Radius: {adr.id}</Text>
       </Box>
       <Box borderStyle="single" padding={1} flexDirection="column">
-        <Text>Risk Score: {score > 75 ? chalk.red(score) : score > 40 ? chalk.yellow(score) : chalk.green(score)}/100</Text>
+        <Text>Risk Score: {risk.score > 60 ? chalk.red(risk.score) : risk.score > 30 ? chalk.yellow(risk.score) : chalk.green(risk.score)}/100 ({risk.level})</Text>
         <Text>Direct Dependents: {direct.length}</Text>
         <Text>Total Cascading Impacts: {downstreamIds.length}</Text>
+        <Text>Max Depth: {depth}</Text>
       </Box>
       {downstreamIds.length > 0 && (
         <Box flexDirection="column" marginTop={1}>

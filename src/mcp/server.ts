@@ -6,6 +6,7 @@ import path from 'path';
 import glob from 'fast-glob';
 import { parseADRContent } from '../core/adrParser.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
+import { calculateArchitectureRisk } from '../core/risk.js';
 import type { ParsedADR } from '../core/types.js';
 
 const server = new Server(
@@ -144,14 +145,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const { engine } = validateAndComputeDAG(adrs);
       const deps = engine.getBlastRadius(id);
       const direct = engine.getDirectDependents(id);
-      const score = deps.length * 10 + direct.length * 5;
+      const depth = engine.getDepth(id);
+      const risk = calculateArchitectureRisk({ directDependentsCount: direct.length, cascadeCount: deps.length, depth });
       return {
         content: [{
           type: 'text', text: JSON.stringify({
             directDependents: direct,
             totalCascadingDownstream: deps,
-            maxDepth: engine.getDepth(id),
-            architectureRiskScore: Math.min(100, score)
+            maxDepth: depth,
+            architectureRiskScore: risk.score,
+            riskLevel: risk.level,
+            riskBreakdown: risk.breakdown
           }, null, 2)
         }]
       };

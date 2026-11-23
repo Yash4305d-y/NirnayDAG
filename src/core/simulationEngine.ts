@@ -1,4 +1,5 @@
 import { DAGEngine } from './dagEngine.js';
+import { calculateArchitectureRisk } from './risk.js';
 import type { NirnayADR } from './types.js';
 
 export interface SimulationResult {
@@ -7,13 +8,6 @@ export interface SimulationResult {
   orphanedNodes: string[];
   impactedNodes: string[];
 }
-
-const CATEGORY_WEIGHTS: Record<string, number> = {
-  'Infrastructure': 10,
-  'Security': 10,
-  'Database': 8,
-  'AI / Engine': 5,
-};
 
 export class SimulationEngine {
   public static compute(
@@ -39,32 +33,31 @@ export class SimulationEngine {
     });
 
     const dag = new DAGEngine(activeGraph);
-    let totalScore = 0;
+    const directDependentsSet = new Set<string>();
     const impactedNodesSet = new Set<string>();
     const orphanedNodesSet = new Set<string>();
 
     activeGraph.forEach((adr) => {
       if (adr.status === 'deprecated') {
+        const direct = dag.getDirectDependents(adr.id);
+        direct.forEach((d) => directDependentsSet.add(d));
         const blast = dag.getBlastRadius(adr.id);
         
         blast.forEach((downstreamId) => {
           impactedNodesSet.add(downstreamId);
           orphanedNodesSet.add(downstreamId);
-          
-          const downstreamNode = activeGraph.find((n) => n.id === downstreamId);
-          if (downstreamNode) {
-            const weight = CATEGORY_WEIGHTS[downstreamNode.category] || 5;
-            totalScore += weight;
-          }
         });
       }
     });
 
-    const normalizedScore = Math.min(Math.round((totalScore / 50) * 100), 100);
+    const risk = calculateArchitectureRisk({
+      directDependentsCount: directDependentsSet.size,
+      cascadeCount: impactedNodesSet.size,
+    });
 
     return {
       activeGraph,
-      fragilityScore: normalizedScore,
+      fragilityScore: risk.score,
       orphanedNodes: Array.from(orphanedNodesSet),
       impactedNodes: Array.from(impactedNodesSet),
     };

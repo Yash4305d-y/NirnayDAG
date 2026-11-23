@@ -9,6 +9,7 @@ import glob from 'fast-glob';
 import Table from 'cli-table3';
 import { parseBatchADRs } from '../core/adrParser.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
+import { calculateArchitectureRisk } from '../core/risk.js';
 import { runInteractiveSession } from './interactive.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -101,10 +102,19 @@ program
     
     const downstreamIds = engine.getBlastRadius(adrId);
     const direct = engine.getDirectDependents(adrId);
-    const score = Math.min(100, downstreamIds.length * 10 + direct.length * 5);
+    const depth = engine.getDepth(adrId);
+    const risk = calculateArchitectureRisk({ directDependentsCount: direct.length, cascadeCount: downstreamIds.length, depth });
     
     if (options.json || process.env.NDAG_OUTPUT === 'json') {
-      console.log(JSON.stringify({ adrId, directDependents: direct.length, cascadeCount: downstreamIds.length, riskScore: score }, null, 2));
+      console.log(JSON.stringify({
+        adrId,
+        directDependents: direct.length,
+        cascadeCount: downstreamIds.length,
+        depth,
+        riskScore: risk.score,
+        riskLevel: risk.level,
+        riskBreakdown: risk.breakdown
+      }, null, 2));
       process.exit(0);
     }
     
@@ -112,7 +122,9 @@ program
     table.push(['ADR ID', adrId]);
     table.push(['Direct Dependents', direct.length]);
     table.push(['Cascade Count', downstreamIds.length]);
-    table.push(['Risk Score', score]);
+    table.push(['Max Depth', depth]);
+    table.push(['Risk Score', `${risk.score}/100 (${risk.level})`]);
+    table.push(['Risk Explanation', risk.explanation]);
     
     console.log(table.toString());
     if (downstreamIds.length > 0) {
