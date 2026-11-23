@@ -193,4 +193,17 @@ describe('DAGEngine', () => {
       expect(levels).toBeDefined();
     });
   });
+
+  describe('Root Nodes (getRoots)', () => {
+    it('should identify all root decisions that have no upstream dependencies', () => {
+      const adrs = [
+        createMockAdr({ id: 'ROOT-1', dependencies: [] }),
+        createMockAdr({ id: 'ROOT-2', dependencies: [] }),
+        createMockAdr({ id: 'MID', dependencies: ['ROOT-1'] }),
+        createMockAdr({ id: 'LEAF', dependencies: ['MID', 'ROOT-2'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      expect(engine.getRoots()).toEqual(['ROOT-1', 'ROOT-2']);
+    });
+  });
 });

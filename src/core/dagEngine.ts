@@ -153,6 +153,20 @@ export class DAGEngine {
   }
 
   /**
+   * Returns all root decisions (nodes with no dependencies on existing graph nodes)
+   */
+  public getRoots(): string[] {
+    const roots: string[] = [];
+    this.adrs.forEach((adr, id) => {
+      const activeDeps = adr.dependencies.filter((depId) => this.adrs.has(depId));
+      if (activeDeps.length === 0) {
+        roots.push(id);
+      }
+    });
+    return roots;
+  }
+
+  /**
    * Computes transitive blast radius for any ADR node
    */
   public getBlastRadius(rootId: string): string[] {

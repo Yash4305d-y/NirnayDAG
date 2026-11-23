@@ -159,10 +159,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     if (name === 'validate_architecture') {
       const { validationResult, engine } = validateAndComputeDAG(adrs);
-      const rootNodes = Object.keys(engine['adjacencyList']).filter(id => {
-        const hasIncoming = Object.values(engine['adjacencyList']).some(deps => deps.includes(id));
-        return !hasIncoming;
-      });
+      const rootNodes = engine.getRoots();
       
       return {
         content: [{

@@ -134,5 +134,8 @@ Dec
     });
     const res = JSON.parse(result.content[0].text);
     expect(typeof res.hasCycles).toBe('boolean');
+    expect(Array.isArray(res.rootDecisions)).toBe(true);
+    expect(res.rootDecisions.length).toBeGreaterThan(0);
+    expect(res.rootDecisions).toContain('ADR-001');
   });
 });
