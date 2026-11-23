@@ -1,4 +1,4 @@
-import { parseADRMarkdown } from '../parser/adrParser.js';
+import { parseADRMarkdown } from '../core/adrParser.js';
 import type { NirnayADR } from '../core/types.js';
 
 // Use Vite's glob import to get all markdown files in the adrs directory as raw strings

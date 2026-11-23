@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+/* oxlint-disable react/only-export-components, react/set-state-in-effect */
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { render, Text, Box, useInput, useApp } from 'ink';
 import TextInput from 'ink-text-input';
 import chokidar from 'chokidar';
@@ -43,7 +44,7 @@ const HomeView = ({ data, onSelect, validationResult }: any) => {
     );
   }, [query, data.mappedAdrs]);
 
-  useInput((input, key) => {
+  useInput((_input, key) => {
     if (key.upArrow) {
       setSelectedIndex(Math.max(0, selectedIndex - 1));
     }
@@ -149,7 +150,9 @@ const BlastRadiusView = ({ adr, engine, onBack }: any) => {
           {downstreamIds.length > 15 && <Text color="gray"> ...and {downstreamIds.length - 15} more</Text>}
         </Box>
       )}
-      <Text color="gray" marginTop={1}>Press 'Esc' or 'b' to go back</Text>
+      <Box marginTop={1}>
+        <Text color="gray">Press 'Esc' or 'b' to go back</Text>
+      </Box>
     </Box>
   );
 };
@@ -164,24 +167,28 @@ const App = ({ targetDir }: { targetDir: string }) => {
   const [cmdMode, setCmdMode] = useState(false);
   const [cmdQuery, setCmdQuery] = useState('');
 
-  const reloadGraph = async () => {
+  const reloadGraph = useCallback(async () => {
     try {
       const data = await loadGraph(targetDir);
       setGraphData(data);
       setError(null);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
-  };
+  }, [targetDir]);
 
   useEffect(() => {
-    reloadGraph();
+    void reloadGraph();
     const watcher = chokidar.watch(targetDir, { ignoreInitial: true });
-    watcher.on('all', reloadGraph);
-    return () => watcher.close();
-  }, [targetDir]);
+    watcher.on('all', () => {
+      void reloadGraph();
+    });
+    return () => {
+      void watcher.close();
+    };
+  }, [targetDir, reloadGraph]);
 
   useInput((input, key) => {
     if (cmdMode) {

@@ -1,5 +1,5 @@
 import { toPng, toSvg } from 'html-to-image';
-import type { ParsedADR, BlastRadiusMap } from '../types/adr.js';
+import type { ParsedADR, BlastRadiusMap } from '../core/types.js';
 
 function downloadFile(filename: string, content: string, type: string) {
   const blob = new Blob([content], { type });

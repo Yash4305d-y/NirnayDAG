@@ -42,13 +42,15 @@
     "ndag": "./dist/cli.js"
   },
   "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint",
+    "test": "vitest run",
     "build": "vite build && tsup",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build",
     "build:cli": "tsup",
     "build:web": "vite build",
     "dev": "vite",
     "dev:cli": "tsx watch src/cli/index.ts",
-    "test": "vitest run",
-    "lint": "eslint .",
     "demo": "tsx scripts/demo.ts",
     "mcp:inspect": "npx @modelcontextprotocol/inspector node dist/mcp.js"
   },
@@ -92,7 +94,6 @@
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.0.5",
     "autoprefixer": "^10.5.4",
-    "eslint": "^9.20.1",
     "oxlint": "^1.75.0",
     "postcss": "^8.5.26",
     "prettier": "^3.5.1",

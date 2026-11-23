@@ -1,4 +1,3 @@
-import React from 'react';
 import { NirnayCanvas } from './components/NirnayCanvas.js';
 
 export function App() {

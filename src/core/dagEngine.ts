@@ -1,4 +1,4 @@
-import type { NirnayADR } from './types.js';
+import type { NirnayADR, ParsedADR } from './types.js';
 
 export interface DAGValidationResult {
   isValid: boolean;
@@ -160,7 +160,7 @@ export class DAGEngine {
   }
 }
 
-import type { ParsedADR } from '../types/adr.js';
+// (ParsedADR imported at top if needed or directly)
 
 export function mapParsedToNirnay(parsed: ParsedADR): NirnayADR {
   return {
