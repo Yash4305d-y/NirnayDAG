@@ -130,7 +130,7 @@ const BlastRadiusView = ({ adr, engine, onBack }: any) => {
   });
 
   const downstreamIds = engine.getBlastRadius(adr.id);
-  const direct = adr.dependencies || [];
+  const direct = engine.getDirectDependents(adr.id);
   const score = Math.min(100, downstreamIds.length * 10 + direct.length * 5);
 
   return (

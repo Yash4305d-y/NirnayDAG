@@ -42,7 +42,7 @@ async function main() {
   );
 
   const parsedADRs = parseBatchADRs(fileData);
-  const { validationResult, engine, mappedAdrs } = validateAndComputeDAG(parsedADRs);
+  const { validationResult, engine } = validateAndComputeDAG(parsedADRs);
 
   // Identify changed ADRs
   let changedAdrs = parsedADRs;
@@ -89,7 +89,7 @@ async function main() {
       const status = adr.frontmatter.status;
       
       const downstreamIds = engine.getBlastRadius(id);
-      const direct = mappedAdrs.find(a => a.id === id)?.dependencies || [];
+      const direct = engine.getDirectDependents(id);
       const score = Math.min(100, downstreamIds.length * 10 + direct.length * 5);
       const maxDepth = downstreamIds.length > 0 ? Math.ceil(downstreamIds.length / 2) : 0; 
 

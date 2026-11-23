@@ -109,5 +109,26 @@ describe('DAGEngine', () => {
       const impacted = engine.getBlastRadius('ISLAND-1');
       expect(impacted).toEqual(['ISLAND-2']);
     });
+
+    it('regression: a root ADR with 3 dependents and 0 dependencies must report 3 direct dependents; a leaf with 5 dependencies must report 0', () => {
+      const testAdrs = [
+        createMockAdr({ id: 'ROOT', dependencies: [] }),
+        createMockAdr({ id: 'DEP-1', dependencies: ['ROOT'] }),
+        createMockAdr({ id: 'DEP-2', dependencies: ['ROOT'] }),
+        createMockAdr({ id: 'DEP-3', dependencies: ['ROOT'] }),
+        createMockAdr({ id: 'EXT-1', dependencies: [] }),
+        createMockAdr({ id: 'EXT-2', dependencies: [] }),
+        createMockAdr({ id: 'LEAF', dependencies: ['DEP-1', 'DEP-2', 'DEP-3', 'EXT-1', 'EXT-2'] }),
+      ];
+      const testEngine = new DAGEngine(testAdrs);
+
+      // Root ADR has 3 dependents and 0 dependencies
+      expect(testEngine.getDirectDependents('ROOT')).toEqual(['DEP-1', 'DEP-2', 'DEP-3']);
+      expect(testEngine.getDirectDependencies('ROOT')).toEqual([]);
+
+      // Leaf ADR has 5 dependencies and 0 dependents
+      expect(testEngine.getDirectDependents('LEAF')).toEqual([]);
+      expect(testEngine.getDirectDependencies('LEAF')).toEqual(['DEP-1', 'DEP-2', 'DEP-3', 'EXT-1', 'EXT-2']);
+    });
   });
 });

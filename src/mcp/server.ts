@@ -143,7 +143,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const id = args?.id as string;
       const { engine } = validateAndComputeDAG(adrs);
       const deps = engine.getBlastRadius(id);
-      const direct = adrs.find(a => a.frontmatter.id === id)?.frontmatter.depends_on || [];
+      const direct = engine.getDirectDependents(id);
       const score = deps.length * 10 + direct.length * 5;
       return {
         content: [{

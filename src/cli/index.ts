@@ -97,10 +97,10 @@ program
   .option('-d, --dir <path>', 'Directory containing ADR markdown files')
   .action(async (adrId, positionalDir, options) => {
     const targetDir = options.dir || positionalDir || process.env.ADR_DIR || './docs/adr';
-    const { engine, mappedAdrs } = await loadAndValidate(targetDir);
+    const { engine } = await loadAndValidate(targetDir);
     
     const downstreamIds = engine.getBlastRadius(adrId);
-    const direct = mappedAdrs.find(a => a.id === adrId)?.dependencies || [];
+    const direct = engine.getDirectDependents(adrId);
     const score = Math.min(100, downstreamIds.length * 10 + direct.length * 5);
     
     if (options.json || process.env.NDAG_OUTPUT === 'json') {

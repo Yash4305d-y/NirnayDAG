@@ -89,7 +89,7 @@ const CanvasContent = () => {
     parsedADRs.forEach(adr => {
       const cascade = engine.getBlastRadius(adr.frontmatter.id);
       brm[adr.frontmatter.id] = {
-        directDependents: adr.frontmatter.depends_on || [],
+        directDependents: engine.getDirectDependents(adr.frontmatter.id),
         totalCascade: cascade,
         depth: cascade.length > 0 ? 1 : 0
       };

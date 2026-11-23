@@ -139,6 +139,20 @@ export class DAGEngine {
   }
 
   /**
+   * Returns direct dependents (nodes that depend ON this node)
+   */
+  public getDirectDependents(id: string): string[] {
+    return [...(this.adjacencyList.get(id) || [])];
+  }
+
+  /**
+   * Returns direct dependencies (nodes that this node depends on)
+   */
+  public getDirectDependencies(id: string): string[] {
+    return [...(this.reverseAdjacencyList.get(id) || [])];
+  }
+
+  /**
    * Computes transitive blast radius for any ADR node
    */
   public getBlastRadius(rootId: string): string[] {
