@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
-import { Activity, RefreshCw, Download, ChevronDown, ShieldAlert, X } from 'lucide-react';
-import type { ParsedADR } from '../../types/adr.js';
+import { Activity, RefreshCw, Download, ChevronDown, ShieldAlert } from 'lucide-react';
+import type { ParsedADR, BlastRadiusMap } from '../../types/adr.js';
 
 interface SimulatorDockProps {
   isOpen: boolean;
   onToggle: () => void;
   adrs: ParsedADR[];
   simulatedDeprecatedIds: string[];
-  blastRadiusMap: Record<string, string[]>;
+  blastRadiusMap: BlastRadiusMap;
   onToggleSimulateDeprecate: (id: string) => void;
   onResetSimulation: () => void;
 }
@@ -28,7 +28,7 @@ export const SimulatorDock: React.FC<SimulatorDockProps> = ({
     const corridor = new Set<string>();
     simulatedDeprecatedIds.forEach(id => {
       if (blastRadiusMap[id]) {
-        blastRadiusMap[id].forEach(depId => corridor.add(depId));
+        blastRadiusMap[id].totalCascade.forEach(depId => corridor.add(depId));
       }
     });
     return corridor.size;

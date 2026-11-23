@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
-import { Handle, Position, NodeProps } from '@xyflow/react';
+import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, HelpCircle, RefreshCcw, XCircle, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import type { NirnayADR, DecisionStatus } from '../../core/types.js';
 import { useSimulationStore } from '../store/useSimulationStore.js';
 
@@ -42,11 +42,9 @@ const statusConfig: Record<DecisionStatus, { label: string; container: string; d
   },
 };
 
-// @ts-ignore
-export const DecisionNode = memo(({ data }: NodeProps<any>) => {
+export const DecisionNode = memo(({ data }: NodeProps<Node<NodeDataProps>>) => {
   const { setOverride } = useSimulationStore();
   const config = statusConfig[data.status];
-  const Icon = config.icon;
 
   const handleSimulateDeprecate = (e: React.MouseEvent) => {
     e.stopPropagation();

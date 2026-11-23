@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ShieldAlert, CheckCircle2, Zap, AlertTriangle, ArrowRight } from 'lucide-react';
+import { X, ShieldAlert, Zap, AlertTriangle, ArrowRight } from 'lucide-react';
 import type { ParsedADR } from '../../types/adr.js';
 
 interface DecisionDrawerProps {

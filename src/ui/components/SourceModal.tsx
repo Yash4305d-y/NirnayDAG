@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, FolderOpen, GitBranch, Loader2, UploadCloud, AlertCircle } from 'lucide-react';
+import { X, FolderOpen, GitBranch, UploadCloud, AlertCircle } from 'lucide-react';
 import { loadFromDirectoryPicker, readFilesFromInput, isFileSystemAccessSupported } from '../../utils/localFolderLoader.js';
 import { fetchGitHubADRs } from '../../utils/githubLoader.js';
 
@@ -23,12 +23,14 @@ export const SourceModal: React.FC<SourceModalProps> = ({ isOpen, onClose, onLoa
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (prevIsOpen !== isOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
       setError(null);
       setIsLoading(false);
     }
-  }, [isOpen]);
+  }
 
   const handleLocalDirectory = async () => {
     if (!isFileSystemAccessSupported()) {

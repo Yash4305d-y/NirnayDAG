@@ -33,7 +33,7 @@ export const validateCommand = new Command('validate')
       }
       
       const engine = new DAGEngine(adrs);
-      const { isValid, errors } = engine.validate();
+      const { isValid, missingDependencies } = engine.validate();
       
       spinner.stop();
       
@@ -49,7 +49,7 @@ export const validateCommand = new Command('validate')
         process.exit(0);
       } else {
         table.push(['Graph Health', chalk.red('Invalid - Cycle Detected')]);
-        errors.forEach(e => table.push([chalk.yellow('Error'), chalk.red(e)]));
+        missingDependencies.forEach((e: { adrId: string; missingId: string }) => table.push([chalk.yellow('Error'), chalk.red(`${e.adrId} -> ${e.missingId}`)]));
         console.log(table.toString());
         console.log(chalk.red('\n❌ Validation failed due to cyclic dependencies.'));
         process.exit(1);

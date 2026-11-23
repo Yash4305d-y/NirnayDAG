@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
-import { Handle, Position, NodeProps } from '@xyflow/react';
+import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, HelpCircle, RefreshCcw, XCircle, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, HelpCircle, RefreshCcw, XCircle, AlertTriangle, type LucideIcon } from 'lucide-react';
 import type { NirnayADR, DecisionStatus } from '../../../core/types.js';
 import { useSimulationStore } from '../../store/useSimulationStore.js';
 
@@ -13,15 +13,14 @@ export interface StitchNodeDataProps extends NirnayADR {
   isSimulationMode?: boolean;
 }
 
-const statusConfig: Record<DecisionStatus, { label: string; glow: string; icon: any; color: string }> = {
+const statusConfig: Record<DecisionStatus, { label: string; glow: string; icon: LucideIcon; color: string }> = {
   accepted: { label: 'Accepted', glow: 'var(--glow-siddha)', icon: CheckCircle2, color: '#10b981' },
   proposed: { label: 'Proposed', glow: 'var(--glow-vichar)', icon: HelpCircle, color: '#f59e0b' },
   superseded: { label: 'Superseded', glow: 'var(--glow-parivartan)', icon: RefreshCcw, color: '#818cf8' },
   deprecated: { label: 'Deprecated', glow: 'var(--glow-tyakta)', icon: XCircle, color: '#f43f5e' },
 };
 
-// @ts-ignore
-export const StitchNodeCard = memo(({ data }: NodeProps<any>) => {
+export const StitchNodeCard = memo(({ data }: NodeProps<Node<StitchNodeDataProps>>) => {
   const { setOverride } = useSimulationStore();
   const config = statusConfig[data.status];
   const Icon = config.icon;

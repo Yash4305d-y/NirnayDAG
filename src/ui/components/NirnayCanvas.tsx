@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import {
   ReactFlow,
   Background,
@@ -11,14 +11,13 @@ import {
   BackgroundVariant,
   useReactFlow,
   ReactFlowProvider,
-  Panel,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 import { parseBatchADRs } from '../../core/adrParser.js';
-import { validateAndComputeDAG, type DAGValidationResult, mapParsedToNirnay } from '../../core/dagEngine.js';
+import { validateAndComputeDAG, type DAGValidationResult } from '../../core/dagEngine.js';
 import { getLayoutedGraph } from '../../core/layoutEngine.js';
-import type { ParsedADR } from '../../types/adr.js';
+import type { ParsedADR, BlastRadiusMap } from '../../types/adr.js';
 import type { NirnayADR } from '../../core/types.js';
 
 import { DecisionNode } from './DecisionNode.js';
@@ -28,9 +27,8 @@ import { SourceModal } from './SourceModal.js';
 import { GraphToolbar, type FilterState } from './GraphToolbar.js';
 import { ExportMenu } from './ExportMenu.js';
 import { Toast, type ToastConfig } from './Toast.js';
-import { AlertCircle, FileWarning, FolderGit2, Database, X } from 'lucide-react';
+import { AlertCircle, FolderGit2, Database, X } from 'lucide-react';
 import { exportCanvasToPNG, exportCanvasToSVG, exportGraphAsJSON } from '../../utils/exportEngine.js';
-import { useSimulationStore } from '../store/useSimulationStore.js';
 import { SimulatorDock } from './SimulatorDock.js';
 
 const nodeTypes = { decisionNode: DecisionNode };
@@ -42,7 +40,7 @@ const CanvasContent = () => {
   const [selectedADR, setSelectedADR] = useState<ParsedADR | null>(null);
   const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
   const [validationResult, setValidationResult] = useState<DAGValidationResult | null>(null);
-  const [blastRadiusMap, setBlastRadiusMap] = useState<Record<string, string[]>>({});
+  const [blastRadiusMap, setBlastRadiusMap] = useState<BlastRadiusMap>({});
   
   // React Flow internal states
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
@@ -59,10 +57,6 @@ const CanvasContent = () => {
   
   const [isSimulatorOpen, setIsSimulatorOpen] = useState<boolean>(false);
   const [simulatedDeprecatedIds, setSimulatedDeprecatedIds] = useState<string[]>([]);
-  
-  // Derived state to map ParsedADR to NirnayADR for components expecting the old interface
-  const mappedAdrs = useMemo(() => adrs.map(mapParsedToNirnay), [adrs]);
-  const mappedSelectedADR = useMemo(() => selectedADR ? mapParsedToNirnay(selectedADR) : null, [selectedADR]);
 
   // Compute simulated blast radius corridor
   const simulatedBlastCorridor = useMemo(() => {
@@ -70,7 +64,7 @@ const CanvasContent = () => {
     simulatedDeprecatedIds.forEach(id => {
       corridor.add(id);
       if (blastRadiusMap[id]) {
-        blastRadiusMap[id].forEach(depId => corridor.add(depId));
+        blastRadiusMap[id].totalCascade.forEach(depId => corridor.add(depId));
       }
     });
     return corridor;
@@ -92,9 +86,14 @@ const CanvasContent = () => {
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedGraph(mAdrs, 'TB');
     
     // Compute blast radius map for all nodes
-    const brm: Record<string, string[]> = {};
+    const brm: BlastRadiusMap = {};
     parsedADRs.forEach(adr => {
-      brm[adr.frontmatter.id] = engine.getBlastRadius(adr.frontmatter.id);
+      const cascade = engine.getBlastRadius(adr.frontmatter.id);
+      brm[adr.frontmatter.id] = {
+        directDependents: adr.frontmatter.depends_on || [],
+        totalCascade: cascade,
+        depth: cascade.length > 0 ? 1 : 0
+      };
     });
     setBlastRadiusMap(brm);
 
@@ -147,7 +146,7 @@ const CanvasContent = () => {
           status: isTargeted ? 'deprecated' : data.status, // apply simulated status
           isSelected: selectedADR?.frontmatter.id === node.id,
           // Add dimmed state if it's not selected and not in blast radius
-          isDimmed: (!isSimulatorOpen && selectedADR && node.id !== selectedADR.frontmatter.id && !blastRadiusMap[selectedADR.frontmatter.id]?.includes(node.id)) || isUnaffected,
+          isDimmed: (!isSimulatorOpen && selectedADR && node.id !== selectedADR.frontmatter.id && !blastRadiusMap[selectedADR.frontmatter.id]?.totalCascade.includes(node.id)) || isUnaffected,
           isSimulationMode: isSimulatorOpen,
           isTargeted,
           isAffected
@@ -263,7 +262,7 @@ const CanvasContent = () => {
       <DecisionDrawer
         adr={selectedADR}
         onClose={() => setSelectedADR(null)}
-        impactedIds={selectedADR ? blastRadiusMap[selectedADR.frontmatter.id] || [] : []}
+        impactedIds={selectedADR ? blastRadiusMap[selectedADR.frontmatter.id]?.totalCascade || [] : []}
         onSelectNode={(id) => {
           const found = adrs.find(a => a.frontmatter.id === id);
           if (found) setSelectedADR(found);

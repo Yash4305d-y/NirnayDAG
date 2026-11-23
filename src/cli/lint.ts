@@ -44,7 +44,7 @@ function main() {
     process.exit(0);
   }
 
-  const { validationResult, engine } = validateAndComputeDAG(parsedADRs);
+  const { validationResult } = validateAndComputeDAG(parsedADRs);
 
   if (!validationResult.isValid) {
     console.error(chalk.red(`\n❌ Architecture DAG validation failed.`));
