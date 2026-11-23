@@ -91,7 +91,7 @@ const CanvasContent = () => {
       brm[adr.frontmatter.id] = {
         directDependents: engine.getDirectDependents(adr.frontmatter.id),
         totalCascade: cascade,
-        depth: cascade.length > 0 ? 1 : 0
+        depth: engine.getDepth(adr.frontmatter.id)
       };
     });
     setBlastRadiusMap(brm);

@@ -172,6 +172,48 @@ export class DAGEngine {
 
     return Array.from(impacted);
   }
+
+  /**
+   * Computes per-node level (longest path distance from rootId) for each reachable dependent.
+   * Terminates safely even if graph contains cycles.
+   */
+  public getCascadeLevels(rootId: string): Record<string, number> {
+    const levels: Record<string, number> = {};
+    if (!this.adrs.has(rootId)) return levels;
+
+    const currentPath = new Set<string>([rootId]);
+
+    const dfs = (currentId: string, currentLevel: number) => {
+      const dependents = this.adjacencyList.get(currentId) || [];
+      for (const childId of dependents) {
+        if (currentPath.has(childId)) {
+          // Cycle detected along current path - safely skip to avoid infinite recursion
+          continue;
+        }
+        const nextLevel = currentLevel + 1;
+        if (!levels[childId] || nextLevel > levels[childId]) {
+          levels[childId] = nextLevel;
+        }
+        currentPath.add(childId);
+        dfs(childId, nextLevel);
+        currentPath.delete(childId);
+      }
+    };
+
+    dfs(rootId, 0);
+    return levels;
+  }
+
+  /**
+   * Computes the maximum depth of the blast radius (longest path from rootId through its dependents).
+   * Returns 0 if node has no dependents.
+   */
+  public getDepth(rootId: string): number {
+    const levels = this.getCascadeLevels(rootId);
+    const values = Object.values(levels);
+    if (values.length === 0) return 0;
+    return Math.max(...values);
+  }
 }
 
 // (ParsedADR imported at top if needed or directly)

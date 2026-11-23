@@ -150,7 +150,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           type: 'text', text: JSON.stringify({
             directDependents: direct,
             totalCascadingDownstream: deps,
-            maxDepth: deps.length > 0 ? Math.ceil(deps.length / 2) : 0,
+            maxDepth: engine.getDepth(id),
             architectureRiskScore: Math.min(100, score)
           }, null, 2)
         }]

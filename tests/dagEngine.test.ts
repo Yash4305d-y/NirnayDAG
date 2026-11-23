@@ -131,4 +131,66 @@ describe('DAGEngine', () => {
       expect(testEngine.getDirectDependencies('LEAF')).toEqual(['DEP-1', 'DEP-2', 'DEP-3', 'EXT-1', 'EXT-2']);
     });
   });
+
+  describe('Graph Depth & Cascade Level Computation', () => {
+    it('should compute depth and levels for a linear chain graph', () => {
+      // Chain: A -> B -> C -> D (D depends on C, C depends on B, B depends on A)
+      const adrs = [
+        createMockAdr({ id: 'A', dependencies: [] }),
+        createMockAdr({ id: 'B', dependencies: ['A'] }),
+        createMockAdr({ id: 'C', dependencies: ['B'] }),
+        createMockAdr({ id: 'D', dependencies: ['C'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      expect(engine.getDepth('A')).toBe(3);
+      expect(engine.getCascadeLevels('A')).toEqual({ B: 1, C: 2, D: 3 });
+      expect(engine.getDepth('B')).toBe(2);
+      expect(engine.getCascadeLevels('B')).toEqual({ C: 1, D: 2 });
+      expect(engine.getDepth('D')).toBe(0);
+      expect(engine.getCascadeLevels('D')).toEqual({});
+    });
+
+    it('should compute depth and levels for a diamond graph', () => {
+      // Diamond: A -> B -> D, A -> C -> D
+      const adrs = [
+        createMockAdr({ id: 'A', dependencies: [] }),
+        createMockAdr({ id: 'B', dependencies: ['A'] }),
+        createMockAdr({ id: 'C', dependencies: ['A'] }),
+        createMockAdr({ id: 'D', dependencies: ['B', 'C'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      expect(engine.getDepth('A')).toBe(2);
+      expect(engine.getCascadeLevels('A')).toEqual({ B: 1, C: 1, D: 2 });
+    });
+
+    it('should compute depth and levels for a wide fan-out graph', () => {
+      // Wide fan-out: A -> B, A -> C, A -> D, A -> E
+      const adrs = [
+        createMockAdr({ id: 'A', dependencies: [] }),
+        createMockAdr({ id: 'B', dependencies: ['A'] }),
+        createMockAdr({ id: 'C', dependencies: ['A'] }),
+        createMockAdr({ id: 'D', dependencies: ['A'] }),
+        createMockAdr({ id: 'E', dependencies: ['A'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      expect(engine.getDepth('A')).toBe(1);
+      expect(engine.getCascadeLevels('A')).toEqual({ B: 1, C: 1, D: 1, E: 1 });
+    });
+
+    it('should terminate safely and compute depth without infinite recursion on a cyclic graph', () => {
+      // Cycle: A -> B -> C -> A
+      const adrs = [
+        createMockAdr({ id: 'A', dependencies: ['C'] }),
+        createMockAdr({ id: 'B', dependencies: ['A'] }),
+        createMockAdr({ id: 'C', dependencies: ['B'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      // Traversal must terminate safely and not throw RangeError (Maximum call stack size exceeded)
+      const depth = engine.getDepth('A');
+      expect(typeof depth).toBe('number');
+      expect(depth).toBeGreaterThanOrEqual(1);
+      const levels = engine.getCascadeLevels('A');
+      expect(levels).toBeDefined();
+    });
+  });
 });

@@ -91,7 +91,7 @@ async function main() {
       const downstreamIds = engine.getBlastRadius(id);
       const direct = engine.getDirectDependents(id);
       const score = Math.min(100, downstreamIds.length * 10 + direct.length * 5);
-      const maxDepth = downstreamIds.length > 0 ? Math.ceil(downstreamIds.length / 2) : 0; 
+      const maxDepth = engine.getDepth(id); 
 
       let riskLevel = '🟢 Low';
       if (score > 60) riskLevel = '🔴 High';
