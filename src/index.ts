@@ -7,8 +7,18 @@ export {
   parseBatchADRs,
   deriveFallbackId,
   disambiguateDuplicateIds,
+  resolveBatchLinks,
 } from './core/adrParser.js';
-export type { NirnayADR, DecisionStatus, EdgeKind, EdgeSource, ADREdgeRef } from './core/types.js';
+export type { LinkResolutionOptions } from './core/adrParser.js';
+export type {
+  NirnayADR,
+  DecisionStatus,
+  EdgeKind,
+  EdgeSource,
+  ADREdgeRef,
+  ClassifiedLink,
+  LinkClassification,
+} from './core/types.js';
 export { calculateArchitectureRisk } from './core/risk.js';
 export type { ArchitectureRiskResult, RiskFactorBreakdown, RiskLevel, RiskInputParams } from './core/risk.js';
 export { generatePRReport } from './core/report.js';

@@ -7,6 +7,8 @@ import type {
   NirnayADR,
   DecisionStatus,
   ADREdgeRef,
+  ClassifiedLink,
+  LinkClassification,
 } from './types.js';
 
 function extractSection(content: string, headings: string[]): string {
@@ -283,7 +285,218 @@ export function disambiguateDuplicateIds(parsedADRs: ParsedADR[]): { duplicateId
   return { duplicateIdsCount };
 }
 
-export function parseBatchADRs(files: Array<{ name: string; content: string; filePath?: string }>): ParsedADR[] {
+export interface LinkResolutionOptions {
+  baseDir?: string;
+  existingFiles?: Iterable<string>;
+  fileExists?: (relativePath: string) => boolean;
+}
+
+const NON_DECISION_ASSET_EXTS = new Set([
+  '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico', '.pdf',
+  '.drawio', '.puml', '.css', '.js', '.ts', '.json', '.yaml', '.yml',
+]);
+
+function normalizePosixPath(p: string): string {
+  const parts = p.replace(/\\/g, '/').split('/');
+  const resolved: string[] = [];
+  for (const part of parts) {
+    if (!part || part === '.') continue;
+    if (part === '..') {
+      if (resolved.length > 0 && resolved[resolved.length - 1] !== '..') {
+        resolved.pop();
+      } else {
+        resolved.push('..');
+      }
+    } else {
+      resolved.push(part);
+    }
+  }
+  return resolved.join('/');
+}
+
+function resolveRelativePosixPath(sourceFilePath: string, target: string): string {
+  if (target.startsWith('/')) {
+    return normalizePosixPath(target.slice(1));
+  }
+  const sourceNorm = normalizePosixPath(sourceFilePath);
+  const lastSlash = sourceNorm.lastIndexOf('/');
+  const sourceDir = lastSlash >= 0 ? sourceNorm.slice(0, lastSlash) : '';
+  return normalizePosixPath(sourceDir ? `${sourceDir}/${target}` : target);
+}
+
+function createFileExistsChecker(options?: LinkResolutionOptions): (relPath: string) => boolean {
+  const existingSet = options?.existingFiles
+    ? new Set(Array.from(options.existingFiles, (f) => normalizePosixPath(f).toLowerCase()))
+    : null;
+
+  let nodeFs: { existsSync: (p: string) => boolean } | undefined;
+  let nodePath: { resolve: (...args: string[]) => string } | undefined;
+  if (options?.baseDir && typeof process !== 'undefined') {
+    const proc = process as unknown as { getBuiltinModule?: (id: string) => unknown };
+    if (typeof proc.getBuiltinModule === 'function') {
+      nodeFs = proc.getBuiltinModule('fs') as typeof nodeFs;
+      nodePath = proc.getBuiltinModule('path') as typeof nodePath;
+    }
+  }
+
+  return (relPath: string): boolean => {
+    if (relPath.startsWith('..')) return false;
+    if (options?.fileExists && options.fileExists(relPath)) return true;
+    if (existingSet && existingSet.has(relPath.toLowerCase())) return true;
+    if (options?.baseDir && nodeFs && nodePath) {
+      try {
+        return nodeFs.existsSync(nodePath.resolve(options.baseDir, relPath));
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  };
+}
+
+function stripBodyFrontmatter(rawContent: string): string {
+  const fmMatch = rawContent.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  return fmMatch ? rawContent.slice(fmMatch[0].length) : rawContent;
+}
+
+function parseLinkTarget(rawInner: string): string {
+  let inner = rawInner.trim();
+  if (inner.startsWith('<')) {
+    const closeIdx = inner.indexOf('>');
+    if (closeIdx > 0) {
+      inner = inner.slice(1, closeIdx).trim();
+    }
+  } else {
+    inner = inner.replace(/\s+(?:"[^"]*"|'[^']*')\s*$/, '').trim();
+  }
+  return inner;
+}
+
+/**
+ * Resolves relative Markdown body links across a batch of parsed ADRs using a
+ * case-insensitive `path -> nodeId` index and classifies each link as
+ * `resolved`, `non-decision`, `external`, or `broken`.
+ */
+export function resolveBatchLinks(parsedADRs: ParsedADR[], options?: LinkResolutionOptions): void {
+  const pathToId = new Map<string, string>();
+
+  for (const adr of parsedADRs) {
+    if (!adr.filePath) continue;
+    const norm = normalizePosixPath(adr.filePath).toLowerCase();
+    pathToId.set(norm, adr.frontmatter.id);
+    const noExt = norm.replace(/\.(md|mdx|markdown)$/i, '');
+    if (!pathToId.has(noExt)) {
+      pathToId.set(noExt, adr.frontmatter.id);
+    }
+  }
+
+  const fileExists = createFileExistsChecker(options);
+  const mdLinkRegex = /\[[^\]]*\]\(([^)\r\n]+)\)/g;
+
+  for (const adr of parsedADRs) {
+    const nonLinkEdges = (adr.edges || []).filter((e) => e.source !== 'body:link');
+    const seenTargets = new Set<string>(nonLinkEdges.map((e) => e.targetId));
+    const resolvedEdges: ADREdgeRef[] = [...nonLinkEdges];
+    const classifiedLinks: ClassifiedLink[] = [];
+
+    const body = stripBodyFrontmatter(adr.rawContent || '');
+    const sourcePath = adr.filePath || '';
+
+    let match: RegExpExecArray | null;
+    mdLinkRegex.lastIndex = 0;
+    while ((match = mdLinkRegex.exec(body)) !== null) {
+      const rawInner = match[1];
+      const rawLinkText = `(${rawInner})`;
+      const targetWithFragment = parseLinkTarget(rawInner);
+
+      if (!targetWithFragment || /^(?:https?:|mailto:|tel:|ftp:|\/\/|#)/i.test(targetWithFragment)) {
+        classifiedLinks.push({
+          rawLinkText,
+          targetPath: targetWithFragment,
+          classification: 'external',
+        });
+        continue;
+      }
+
+      const cleanTarget = targetWithFragment.split('#')[0].split('?')[0].trim();
+      if (!cleanTarget) {
+        classifiedLinks.push({
+          rawLinkText,
+          targetPath: targetWithFragment,
+          classification: 'external',
+        });
+        continue;
+      }
+
+      const resolvedPath = resolveRelativePosixPath(sourcePath, cleanTarget);
+      const lower = resolvedPath.toLowerCase();
+      const trimmedDir = lower.replace(/\/+$/, '');
+
+      const resolvedId =
+        pathToId.get(lower) ??
+        pathToId.get(`${lower}.md`) ??
+        pathToId.get(`${lower}.mdx`) ??
+        pathToId.get(`${lower}.markdown`) ??
+        pathToId.get(`${trimmedDir}/readme.md`) ??
+        pathToId.get(`${trimmedDir}/index.md`);
+
+      if (resolvedId) {
+        classifiedLinks.push({
+          rawLinkText,
+          targetPath: resolvedPath,
+          classification: 'resolved',
+          resolvedId,
+        });
+        if (resolvedId !== adr.frontmatter.id && !seenTargets.has(resolvedId)) {
+          seenTargets.add(resolvedId);
+          resolvedEdges.push({
+            targetId: resolvedId,
+            kind: 'soft',
+            source: 'body:link',
+            rawText: rawLinkText,
+          });
+        }
+        continue;
+      }
+
+      const extMatch = lower.match(/(\.[a-z0-9]+)$/);
+      const ext = extMatch ? extMatch[1] : '';
+      let classification: LinkClassification = 'broken';
+
+      if (
+        fileExists(resolvedPath) ||
+        (!ext && (fileExists(`${resolvedPath}.md`) || fileExists(`${resolvedPath}.mdx`))) ||
+        (ext && NON_DECISION_ASSET_EXTS.has(ext))
+      ) {
+        classification = 'non-decision';
+      }
+
+      classifiedLinks.push({
+        rawLinkText,
+        targetPath: resolvedPath,
+        classification,
+      });
+
+      if (classification === 'broken' && !seenTargets.has(resolvedPath)) {
+        seenTargets.add(resolvedPath);
+        resolvedEdges.push({
+          targetId: resolvedPath,
+          kind: 'soft',
+          source: 'body:link',
+          rawText: rawLinkText,
+        });
+      }
+    }
+
+    adr.edges = resolvedEdges;
+    adr.links = classifiedLinks;
+  }
+}
+
+export function parseBatchADRs(
+  files: Array<{ name: string; content: string; filePath?: string }>,
+  options?: LinkResolutionOptions
+): ParsedADR[] {
   const parsedADRs: ParsedADR[] = [];
 
   for (const file of files) {
@@ -302,6 +515,8 @@ export function parseBatchADRs(files: Array<{ name: string; content: string; fil
       console.warn(`Error parsing ADR file ${file.name}:`, e);
     }
   }
+
+  resolveBatchLinks(parsedADRs, options);
 
   return parsedADRs;
 }
