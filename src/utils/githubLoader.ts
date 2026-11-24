@@ -6,34 +6,56 @@ export interface GitHubRepoConfig {
   token?: string;
 }
 
-export async function fetchGitHubADRs(config: GitHubRepoConfig): Promise<{ files: Array<{ name: string; content: string }>; errors: string[] }> {
+export function checkRateLimit(response: Response): void {
+  const remaining = response.headers.get('x-ratelimit-remaining');
+  const reset = response.headers.get('x-ratelimit-reset');
+  const isRateLimited =
+    response.status === 429 ||
+    (response.status === 403 &&
+      (remaining === '0' || response.statusText.toLowerCase().includes('rate limit')));
+
+  if (isRateLimited) {
+    let resetMsg = '';
+    if (reset && !isNaN(Number(reset))) {
+      const resetDate = new Date(Number(reset) * 1000);
+      resetMsg = ` Resets at ${resetDate.toISOString()}.`;
+    }
+    throw new Error(
+      `GitHub API rate limit exceeded.${resetMsg} Please provide a GitHub Personal Access Token to increase your rate limit.`
+    );
+  }
+}
+
+export async function fetchGitHubADRs(
+  config: GitHubRepoConfig
+): Promise<{ files: Array<{ name: string; content: string }>; errors: string[] }> {
   const { owner, repo, branch = 'main', path = '', token } = config;
   const errors: string[] = [];
   const files: Array<{ name: string; content: string }> = [];
 
   const headers: Record<string, string> = {
-    'Accept': 'application/vnd.github.v3+json',
+    Accept: 'application/vnd.github.v3+json',
   };
-  
+
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  
+
   // Clean up path
   const urlPath = path.replace(/^\/|\/$/g, '');
-  // Build URL with ref query parameter for branch
-  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${urlPath}?ref=${branch}`;
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${urlPath}?ref=${encodeURIComponent(branch)}`;
 
   try {
     const response = await fetch(url, { headers });
-    
+
     if (!response.ok) {
-      if (response.status === 403) {
-        throw new Error('GitHub API rate limit exceeded or forbidden (403).');
-      } else if (response.status === 404) {
+      checkRateLimit(response);
+      if (response.status === 404) {
         throw new Error(`Repository or path not found (404): ${owner}/${repo}/${urlPath}`);
       } else if (response.status === 401) {
         throw new Error('Bad credentials: The provided GitHub token is invalid (401).');
+      } else if (response.status === 403) {
+        throw new Error(`Access forbidden (403): Check permissions for ${owner}/${repo}`);
       } else {
         throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
       }
@@ -41,61 +63,60 @@ export async function fetchGitHubADRs(config: GitHubRepoConfig): Promise<{ files
 
     const data = await response.json();
     let items: any[] = [];
-    
-    // If it's a directory, GitHub returns an array. If it's a file, it returns an object.
+
     if (Array.isArray(data)) {
       items = data;
     } else if (typeof data === 'object' && data !== null) {
       items = [data];
     }
-    
+
     // Filter for markdown files
-    const mdItems = items.filter(item => 
-      item.type === 'file' && 
-      (item.name.toLowerCase().endsWith('.md') || item.name.toLowerCase().endsWith('.markdown'))
+    const mdItems = items.filter(
+      (item) =>
+        item.type === 'file' &&
+        (item.name.toLowerCase().endsWith('.md') || item.name.toLowerCase().endsWith('.markdown'))
     );
-    
-    // Fetch raw contents sequentially (or could be Promise.all to optimize)
-    // We'll use Promise.all to fetch them in parallel.
-    await Promise.all(mdItems.map(async (item) => {
-      if (item.download_url) {
+
+    // Fetch file contents through GitHub API (api.github.com) with Accept: application/vnd.github.raw
+    // NEVER send Authorization to raw.githubusercontent.com
+    await Promise.all(
+      mdItems.map(async (item) => {
         try {
-          // Fetch raw file
-          // IMPORTANT: Need to be careful to pass the auth token for download urls too
-          // Some download URLs (like on private repos) require it.
-          const contentResponse = await fetch(item.download_url, { headers });
+          const itemPath = item.path || (urlPath ? `${urlPath}/${item.name}` : item.name);
+          const fileApiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${itemPath}?ref=${encodeURIComponent(branch)}`;
+
+          const fileHeaders: Record<string, string> = {
+            Accept: 'application/vnd.github.raw',
+          };
+          if (token) {
+            fileHeaders['Authorization'] = `Bearer ${token}`;
+          }
+
+          const contentResponse = await fetch(fileApiUrl, { headers: fileHeaders });
           if (!contentResponse.ok) {
-            errors.push(`Failed to download ${item.name}: ${contentResponse.statusText}`);
+            checkRateLimit(contentResponse);
+            // Fallback for base64 if available in item
+            if (item.content) {
+              const decoded =
+                typeof Buffer !== 'undefined'
+                  ? Buffer.from(item.content, item.encoding || 'base64').toString('utf-8')
+                  : atob(item.content);
+              files.push({ name: item.name, content: decoded });
+              return;
+            }
+            errors.push(
+              `Failed to download ${item.name}: ${contentResponse.status} ${contentResponse.statusText}`
+            );
             return;
           }
+
           const content = await contentResponse.text();
           files.push({ name: item.name, content });
-        } catch (downloadErr: any) {
-          errors.push(`Error downloading ${item.name}: ${downloadErr.message}`);
+        } catch (fileErr: any) {
+          errors.push(`Error downloading ${item.name}: ${fileErr.message}`);
         }
-      } else if (item.content) {
-        // Fallback for when the file content is returned directly in base64
-        try {
-          const encoding = item.encoding || 'base64';
-          let decodedContent = '';
-          if (encoding === 'base64') {
-            if (typeof Buffer !== 'undefined') {
-              decodedContent = Buffer.from(item.content, 'base64').toString('utf-8');
-            } else {
-              decodedContent = atob(item.content);
-            }
-          } else {
-            decodedContent = item.content;
-          }
-          files.push({ name: item.name, content: decodedContent });
-        } catch (decodeErr: any) {
-          errors.push(`Error decoding ${item.name}: ${decodeErr.message}`);
-        }
-      } else {
-        errors.push(`No download URL or content found for ${item.name}`);
-      }
-    }));
-
+      })
+    );
   } catch (err: any) {
     errors.push(err.message || String(err));
   }
