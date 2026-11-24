@@ -29,6 +29,7 @@ dist/
 .tmp/
 *.log
 nirnay-pr-summary.md
+*.tgz
 smoke-test-env/
 test-mcp.ts
 .antigravity/

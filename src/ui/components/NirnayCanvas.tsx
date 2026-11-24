@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
@@ -110,6 +110,27 @@ const CanvasContent = () => {
 
     setTimeout(() => fitView({ padding: 0.2, duration: 800 }), 50);
   }, [setNodes, setEdges, fitView]);
+
+  // Auto-load ADRs from local server API if running via 'ndag serve'
+  useEffect(() => {
+    let active = true;
+    fetch('/api/adrs')
+      .then((res) => {
+        if (!res.ok) return null;
+        return res.json();
+      })
+      .then((data) => {
+        if (active && data && Array.isArray(data.files) && data.files.length > 0) {
+          handleFilesLoaded(data.files);
+        }
+      })
+      .catch(() => {
+        // Silently ignore if running standalone without server
+      });
+    return () => {
+      active = false;
+    };
+  }, [handleFilesLoaded]);
 
   // Interactive Node Selection
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {

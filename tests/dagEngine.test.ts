@@ -54,7 +54,8 @@ describe('DAGEngine', () => {
     expect(result.isValid).toBe(false);
     expect(result.hasCycle).toBe(true);
     expect(result.cyclePath).toBeDefined();
-    expect(result.cyclePath!.length).toBeGreaterThan(0);
+    expect(result.cyclePath![0]).toBe(result.cyclePath![result.cyclePath!.length - 1]);
+    expect(result.cyclePath).toEqual(['ADR-001', 'ADR-002', 'ADR-001']);
   });
 
   it('should detect a self-referential cycle', () => {
@@ -66,6 +67,70 @@ describe('DAGEngine', () => {
     expect(result.isValid).toBe(false);
     expect(result.hasCycle).toBe(true);
     expect(result.cyclePath).toEqual(['ADR-001', 'ADR-001']);
+  });
+
+  describe('Cycle Path Extraction (Pure Cycle)', () => {
+    it('should return only cycle nodes when reachable from a non-cyclic prefix', () => {
+      // ADR-0001 -> ADR-0002 -> ADR-0004 -> ADR-0006 -> ADR-0004
+      const adrs = [
+        createMockAdr({ id: 'ADR-0001', dependencies: [] }),
+        createMockAdr({ id: 'ADR-0002', dependencies: ['ADR-0001'] }),
+        createMockAdr({ id: 'ADR-0004', dependencies: ['ADR-0002', 'ADR-0006'] }),
+        createMockAdr({ id: 'ADR-0006', dependencies: ['ADR-0004'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      const result = engine.validate();
+      expect(result.isValid).toBe(false);
+      expect(result.hasCycle).toBe(true);
+      expect(result.cyclePath).toBeDefined();
+      expect(result.cyclePath![0]).toBe(result.cyclePath![result.cyclePath!.length - 1]);
+      // Should NOT contain ADR-0001 or ADR-0002 from the prefix
+      expect(result.cyclePath).not.toContain('ADR-0001');
+      expect(result.cyclePath).not.toContain('ADR-0002');
+      expect(result.cyclePath).toEqual(['ADR-0004', 'ADR-0006', 'ADR-0004']);
+    });
+
+    it('should return only self-loop node when self-loop is reachable from a non-cyclic prefix', () => {
+      // ADR-0001 -> ADR-0002 (with ADR-0002 depending on itself)
+      const adrs = [
+        createMockAdr({ id: 'ADR-0001', dependencies: [] }),
+        createMockAdr({ id: 'ADR-0002', dependencies: ['ADR-0001', 'ADR-0002'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      const result = engine.validate();
+      expect(result.isValid).toBe(false);
+      expect(result.hasCycle).toBe(true);
+      expect(result.cyclePath).toEqual(['ADR-0002', 'ADR-0002']);
+    });
+
+    it('should return only one pure cycle when graph contains two separate cycles', () => {
+      // Disjoint Cycle 1 (ADR-010 <-> ADR-011) and Cycle 2 (ADR-020 <-> ADR-021)
+      const adrs = [
+        createMockAdr({ id: 'PREFIX-1', dependencies: [] }),
+        createMockAdr({ id: 'ADR-010', dependencies: ['PREFIX-1', 'ADR-011'] }),
+        createMockAdr({ id: 'ADR-011', dependencies: ['ADR-010'] }),
+        createMockAdr({ id: 'PREFIX-2', dependencies: [] }),
+        createMockAdr({ id: 'ADR-020', dependencies: ['PREFIX-2', 'ADR-021'] }),
+        createMockAdr({ id: 'ADR-021', dependencies: ['ADR-020'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      const result = engine.validate();
+      expect(result.isValid).toBe(false);
+      expect(result.hasCycle).toBe(true);
+      expect(result.cyclePath).toBeDefined();
+
+      const path = result.cyclePath!;
+      // Starts and ends at the same node
+      expect(path[0]).toBe(path[path.length - 1]);
+      // Should not contain prefix nodes
+      expect(path).not.toContain('PREFIX-1');
+      expect(path).not.toContain('PREFIX-2');
+
+      // Must be entirely Cycle 1 OR entirely Cycle 2, never mixing nodes from both
+      const isCycle1 = path.every((node) => ['ADR-010', 'ADR-011'].includes(node));
+      const isCycle2 = path.every((node) => ['ADR-020', 'ADR-021'].includes(node));
+      expect(isCycle1 || isCycle2).toBe(true);
+    });
   });
 
   it('should detect missing dependencies', () => {

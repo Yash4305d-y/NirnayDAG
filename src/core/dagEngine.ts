@@ -131,7 +131,11 @@ export class DAGEngine {
 
     for (const node of this.adrs.keys()) {
       if (!visited.has(node)) {
-        if (dfs(node)) return path;
+        if (dfs(node)) {
+          const cycleNode = path[path.length - 1];
+          const cycleStartIndex = path.indexOf(cycleNode);
+          return path.slice(cycleStartIndex);
+        }
       }
     }
 
