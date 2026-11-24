@@ -4,7 +4,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import fs from 'fs-extra';
 import path from 'path';
 import glob from 'fast-glob';
-import { parseADRContent } from '../core/adrParser.js';
+import { parseADRContent, deriveFallbackId } from '../core/adrParser.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
 import { calculateArchitectureRisk } from '../core/risk.js';
 import type { ParsedADR } from '../core/types.js';
@@ -35,12 +35,11 @@ function loadAdrs(): ParsedADR[] {
   for (const file of files) {
     const content = fs.readFileSync(file, "utf8");
     try {
-      const baseNameMatch = path.basename(file).match(/^(\d+)/);
-      let fallbackId = path.basename(file).replace(/\.mdx?$/, '');
-      if (baseNameMatch) {
-        fallbackId = `ADR-${baseNameMatch[1]}`;
-      }
-      adrs.push(parseADRContent(content, fallbackId));
+      const relativePath = path.relative(resolvedDir, file).replace(/\\/g, '/');
+      const fallbackId = deriveFallbackId(relativePath);
+      const parsed = parseADRContent(content, fallbackId);
+      parsed.filePath = relativePath;
+      adrs.push(parsed);
     } catch (e) {
       console.error(`Failed to parse ${file}`, e);
     }

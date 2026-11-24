@@ -221,6 +221,68 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
   };
 }
 
+/**
+ * Derives a deterministic fallback ADR ID from a file path or filename.
+ * Generic filenames (README.md, index.md) use their parent directory name when available.
+ */
+export function deriveFallbackId(relativePath: string): string {
+  const normalized = relativePath.replace(/\\/g, '/').replace(/\/+$/, '');
+  const parts = normalized.split('/').filter(Boolean);
+  const fileName = parts[parts.length - 1] ?? '';
+  const baseName = fileName.replace(/\.(md|mdx|markdown)$/i, '');
+  const lower = baseName.toLowerCase();
+
+  if ((lower === 'readme' || lower === 'index') && parts.length >= 2) {
+    const parentDir = parts[parts.length - 2];
+    if (parentDir && parentDir !== '.' && parentDir !== '..') {
+      return parentDir;
+    }
+  }
+
+  const numMatch = baseName.match(/^(\d+)/);
+  if (numMatch) {
+    return `ADR-${numMatch[1]}`;
+  }
+  return baseName;
+}
+
+/**
+ * Disambiguates colliding ADR IDs in-place by appending `::relativePath`
+ * (and `#n` if still needed). Returns the count of files whose initial ID collided.
+ */
+export function disambiguateDuplicateIds(parsedADRs: ParsedADR[]): { duplicateIdsCount: number } {
+  const initialIdCounts = new Map<string, number>();
+  for (const adr of parsedADRs) {
+    const id = adr.frontmatter.id;
+    initialIdCounts.set(id, (initialIdCounts.get(id) || 0) + 1);
+  }
+
+  let duplicateIdsCount = 0;
+  const usedIds = new Set<string>();
+
+  for (const adr of parsedADRs) {
+    const initialId = adr.frontmatter.id;
+    if ((initialIdCounts.get(initialId) || 0) > 1) {
+      duplicateIdsCount++;
+    }
+
+    let finalId = initialId;
+    if (usedIds.has(finalId)) {
+      const pathLabel = adr.filePath || 'unknown';
+      finalId = `${initialId}::${pathLabel}`;
+      let suffix = 1;
+      while (usedIds.has(finalId)) {
+        finalId = `${initialId}::${pathLabel}#${suffix++}`;
+      }
+      adr.frontmatter.id = finalId;
+    }
+
+    usedIds.add(finalId);
+  }
+
+  return { duplicateIdsCount };
+}
+
 export function parseBatchADRs(files: Array<{ name: string; content: string; filePath?: string }>): ParsedADR[] {
   const parsedADRs: ParsedADR[] = [];
 
@@ -230,15 +292,11 @@ export function parseBatchADRs(files: Array<{ name: string; content: string; fil
     }
 
     try {
-      // Create fallback ID from filename (e.g., 0001-record-architecture-decisions.md -> 0001)
-      const baseNameMatch = file.name.match(/^(\d+)/);
-      let fallbackId = file.name.replace(/\.mdx?$/, '');
-      if (baseNameMatch) {
-        fallbackId = `ADR-${baseNameMatch[1]}`;
-      }
+      const targetPath = file.filePath ?? file.name;
+      const fallbackId = deriveFallbackId(targetPath);
 
       const parsed = parseADRContent(file.content, fallbackId);
-      parsed.filePath = file.filePath ?? file.name;
+      parsed.filePath = targetPath;
       parsedADRs.push(parsed);
     } catch (e) {
       console.warn(`Error parsing ADR file ${file.name}:`, e);

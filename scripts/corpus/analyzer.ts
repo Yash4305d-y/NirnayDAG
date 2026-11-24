@@ -2,7 +2,12 @@ import path from 'path';
 import fs from 'fs-extra';
 import glob from 'fast-glob';
 import * as yaml from 'js-yaml';
-import { parseADRContent } from '../../src/core/adrParser.js';
+import {
+  parseADRContent,
+  deriveFallbackId,
+  disambiguateDuplicateIds,
+} from '../../src/core/adrParser.js';
+export { deriveFallbackId };
 import { validateAndComputeDAG } from '../../src/core/dagEngine.js';
 import type { ParsedADR } from '../../src/core/types.js';
 import type {
@@ -65,25 +70,6 @@ export function aggregateFailureReasons(failures: FileParseFailure[]): FailureRe
   return Array.from(counts.entries())
     .map(([reason, count]) => ({ reason, count }))
     .sort((a, b) => b.count - a.count);
-}
-
-export function deriveFallbackId(relativePath: string): string {
-  const normalized = relativePath.replace(/\\/g, '/');
-  const baseName = path.posix.basename(normalized).replace(/\.(md|mdx)$/i, '');
-  const lower = baseName.toLowerCase();
-
-  if (lower === 'readme' || lower === 'index') {
-    const parentDir = path.posix.basename(path.posix.dirname(normalized));
-    if (parentDir && parentDir !== '.' && parentDir !== '/') {
-      return parentDir;
-    }
-  }
-
-  const numMatch = baseName.match(/^(\d+)/);
-  if (numMatch) {
-    return `ADR-${numMatch[1]}`;
-  }
-  return baseName;
 }
 
 function extractRawFrontmatter(content: string): {
@@ -250,38 +236,10 @@ export function analyzeDecisionFiles(files: DecisionFileInput[]): AnalysisOutcom
     };
   }
 
-  // Count initial ID collisions across parsed files, then disambiguate by appending relativePath
-  const initialIdCounts = new Map<string, number>();
+  // Disambiguate colliding IDs in core, then index final IDs -> record
+  const { duplicateIdsCount } = disambiguateDuplicateIds(parsedADRs);
   for (const adr of parsedADRs) {
-    const id = adr.frontmatter.id;
-    initialIdCounts.set(id, (initialIdCounts.get(id) || 0) + 1);
-  }
-
-  let duplicateIdsCount = 0;
-  const usedIds = new Set<string>();
-  const fileContentByPath = new Map<string, string>();
-  for (const file of files) {
-    fileContentByPath.set(file.relativePath, file.content);
-  }
-
-  for (const adr of parsedADRs) {
-    const initialId = adr.frontmatter.id;
-    if ((initialIdCounts.get(initialId) || 0) > 1) {
-      duplicateIdsCount++;
-    }
-
-    let finalId = initialId;
-    if (usedIds.has(finalId)) {
-      finalId = `${initialId}::${adr.filePath || 'unknown'}`;
-      let suffix = 1;
-      while (usedIds.has(finalId)) {
-        finalId = `${initialId}::${adr.filePath || 'unknown'}#${suffix++}`;
-      }
-      adr.frontmatter.id = finalId;
-    }
-
-    usedIds.add(finalId);
-    idToRecord.set(finalId, {
+    idToRecord.set(adr.frontmatter.id, {
       relativePath: adr.filePath || 'unknown',
       content: adr.rawContent,
     });
