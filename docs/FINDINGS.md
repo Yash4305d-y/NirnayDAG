@@ -1,8 +1,8 @@
-# NirnayDAG Corpus Benchmark Findings (Phase 2A.1)
+# NirnayDAG Corpus Benchmark Findings (Phase 2A.2)
 
-> Benchmark Executed: 2026-11-24T19:54:25.054Z  
-> Runner Version: `1.0.0-phase2a.1`  
-> Scope: **Measurement Only** across pinned open-source decision-record commits without modifying `src/core/adrParser.ts` or `src/core/dagEngine.ts`.
+> Benchmark Executed: 2026-11-24T20:27:30.592Z  
+> Runner Version: `1.0.0-phase2a.2`  
+> Scope: **Measurement & Data-Integrity Fixes** across pinned open-source decision-record commits without modifying `src/core/adrParser.ts`.
 
 ---
 
@@ -12,32 +12,39 @@ NirnayDAG's existing parser and DAG engine were run against **7 open-source repo
 
 - **Total Decision Files Found:** 1565
 - **Parsed OK:** 1565 (100%) — *see definition below*
-- **Total Graph Nodes:** 1565
+- **Total Graph Nodes:** 1565 (1565 unique IDs; 4 files with initial ID collisions before disambiguation)
 - **Total Active Graph Edges:** 15
-- **Total Isolated Nodes:** 1514
-- **Unresolved References (Broken Links):** 113 (unvalidated)
+- **Total Isolated Nodes:** 1487
+- **Unresolved References (Broken Links):** 201 (unvalidated)
 - **Repositories with Detected Cycles:** 2 (unvalidated; pending manual review)
 
 > **Definition — "Parsed OK":** A non-empty file where `parseADRContent()` did not throw and returned a non-null `ParsedADR` object with a non-empty `frontmatter.id` (whether from frontmatter, filename fallback, or generated ID). **"Parsed OK" measures parser survival, not metadata extraction quality**—which is reported separately in the extraction-quality columns immediately next to it.
+
+### Data Quality
+
+In Phase 2A.1, `kubernetes/enhancements` had 708 markdown files, 689 of which were named `README.md` inside KEP subdirectories. All 689 received the fallback ID `"README"`, and `DAGEngine`'s `Map` silently overwrote colliding entries—collapsing 708 files down to 19 graph nodes while the corpus report counted `mappedAdrs.length` (708) instead of the engine's actual graph size. In Phase 2A.2, this was fixed in three ways: (1) `DAGEngine` now records duplicate IDs (with every file path involved) as a validation error and `ndag validate` fails on them rather than silently overwriting; (2) the corpus analyzer derives fallback IDs for generic filenames (`README.md`, `index.md`) from their parent directory name (e.g., `keps/sig-api/1027-api-unions/README.md` → `1027-api-unions`) and disambiguates any remaining collisions by appending the relative file path; and (3) `Nodes`, `Edges`, `Isolated Nodes`, and `Edge Density` are read directly from `DAGEngine`'s graph.
 
 ---
 
 ## 2. Benchmark Results & Extraction Quality
 
-| Repository | Commit | Format | License | Files Found | Parsed OK | Parse Rate | Real Title % | Status Found % | ID Source (FM / File / Gen) | Nodes | Edges | Edge Density | Isolated Nodes | Cycles | Broken Links | Analysis Time | Clone Time |
-| :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [backstage/backstage](https://github.com/backstage/backstage.git) | `b3ed969` | `madr` | Apache-2.0 | 17 | 17 | 100% | 100% | 0% | 100% / 0% / 0% | 17 | 0 | 0 | 13 | None | 4 | 22ms | 60ms |
-| [adr/madr](https://github.com/adr/madr.git) | `ba75bb1` | `madr` | MIT | 21 | 21 | 100% | 100% | 4.8% | 0% / 100% / 0% | 21 | 3 | 0.143 | 18 | Detected (3 nodes, unvalidated) | 0 | 21ms | 50ms |
-| [rust-lang/rfcs](https://github.com/rust-lang/rfcs.git) | `f43d578` | `rfc` | MIT / Apache-2.0 | 654 | 654 | 100% | 7.5% | 0% | 0% / 100% / 0% | 654 | 0 | 0 | 651 | None | 4 | 360ms | 51ms |
-| [kubernetes/enhancements](https://github.com/kubernetes/enhancements.git) | `cac930c` | `kep` | Apache-2.0 | 708 | 708 | 100% | 97.9% | 0% | 0% / 100% / 0% | 708 | 0 | 0 | 705 | None | 5 | 527ms | 60ms |
-| [cosmos/cosmos-sdk](https://github.com/cosmos/cosmos-sdk.git) | `06a0152` | `adr` | Apache-2.0 | 65 | 65 | 100% | 100% | 0% | 0% / 100% / 0% | 65 | 0 | 0 | 45 | None | 92 | 48ms | 54ms |
-| [JabRef/jabref](https://github.com/JabRef/jabref.git) | `d058450` | `madr` | MIT | 88 | 88 | 100% | 100% | 9.1% | 0% / 100% / 0% | 88 | 12 | 0.136 | 73 | Detected (3 nodes, unvalidated) | 4 | 48ms | 55ms |
-| [alphagov/govuk-design-system-architecture](https://github.com/alphagov/govuk-design-system-architecture.git) | `89854bd` | `nygard` | MIT | 12 | 12 | 100% | 100% | 0% | 0% / 100% / 0% | 12 | 0 | 0 | 9 | None | 4 | 8ms | 61ms |
+| Repository | Commit | Format | License | Files Found | Parsed OK | Parse Rate | Real Title % | Status Found % | ID Source (FM / File / Gen) | Duplicate IDs | Unique IDs | Nodes | Edges | Edge Density | Isolated Nodes | Cycles | Broken Links | Analysis Time | Checkout Time (cached) |
+| :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| [backstage/backstage](https://github.com/backstage/backstage.git) | `b3ed969` | `madr` | Apache-2.0 | 17 | 17 | 100% | 100% | 0% | 100% / 0% / 0% | 0 | 17 | 17 | 0 | 0 | 13 | None | 4 | 25ms | 68ms |
+| [adr/madr](https://github.com/adr/madr.git) | `ba75bb1` | `madr` | MIT | 21 | 21 | 100% | 100% | 4.8% | 0% / 100% / 0% | 0 | 21 | 21 | 3 | 0.143 | 18 | Detected (3 nodes, unvalidated) | 0 | 24ms | 70ms |
+| [rust-lang/rfcs](https://github.com/rust-lang/rfcs.git) | `f43d578` | `rfc` | MIT / Apache-2.0 | 654 | 654 | 100% | 7.5% | 0% | 0% / 100% / 0% | 2 | 654 | 654 | 0 | 0 | 651 | None | 4 | 518ms | 67ms |
+| [kubernetes/enhancements](https://github.com/kubernetes/enhancements.git) | `cac930c` | `kep` | Apache-2.0 | 708 | 708 | 100% | 97.9% | 0% | 0% / 100% / 0% | 2 | 708 | 708 | 0 | 0 | 678 | None | 93 | 621ms | 54ms |
+| [cosmos/cosmos-sdk](https://github.com/cosmos/cosmos-sdk.git) | `06a0152` | `adr` | Apache-2.0 | 65 | 65 | 100% | 100% | 0% | 0% / 100% / 0% | 0 | 65 | 65 | 0 | 0 | 45 | None | 92 | 47ms | 51ms |
+| [JabRef/jabref](https://github.com/JabRef/jabref.git) | `d058450` | `madr` | MIT | 88 | 88 | 100% | 100% | 9.1% | 0% / 100% / 0% | 0 | 88 | 88 | 12 | 0.136 | 73 | Detected (3 nodes, unvalidated) | 4 | 60ms | 56ms |
+| [alphagov/govuk-design-system-architecture](https://github.com/alphagov/govuk-design-system-architecture.git) | `89854bd` | `nygard` | MIT | 12 | 12 | 100% | 100% | 0% | 0% / 100% / 0% | 0 | 12 | 12 | 0 | 0 | 9 | None | 4 | 9ms | 49ms |
 
 *Column notes:*
 - **Real Title %**: % of parsed files whose extracted title is not the parser fallback `'Untitled ADR'`.
 - **Status Found %**: % of parsed files with an explicit `status`, `stage`, or `state` key in YAML frontmatter (the parser defaults missing frontmatter status to `'accepted'`).
 - **ID Source (FM / File / Gen)**: % of parsed files whose ID came from YAML frontmatter (`FM`), filename fallback (`File`), or random generation (`Gen`).
+- **Duplicate IDs**: Count of parsed files whose initial ID collided with another file before relative-path disambiguation.
+- **Unique IDs**: Count of distinct node IDs in `DAGEngine`'s graph after disambiguation.
+- **Checkout Time (cached)**: Time to verify/checkout the pinned commit SHA from the local `.corpus/` cache (50–60 ms reflects cached local checkouts, not fresh network clones).
 
 ---
 
@@ -49,10 +56,10 @@ No unhandled parse failures were recorded across the analyzed files.
 
 
 ### Graph Connectivity & Isolated Nodes
-- Across the 7 repositories, measured edge density ranges from **0** to **0.143** edges per node, with **1514** of **1565** nodes having zero incoming and zero outgoing edges.
+- Across the 7 repositories, measured edge density ranges from **0** to **0.143** edges per node, with **1487** of **1565** nodes having zero incoming and zero outgoing edges.
 
 ### Unresolved References (Broken Links)
-- **113** dependency targets could not be matched to any parsed node ID in the same repository. Samples (up to 10 per repository, with source file path and raw link text) are recorded in `results/evidence.json`.
+- **201** dependency targets could not be matched to any parsed node ID in the same repository. Samples (up to 10 per repository, with source file path and raw link text) are recorded in `results/evidence.json`.
 
 ### Detected Cycles (Unvalidated)
 - The DAG engine flagged cycles in **2** repository(ies). Exact file paths and raw link text for each cycle edge are recorded in `results/evidence.json` for manual verification.
@@ -79,7 +86,7 @@ Review the raw evidence in `results/evidence.json` and check off each item once 
 ### Broken Link Samples
 - [ ] **backstage/backstage** — Review sample of 4 of 4 broken link(s) in `results/evidence.json`
 - [ ] **rust-lang/rfcs** — Review sample of 4 of 4 broken link(s) in `results/evidence.json`
-- [ ] **kubernetes/enhancements** — Review sample of 5 of 5 broken link(s) in `results/evidence.json`
+- [ ] **kubernetes/enhancements** — Review sample of 10 of 93 broken link(s) in `results/evidence.json`
 - [ ] **cosmos/cosmos-sdk** — Review sample of 10 of 92 broken link(s) in `results/evidence.json`
 - [ ] **JabRef/jabref** — Review sample of 4 of 4 broken link(s) in `results/evidence.json`
 - [ ] **alphagov/govuk-design-system-architecture** — Review sample of 4 of 4 broken link(s) in `results/evidence.json`
