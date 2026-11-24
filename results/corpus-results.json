@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-11-24T20:34:58.721Z",
-  "runnerVersion": "1.0.0-phase2a.2+2b",
+  "timestamp": "2026-11-24T20:46:38.662Z",
+  "runnerVersion": "1.0.0-phase2c.1",
   "licenseNotice": "All repositories listed are publicly hosted open-source projects analyzed under their respective open-source licenses for evaluation and research purposes. NirnayDAG benchmarks local clones and does not redistribute repository contents.",
   "summary": {
     "totalReposAnalyzed": 7,
@@ -8,14 +8,17 @@
     "totalFilesParsedOK": 1565,
     "averageParseRatePercent": 100,
     "totalNodes": 1565,
-    "totalEdges": 15,
+    "totalEdges": 353,
     "totalDuplicateIds": 4,
     "totalUniqueIds": 1565,
     "totalHardEdges": 0,
-    "totalSoftEdges": 15,
-    "totalBrokenLinks": 201,
+    "totalSoftEdges": 353,
+    "totalResolvedLinks": 456,
+    "totalNonDecisionLinks": 177,
+    "totalExternalLinks": 38682,
+    "totalBrokenLinks": 98,
     "totalCyclesDetected": 0,
-    "totalMutualReferences": 5
+    "totalMutualReferences": 14
   },
   "results": [
     {
@@ -46,37 +49,34 @@
       "duplicateIdsCount": 0,
       "uniqueIdsCount": 17,
       "nodes": 17,
-      "edges": 0,
+      "edges": 4,
       "hardEdges": 0,
-      "softEdges": 0,
-      "edgeDensity": 0,
-      "isolatedNodes": 13,
+      "softEdges": 4,
+      "edgeDensity": 0.235,
+      "isolatedNodes": 12,
       "cyclesFound": false,
-      "mutualReferencesCount": 0,
-      "mutualReferences": [],
-      "brokenLinks": 4,
-      "missingDependencies": [
+      "mutualReferencesCount": 1,
+      "mutualReferences": [
         {
-          "adrId": "adrs-adr008",
-          "missingId": "ADR-adr002-default-catalog-file-format"
-        },
-        {
-          "adrId": "adrs-adr009",
-          "missingId": "ADR-adr002-default-catalog-file-format"
-        },
-        {
-          "adrId": "adrs-adr013",
-          "missingId": "ADR-adr014-use-fetch"
-        },
-        {
-          "adrId": "adrs-adr014",
-          "missingId": "ADR-adr013-use-node-fetch"
+          "pair": [
+            "adrs-adr013",
+            "adrs-adr014"
+          ]
         }
       ],
+      "resolvedLinks": 4,
+      "nonDecisionLinks": 1,
+      "externalLinks": 29,
+      "brokenLinks": 0,
+      "missingDependencies": [],
+      "before": {
+        "edges": 0,
+        "brokenLinks": 4
+      },
       "timing": {
-        "cloneMs": 58,
-        "analysisMs": 21,
-        "totalMs": 79
+        "cloneMs": 57,
+        "analysisMs": 26,
+        "totalMs": 83
       }
     },
     {
@@ -107,11 +107,11 @@
       "duplicateIdsCount": 0,
       "uniqueIdsCount": 21,
       "nodes": 21,
-      "edges": 3,
+      "edges": 4,
       "hardEdges": 0,
-      "softEdges": 3,
-      "edgeDensity": 0.143,
-      "isolatedNodes": 18,
+      "softEdges": 4,
+      "edgeDensity": 0.19,
+      "isolatedNodes": 16,
       "cyclesFound": false,
       "mutualReferencesCount": 1,
       "mutualReferences": [
@@ -122,12 +122,19 @@
           ]
         }
       ],
+      "resolvedLinks": 4,
+      "nonDecisionLinks": 4,
+      "externalLinks": 34,
       "brokenLinks": 0,
       "missingDependencies": [],
+      "before": {
+        "edges": 3,
+        "brokenLinks": 0
+      },
       "timing": {
-        "cloneMs": 50,
-        "analysisMs": 14,
-        "totalMs": 64
+        "cloneMs": 51,
+        "analysisMs": 15,
+        "totalMs": 66
       }
     },
     {
@@ -158,37 +165,112 @@
       "duplicateIdsCount": 2,
       "uniqueIdsCount": 654,
       "nodes": 654,
-      "edges": 0,
+      "edges": 12,
       "hardEdges": 0,
-      "softEdges": 0,
-      "edgeDensity": 0,
-      "isolatedNodes": 651,
+      "softEdges": 12,
+      "edgeDensity": 0.018,
+      "isolatedNodes": 624,
       "cyclesFound": false,
       "mutualReferencesCount": 0,
       "mutualReferences": [],
-      "brokenLinks": 4,
+      "resolvedLinks": 13,
+      "nonDecisionLinks": 1,
+      "externalLinks": 5734,
+      "brokenLinks": 21,
       "missingDependencies": [
         {
-          "adrId": "ADR-3627",
-          "missingId": "ADR-2005-match-ergonomics"
+          "adrId": "ADR-0019",
+          "missingId": "text/0003-opt-in-builtin-traits.md"
         },
         {
-          "adrId": "ADR-3654",
-          "missingId": "ADR-1522-conservative-impl-trait"
+          "adrId": "ADR-0474",
+          "missingId": "text/www.boost.org/doc/libs/1_57_0/libs/filesystem/doc/reference.html"
         },
         {
-          "adrId": "ADR-3654",
-          "missingId": "ADR-2071-impl-trait-type-alias"
+          "adrId": "ADR-1558",
+          "missingId": "text/&mut bar"
+        },
+        {
+          "adrId": "ADR-1946",
+          "missingId": "text/URL"
+        },
+        {
+          "adrId": "ADR-1946",
+          "missingId": "text/std::iter::Iterator"
+        },
+        {
+          "adrId": "ADR-1946",
+          "missingId": "text/bars::Bar"
+        },
+        {
+          "adrId": "ADR-1946",
+          "missingId": "text/ipsum::Dolor"
+        },
+        {
+          "adrId": "ADR-1946",
+          "missingId": "text/ipsum::sit"
+        },
+        {
+          "adrId": "ADR-1946",
+          "missingId": "text/super::ipsum"
+        },
+        {
+          "adrId": "ADR-1946",
+          "missingId": "text/storage::Filesystem.size"
+        },
+        {
+          "adrId": "ADR-1946",
+          "missingId": "text/storage::Engine::Other"
+        },
+        {
+          "adrId": "ADR-2314",
+          "missingId": "text/link needed"
+        },
+        {
+          "adrId": "ADR-2945",
+          "missingId": "text/forced-unwind"
+        },
+        {
+          "adrId": "ADR-3101",
+          "missingId": "text/archive.adaic.com/standards/83lrm/html/lrm-02-04.html"
+        },
+        {
+          "adrId": "ADR-3502",
+          "missingId": "text/play.rust-lang.org"
+        },
+        {
+          "adrId": "ADR-3637",
+          "missingId": "text/<https:/en.wikipedia.org/wiki/E_(programming_language"
+        },
+        {
+          "adrId": "ADR-3642",
+          "missingId": "text/add_spawn_hook"
+        },
+        {
+          "adrId": "ADR-3668",
+          "missingId": "text/crate::ops::FnOnce"
+        },
+        {
+          "adrId": "ADR-3668",
+          "missingId": "text/crate::ops::FnMut"
+        },
+        {
+          "adrId": "ADR-3668",
+          "missingId": "text/crate::ops::Fn"
         },
         {
           "adrId": "ADR-3764",
-          "missingId": "ADR-build-std"
+          "missingId": "text/build-std.html"
         }
       ],
+      "before": {
+        "edges": 0,
+        "brokenLinks": 4
+      },
       "timing": {
-        "cloneMs": 47,
-        "analysisMs": 370,
-        "totalMs": 417
+        "cloneMs": 51,
+        "analysisMs": 409,
+        "totalMs": 460
       }
     },
     {
@@ -219,393 +301,251 @@
       "duplicateIdsCount": 2,
       "uniqueIdsCount": 708,
       "nodes": 708,
-      "edges": 0,
+      "edges": 216,
       "hardEdges": 0,
-      "softEdges": 0,
-      "edgeDensity": 0,
-      "isolatedNodes": 678,
+      "softEdges": 216,
+      "edgeDensity": 0.305,
+      "isolatedNodes": 461,
       "cyclesFound": false,
-      "mutualReferencesCount": 0,
-      "mutualReferences": [],
-      "brokenLinks": 93,
+      "mutualReferencesCount": 3,
+      "mutualReferences": [
+        {
+          "pair": [
+            "kubernetes-control-plane-metrics-stability",
+            "metrics-validation-and-verification"
+          ]
+        },
+        {
+          "pair": [
+            "1645-multi-cluster-services-api",
+            "specification"
+          ]
+        },
+        {
+          "pair": [
+            "3063-dynamic-resource-allocation",
+            "4381-dra-structured-parameters"
+          ]
+        }
+      ],
+      "resolvedLinks": 254,
+      "nonDecisionLinks": 165,
+      "externalLinks": 32259,
+      "brokenLinks": 51,
       "missingDependencies": [
         {
-          "adrId": "3157-watch-list",
-          "missingId": "ADR-memory_usage_before"
+          "adrId": "1040-priority-and-fairness",
+          "missingId": "keps/sig-api-machinery/1040-priority-and-fairness/%v"
         },
         {
-          "adrId": "3157-watch-list",
-          "missingId": "ADR-sequence_diagram"
+          "adrId": "3716-admission-webhook-match-conditions",
+          "missingId": "pkg/apis/admission/types.go"
         },
         {
-          "adrId": "3157-watch-list",
-          "missingId": "ADR-cacher"
+          "adrId": "4192-svm-in-tree",
+          "missingId": "keps/sig-api-machinery/4192-svm-in-tree/(https:/github.com/kubernetes/enhancements/blob/master/keps/sig-api-machinery/3157-watch-list/README.md"
         },
         {
-          "adrId": "3157-watch-list",
-          "missingId": "ADR-cacher_deep_copy"
+          "adrId": "4988-snapshottable-api-server-cache",
+          "missingId": "keps/sig-api-machinery/4988-snapshottable-api-server-cache/[https:/pkg.go.dev/hash/fnv](https:/pkg.go.dev/hash/fnv"
         },
         {
-          "adrId": "3157-watch-list",
-          "missingId": "ADR-watch_server_allocs"
+          "adrId": "5073-declarative-validation-with-validation-gen",
+          "missingId": "keps/sig-api-machinery/5073-declarative-validation-with-validation-gen/v1.Recreate, v1.RollingUpdate"
         },
         {
-          "adrId": "3157-watch-list",
-          "missingId": "ADR-memory_usage_after"
+          "adrId": "575-crd-defaulting",
+          "missingId": "keps/sig-api-machinery/20190425-structural-openapi.md"
         },
         {
-          "adrId": "4006-transition-spdy-to-websockets",
-          "missingId": "ADR-spdy-architechtural-diagram"
+          "adrId": "575-crd-defaulting",
+          "missingId": "keps/sig-api-machinery/20180731-crd-pruning.md"
         },
         {
-          "adrId": "4006-transition-spdy-to-websockets",
-          "missingId": "ADR-remote-command-subprotocol"
+          "adrId": "598-crd-conversion-webhook",
+          "missingId": "contributors/devel/sig-architecture/api_changes.md"
         },
         {
-          "adrId": "4006-transition-spdy-to-websockets",
-          "missingId": "ADR-stream-translator-proxy-2"
+          "adrId": "2185-random-pod-select-on-replicaset-downscale",
+          "missingId": "keps/sig-apps/2185-random-pod-select-on-replicaset-downscale/git.k8s.io/enhancements/keps/sig-apps/2255-pod-cost"
         },
         {
-          "adrId": "4080-generic-controlplane",
-          "missingId": "ADR-staging-repos"
+          "adrId": "3335-statefulset-slice",
+          "missingId": "keps/sig-apps/3335-statefulset-slice/StatefulSet"
         },
         {
-          "adrId": "4420-retry-generate-name",
-          "missingId": "ADR-probability-of-collision-0"
+          "adrId": "1314-node-restriction-pods",
+          "missingId": "keps/sig-auth/1314-node-restriction-pods/0000-20170814-bounding-self-labeling-kubelets.md"
         },
         {
-          "adrId": "4420-retry-generate-name",
-          "missingId": "ADR-probability-of-collision-0-to-1"
+          "adrId": "5681-conditional-authorization",
+          "missingId": "keps/sig-auth/5681-conditional-authorization/github.com/kubernetes/kubernetes/issues/128154"
         },
         {
-          "adrId": "4420-retry-generate-name",
-          "missingId": "ADR-probability-of-collision-0-to-8"
+          "adrId": "2299-kustomize-plugin-composition",
+          "missingId": "keps/sig-cli/2299-kustomize-plugin-composition/[-a-z0-9]*[a-z0-9]"
+        },
+        {
+          "adrId": "2906-kustomize-function-catalog",
+          "missingId": "keps/sig-cli/2290-kustomize-plugin-composition/README.md"
+        },
+        {
+          "adrId": "1179-building-without-in-tree-providers",
+          "missingId": "keps/sig-cloud-provider/1179-building-without-in-tree-providers/keps/sig-cloud-provider/20190125-removing-in-tree-providers.md"
+        },
+        {
+          "adrId": "2394-support-out-of-tree-AWS-cloud-provider",
+          "missingId": "keps/sig-cloud-provider/20180530-cloud-controller-manager.md"
+        },
+        {
+          "adrId": "668-out-of-tree-gce",
+          "missingId": "keps/sig-cloud-provider/20180530-cloud-controller-manager.md"
+        },
+        {
+          "adrId": "669-out-of-tree-openstack",
+          "missingId": "keps/sig-cloud-provider/20180530-cloud-controller-manager.md"
+        },
+        {
+          "adrId": "670-out-of-tree-vsphere",
+          "missingId": "keps/sig-cloud-provider/20180530-cloud-controller-manager.md"
+        },
+        {
+          "adrId": "671-out-of-tree-ibm",
+          "missingId": "keps/sig-cloud-provider/20180530-cloud-controller-manager.md"
+        },
+        {
+          "adrId": "667-out-of-tree-azure",
+          "missingId": "keps/sig-cloud-provider/20180530-cloud-controller-manager.md"
+        },
+        {
+          "adrId": "2500-kubeadm-join-control-plane-workflow",
+          "missingId": "keps/sig-cluster-lifecycle/kubeadm/2500-kubeadm-join-control-plane-workflow/20190122-Certificates-copy-for-kubeadm-join--control-plane.md"
         },
         {
           "adrId": "970-kubeadm-config",
-          "missingId": "ADR-20190122-Certificates-copy-for-kubeadm-join--control-plane"
+          "missingId": "keps/sig-cluster-lifecycle/kubeadm/970-kubeadm-config/20190122-Certificates-copy-for-kubeadm-join--control-plane.md"
         },
         {
           "adrId": "0000-community-forum",
-          "missingId": "ADR-0005-contributor-site"
+          "missingId": "keps/sig-contributor-experience/0000-community-forum/0005-contributor-site.md"
         },
         {
-          "adrId": "kubernetes-control-plane-metrics-stability",
-          "missingId": "ADR-metrics-validation-and-verification"
+          "adrId": "metrics-stability-to-beta",
+          "missingId": "keps/sig-instrumentation/1209-metrics-stability/tdb"
         },
         {
-          "adrId": "kubernetes-control-plane-metrics-stability",
-          "missingId": "ADR-metrics-stability-to-beta"
+          "adrId": "1748-pod-resource-metrics",
+          "missingId": "keps/sig-node/20181106-in-place-update-of-pod-resources.md"
         },
         {
-          "adrId": "metrics-stability-migration",
-          "missingId": "ADR-kubernetes-control-plane-metrics-stability"
+          "adrId": "647-apiserver-tracing",
+          "missingId": "keps/sig-instrumentation/647-apiserver-tracing/apiserver_request_slo_duration_seconds"
         },
         {
-          "adrId": "metrics-stability-migration",
-          "missingId": "ADR-metrics-validation-and-verification"
+          "adrId": "1672-tracking-terminating-endpoints",
+          "missingId": "keps/sig-network/20190603-endpointslices/README.md"
         },
         {
-          "adrId": "metrics-validation-and-verification",
-          "missingId": "ADR-kubernetes-control-plane-metrics-stability"
+          "adrId": "3070-reserved-service-ip-range",
+          "missingId": "keps/sig-network/3070-reserved-service-ip-range/p[kg/registry/core/rest/storage_core.go](https:/github.com/kubernetes/kubernetes/blob/2ac6a4121f5b2a94acc88d62c07d8ed1cd34ed63/pkg/registry/core/rest/storage_core.go"
         },
         {
-          "adrId": "4322-cluster-inventory",
-          "missingId": "ADR-consumer-scoped-inventories"
+          "adrId": "3668-reserved-service-nodeport-range",
+          "missingId": "keps/sig-network/3668-reserved-service-nodeport-range/p[kg/registry/core/rest/storage_core.go](https:/github.com/kubernetes/kubernetes/blob/2ac6a4121f5b2a94acc88d62c07d8ed1cd34ed63/pkg/registry/core/rest/storage_core.go"
         },
         {
-          "adrId": "4322-cluster-inventory",
-          "missingId": "ADR-global-hub"
+          "adrId": "4427-relaxed-dns-search-validation",
+          "missingId": "keps/sig-network/4427-relaxed-dns-search-validation/[-a-z0-9]*[a-z0-9]"
         },
         {
-          "adrId": "4322-cluster-inventory",
-          "missingId": "ADR-global-hub-per-inventory"
+          "adrId": "135-seccomp",
+          "missingId": "keps/sig-node/135-seccomp/277-ephemeral-containers"
         },
         {
-          "adrId": "4322-cluster-inventory",
-          "missingId": "ADR-regional-hub-multiple-inventories"
+          "adrId": "1547-building-kubelet-without-docker",
+          "missingId": "keps/sig-cloud-provider/20190729-building-without-in-tree-providers.md"
         },
         {
-          "adrId": "4322-cluster-inventory",
-          "missingId": "ADR-regional-hub-per-inventory"
-        },
-        {
-          "adrId": "4322-cluster-inventory",
-          "missingId": "ADR-self-assembling-inventories"
-        },
-        {
-          "adrId": "1769-memory-manager",
-          "missingId": "ADR-mm_tm_diagram"
-        },
-        {
-          "adrId": "1769-memory-manager",
-          "missingId": "ADR-multi_numa"
-        },
-        {
-          "adrId": "1769-memory-manager",
-          "missingId": "ADR-mem_tables_startup_without_naf"
-        },
-        {
-          "adrId": "1769-memory-manager",
-          "missingId": "ADR-mem_tables_startup"
-        },
-        {
-          "adrId": "1769-memory-manager",
-          "missingId": "ADR-mem_tables_runtime"
-        },
-        {
-          "adrId": "1769-memory-manager",
-          "missingId": "ADR-mm_simulation"
-        },
-        {
-          "adrId": "2570-memory-qos",
-          "missingId": "ADR-memory-high"
-        },
-        {
-          "adrId": "2570-memory-qos",
-          "missingId": "ADR-container-level"
-        },
-        {
-          "adrId": "2570-memory-qos",
-          "missingId": "ADR-pod-level"
-        },
-        {
-          "adrId": "2570-memory-qos",
-          "missingId": "ADR-qos-level"
-        },
-        {
-          "adrId": "2570-memory-qos",
-          "missingId": "ADR-node-level"
+          "adrId": "1558-streaming-proxy-redirects",
+          "missingId": "keps/sig-node/1558-streaming-proxy-redirects/277-ephemeral-containers"
         },
         {
           "adrId": "2837-pod-level-resource-spec",
-          "missingId": "ADR-pod-request-limit-unset"
+          "missingId": "keps/sig-node/2837-pod-level-resource-spec/(KEP"
         },
         {
-          "adrId": "2837-pod-level-resource-spec",
-          "missingId": "ADR-pod-limit-set"
+          "adrId": "3573-device-plugin",
+          "missingId": "keps/sig-node/3573-device-plugin/[keps/sig-node/606-compute-device-assignment]"
         },
         {
-          "adrId": "2837-pod-level-resource-spec",
-          "missingId": "ADR-pod-request-set"
+          "adrId": "4009-add-cdi-devices-to-device-plugin-api",
+          "missingId": "keps/sig-node/4009-add-cdi-devices-to-device-plugin-api/(https:/github.com/kubernetes/enhancements/pull/3731"
         },
         {
-          "adrId": "2837-pod-level-resource-spec",
-          "missingId": "ADR-pod-request-limit-set"
+          "adrId": "5526-pod-level-resource-managers",
+          "missingId": "keps/sig-node/5526-pod-level-resource-managers/not the initial KEP PR"
         },
         {
-          "adrId": "2837-pod-level-resource-spec",
-          "missingId": "ADR-example-1"
+          "adrId": "585-runtime-class",
+          "missingId": "keps/sig-node/sig-auth/0000-20170814-bounding-self-labeling-kubelets.md"
         },
         {
-          "adrId": "2837-pod-level-resource-spec",
-          "missingId": "ADR-example-2"
+          "adrId": "5027-dra-admin-controlled-device-attributes",
+          "missingId": "keps/sig-scheduling/5027-dra-admin-controlled-device-attributes/("
         },
         {
-          "adrId": "2837-pod-level-resource-spec",
-          "missingId": "ADR-example-3"
+          "adrId": "5142-pop-backoffq-when-activeq-empty",
+          "missingId": "keps/sig-scheduling/5142-pop-backoffq-when-activeq-empty/github.com/kubernetes/kubernetes/pull/128748"
         },
         {
-          "adrId": "2837-pod-level-resource-spec",
-          "missingId": "ADR-example-4"
+          "adrId": "5491-dra-list-types-for-attributes",
+          "missingId": "keps/sig-scheduling/5491-dra-list-types-for-attributes/list"
         },
         {
-          "adrId": "2837-pod-level-resource-spec",
-          "missingId": "ADR-example-5"
+          "adrId": "121-local-persistent-volumes",
+          "missingId": "keps/sig-storage/121-local-persistent-volumes/local-storage-overview.md"
         },
         {
-          "adrId": "2837-pod-level-resource-spec",
-          "missingId": "ADR-example-6"
-        },
-        {
-          "adrId": "2837-pod-level-resource-spec",
-          "missingId": "ADR-example-7"
-        },
-        {
-          "adrId": "2837-pod-level-resource-spec",
-          "missingId": "ADR-example-8"
-        },
-        {
-          "adrId": "2837-pod-level-resource-spec",
-          "missingId": "ADR-example-9"
-        },
-        {
-          "adrId": "2837-pod-level-resource-spec",
-          "missingId": "ADR-oom-example-1"
-        },
-        {
-          "adrId": "2837-pod-level-resource-spec",
-          "missingId": "ADR-oom-example-2"
-        },
-        {
-          "adrId": "3063-dynamic-resource-allocation",
-          "missingId": "ADR-components"
-        },
-        {
-          "adrId": "4176-cpumanager-spread-cpus-preferred-policy",
-          "missingId": "ADR-cpu-ordering"
-        },
-        {
-          "adrId": "4381-dra-structured-parameters",
-          "missingId": "ADR-components"
-        },
-        {
-          "adrId": "4381-dra-structured-parameters",
-          "missingId": "ADR-kubelet"
-        },
-        {
-          "adrId": "4540-strict-cpu-reservation",
-          "missingId": "ADR-strict-cpu-allocation"
-        },
-        {
-          "adrId": "4603-tune-crashloopbackoff",
-          "missingId": "ADR-restarts-vs-elapsed-all"
-        },
-        {
-          "adrId": "4603-tune-crashloopbackoff",
-          "missingId": "ADR-restarts-vs-elapsed-new-default"
-        },
-        {
-          "adrId": "4603-tune-crashloopbackoff",
-          "missingId": "ADR-crashloopbackoff-succeedingcontainer"
-        },
-        {
-          "adrId": "4781-kublet-restart-pod-status",
-          "missingId": "ADR-before-changes"
-        },
-        {
-          "adrId": "4781-kublet-restart-pod-status",
-          "missingId": "ADR-scenario-1"
-        },
-        {
-          "adrId": "4781-kublet-restart-pod-status",
-          "missingId": "ADR-scenario-2"
-        },
-        {
-          "adrId": "4800-cpumanager-split-uncorecache",
-          "missingId": "ADR-images"
-        },
-        {
-          "adrId": "5554-in-place-update-pod-resources-alongside-static-cpu-manager-policy",
-          "missingId": "ADR-cpu_manager_policies_pod_types"
-        },
-        {
-          "adrId": "5554-in-place-update-pod-resources-alongside-static-cpu-manager-policy",
-          "missingId": "ADR-pod_admission_topology_manager_interactions"
-        },
-        {
-          "adrId": "5554-in-place-update-pod-resources-alongside-static-cpu-manager-policy",
-          "missingId": "ADR-hardware_topology_diagram"
-        },
-        {
-          "adrId": "5554-in-place-update-pod-resources-alongside-static-cpu-manager-policy",
-          "missingId": "ADR-use_cases_for_cpu_resize"
-        },
-        {
-          "adrId": "5593-configure-the-max-crashloopbackoff-delay",
-          "missingId": "ADR-restarts-vs-elapsed-minimum-per-node"
-        },
-        {
-          "adrId": "1498-kubernetes-yearly-support-period",
-          "missingId": "ADR-versions-in-production"
-        },
-        {
-          "adrId": "1498-kubernetes-yearly-support-period",
-          "missingId": "ADR-upgrade-cadence"
-        },
-        {
-          "adrId": "1729-rebase-images-to-distroless",
-          "missingId": "ADR-rebase-core-master"
-        },
-        {
-          "adrId": "1734-k8s-image-promoter",
-          "missingId": "ADR-promote-process"
-        },
-        {
-          "adrId": "1790-recover-resize-failure",
-          "missingId": "ADR-Expanding volume - Kubelet Loop"
-        },
-        {
-          "adrId": "1790-recover-resize-failure",
-          "missingId": "ADR-get_new_size"
-        },
-        {
-          "adrId": "1900-volume-snapshot-validation-webhook",
-          "missingId": "ADR-webhook-workflow"
-        },
-        {
-          "adrId": "3314-csi-changed-block-tracking",
-          "missingId": "ADR-flow"
-        },
-        {
-          "adrId": "3314-csi-changed-block-tracking",
-          "missingId": "ADR-perms"
+          "adrId": "1710-selinux-relabeling",
+          "missingId": "keps/sig-storage/1710-selinux-relabeling/github.com/util-linux/util-linux"
         },
         {
           "adrId": "3751-volume-attributes-class",
-          "missingId": "ADR-Create_VolumeAttributesClass"
+          "missingId": "keps/sig-storage/3751-volume-attributes-class/kubernetes.io/vpc-protection"
         },
         {
-          "adrId": "3751-volume-attributes-class",
-          "missingId": "ADR-Delete_VolumeAttributesClass"
+          "adrId": "5936-atomic-write-volume-user-fields",
+          "missingId": "keps/sig-storage/5936-atomic-write-volume-user-fields/kep-2451"
         },
         {
-          "adrId": "3751-volume-attributes-class",
-          "missingId": "ADR-Create_PVC"
+          "adrId": "5936-atomic-write-volume-user-fields",
+          "missingId": "keps/sig-storage/5936-atomic-write-volume-user-fields/kep-3257"
         },
         {
-          "adrId": "3751-volume-attributes-class",
-          "missingId": "ADR-Create_Volume"
+          "adrId": "5936-atomic-write-volume-user-fields",
+          "missingId": "keps/sig-storage/5936-atomic-write-volume-user-fields/kep-4317"
         },
         {
-          "adrId": "3751-volume-attributes-class",
-          "missingId": "ADR-Delete_PVC"
+          "adrId": "4885-windows-cpu-and-memory-affinity",
+          "missingId": "keps/sig-windows/4885-windows-cpu-and-memory-affinity/keps/sig-node/1769-memory-manager"
         },
         {
-          "adrId": "3751-volume-attributes-class",
-          "missingId": "ADR-VolumeAttributesClass-Flow"
+          "adrId": "4885-windows-cpu-and-memory-affinity",
+          "missingId": "keps/sig-windows/4885-windows-cpu-and-memory-affinity/keps/sig-node/3570-cpu-manager"
         },
         {
-          "adrId": "3751-volume-attributes-class",
-          "missingId": "ADR-VolumeAttributesClass_Update"
-        },
-        {
-          "adrId": "3751-volume-attributes-class",
-          "missingId": "ADR-VolumeAttributesClass-ModifyVolume-Flow-v3"
-        },
-        {
-          "adrId": "3751-volume-attributes-class",
-          "missingId": "ADR-VolumeAttributesClass-BatchUpdate"
-        },
-        {
-          "adrId": "4958-csi-sidecars-all-in-one",
-          "missingId": "ADR-aio2"
-        },
-        {
-          "adrId": "4958-csi-sidecars-all-in-one",
-          "missingId": "ADR-aio4"
-        },
-        {
-          "adrId": "4958-csi-sidecars-all-in-one",
-          "missingId": "ADR-aio5"
-        },
-        {
-          "adrId": "4958-csi-sidecars-all-in-one",
-          "missingId": "ADR-aio6"
-        },
-        {
-          "adrId": "4958-csi-sidecars-all-in-one",
-          "missingId": "ADR-aio11"
-        },
-        {
-          "adrId": "4958-csi-sidecars-all-in-one",
-          "missingId": "ADR-aio10"
+          "adrId": "4885-windows-cpu-and-memory-affinity",
+          "missingId": "keps/sig-windows/4885-windows-cpu-and-memory-affinity/keps/sig-node/693-topology-manager\""
         }
       ],
+      "before": {
+        "edges": 0,
+        "brokenLinks": 93
+      },
       "timing": {
-        "cloneMs": 50,
-        "analysisMs": 479,
-        "totalMs": 529
+        "cloneMs": 54,
+        "analysisMs": 544,
+        "totalMs": 598
       }
     },
     {
@@ -636,259 +576,57 @@
       "duplicateIdsCount": 0,
       "uniqueIdsCount": 65,
       "nodes": 65,
-      "edges": 0,
+      "edges": 88,
       "hardEdges": 0,
-      "softEdges": 0,
-      "edgeDensity": 0,
-      "isolatedNodes": 45,
+      "softEdges": 88,
+      "edgeDensity": 1.354,
+      "isolatedNodes": 7,
       "cyclesFound": false,
-      "mutualReferencesCount": 0,
-      "mutualReferences": [],
-      "brokenLinks": 92,
+      "mutualReferencesCount": 5,
+      "mutualReferences": [
+        {
+          "pair": [
+            "PROCESS",
+            "architecture"
+          ]
+        },
+        {
+          "pair": [
+            "adr-007-specialization-groups",
+            "adr-008-dCERT-group"
+          ]
+        },
+        {
+          "pair": [
+            "adr-020-protobuf-transaction-encoding",
+            "adr-027-deterministic-protobuf-serialization"
+          ]
+        },
+        {
+          "pair": [
+            "adr-050-sign-mode-textual",
+            "adr-050-sign-mode-textual-annex1"
+          ]
+        },
+        {
+          "pair": [
+            "adr-057-app-wiring",
+            "adr-063-core-module-api"
+          ]
+        }
+      ],
+      "resolvedLinks": 137,
+      "nonDecisionLinks": 0,
+      "externalLinks": 312,
+      "brokenLinks": 14,
       "missingDependencies": [
         {
-          "adrId": "PROCESS",
-          "missingId": "ADR-README"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-PROCESS"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-002-docs-structure"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-004-split-denomination-keys"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-006-secret-store-replacement"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-009-evidence-module"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-010-modular-antehandler"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-019-protobuf-state-encoding"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-020-protobuf-transaction-encoding"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-021-protobuf-query-encoding"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-023-protobuf-naming"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-029-fee-grant-module"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-030-authz-module"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-031-msg-service"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-055-orm"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-058-auto-generated-cli"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-061-liquid-staking"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-003-dynamic-capability-store"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-011-generalize-genesis-accounts"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-012-state-accessors"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-013-metrics"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-016-validator-consensus-key-rotation"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-017-historical-header-module"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-018-extendable-voting-period"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-022-custom-panic-handling"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-024-coin-metadata"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-027-deterministic-protobuf-serialization"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-028-public-key-addresses"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-032-typed-events"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-033-protobuf-inter-module-comm"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-035-rosetta-api-support"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-037-gov-split-vote"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-038-state-listening"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-039-epoched-staking"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-040-storage-and-smt-state-commitments"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-046-module-params"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-054-semver-compatible-modules"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-057-app-wiring"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-059-test-scopes"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-062-collections-state-layer"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-063-core-module-api"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-065-store-v2"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-076-tx-malleability"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-044-protobuf-updates-guidelines"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-047-extend-upgrade-plan"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-053-go-module-refactoring"
-        },
-        {
-          "adrId": "architecture",
-          "missingId": "ADR-adr-068-preblock"
-        },
-        {
-          "adrId": "adr-007-specialization-groups",
-          "missingId": "ADR-adr-008-dCERT-group"
-        },
-        {
-          "adrId": "adr-008-dCERT-group",
-          "missingId": "ADR-adr-007-specialization-groups"
-        },
-        {
-          "adrId": "adr-020-protobuf-transaction-encoding",
-          "missingId": "ADR-adr-019-protobuf-state-encoding"
-        },
-        {
-          "adrId": "adr-020-protobuf-transaction-encoding",
-          "missingId": "ADR-adr-027-deterministic-protobuf-serialization"
-        },
-        {
-          "adrId": "adr-021-protobuf-query-encoding",
-          "missingId": "ADR-adr-019-protobuf-state-encoding"
-        },
-        {
-          "adrId": "adr-021-protobuf-query-encoding",
-          "missingId": "ADR-adr-020-protobuf-transaction-encoding"
-        },
-        {
           "adrId": "adr-027-deterministic-protobuf-serialization",
           "missingId": "ADR-020"
         },
         {
-          "adrId": "adr-027-deterministic-protobuf-serialization",
-          "missingId": "ADR-adr-020-protobuf-transaction-encoding"
-        },
-        {
-          "adrId": "adr-030-authz-module",
-          "missingId": "ADR-adr-029-fee-grant-module"
-        },
-        {
           "adrId": "adr-031-msg-service",
           "missingId": "ADR-020"
-        },
-        {
-          "adrId": "adr-031-msg-service",
-          "missingId": "ADR-adr-020-protobuf-transaction-encoding"
-        },
-        {
-          "adrId": "adr-031-msg-service",
-          "missingId": "ADR-adr-021-protobuf-query-encoding"
-        },
-        {
-          "adrId": "adr-033-protobuf-inter-module-comm",
-          "missingId": "ADR-adr-021-protobuf-query-encoding"
-        },
-        {
-          "adrId": "adr-033-protobuf-inter-module-comm",
-          "missingId": "ADR-adr-031-msg-service"
         },
         {
           "adrId": "adr-033-protobuf-inter-module-comm",
@@ -900,19 +638,11 @@
         },
         {
           "adrId": "adr-033-protobuf-inter-module-comm",
-          "missingId": "ADR-adr-028-public-key-addresses"
-        },
-        {
-          "adrId": "adr-042-group-module",
-          "missingId": "ADR-adr-029-fee-grant-module"
+          "missingId": "docs/docs/learn/advanced/10-ocap.md"
         },
         {
           "adrId": "adr-042-group-module",
           "missingId": "ADR-033"
-        },
-        {
-          "adrId": "adr-044-protobuf-updates-guidelines",
-          "missingId": "ADR-adr-037-gov-split-vote"
         },
         {
           "adrId": "adr-045-check-delivertx-middlewares",
@@ -920,105 +650,41 @@
         },
         {
           "adrId": "adr-045-check-delivertx-middlewares",
-          "missingId": "ADR-adr-022-custom-panic-handling"
-        },
-        {
-          "adrId": "adr-045-check-delivertx-middlewares",
           "missingId": "ADR-010"
-        },
-        {
-          "adrId": "adr-045-check-delivertx-middlewares",
-          "missingId": "ADR-adr-010-modular-antehandler"
         },
         {
           "adrId": "adr-050-sign-mode-textual-annex1",
           "missingId": "ADR-050"
         },
         {
-          "adrId": "adr-050-sign-mode-textual-annex1",
-          "missingId": "ADR-adr-050-sign-mode-textual"
-        },
-        {
           "adrId": "adr-050-sign-mode-textual",
           "missingId": "ADR-020"
         },
         {
-          "adrId": "adr-050-sign-mode-textual",
-          "missingId": "ADR-adr-020-protobuf-transaction-encoding"
-        },
-        {
-          "adrId": "adr-050-sign-mode-textual",
-          "missingId": "ADR-adr-050-sign-mode-textual-annex2"
-        },
-        {
-          "adrId": "adr-050-sign-mode-textual",
-          "missingId": "ADR-adr-050-sign-mode-textual-annex1"
-        },
-        {
           "adrId": "adr-054-semver-compatible-modules",
-          "missingId": "ADR-adr-020-protobuf-transaction-encoding"
-        },
-        {
-          "adrId": "adr-054-semver-compatible-modules",
-          "missingId": "ADR-adr-033-protobuf-inter-module-comm"
-        },
-        {
-          "adrId": "adr-057-app-wiring",
-          "missingId": "ADR-adr-053-go-module-refactoring"
-        },
-        {
-          "adrId": "adr-057-app-wiring",
-          "missingId": "ADR-adr-033-protobuf-inter-module-comm"
-        },
-        {
-          "adrId": "adr-057-app-wiring",
-          "missingId": "ADR-adr-063-core-module-api"
-        },
-        {
-          "adrId": "adr-057-app-wiring",
-          "missingId": "ADR-adr-054-semver-compatible-modules"
-        },
-        {
-          "adrId": "adr-063-core-module-api",
-          "missingId": "ADR-adr-033-protobuf-inter-module-comm"
-        },
-        {
-          "adrId": "adr-063-core-module-api",
-          "missingId": "ADR-adr-057-app-wiring"
-        },
-        {
-          "adrId": "adr-063-core-module-api",
-          "missingId": "ADR-adr-055-orm"
-        },
-        {
-          "adrId": "adr-063-core-module-api",
-          "missingId": "ADR-adr-062-collections-state-layer"
-        },
-        {
-          "adrId": "adr-063-core-module-api",
-          "missingId": "ADR-adr-058-auto-generated-cli"
-        },
-        {
-          "adrId": "adr-063-core-module-api",
-          "missingId": "ADR-adr-028-public-key-addresses"
+          "missingId": "docs/proto/cosmos/app/v1alpha1/module.proto"
         },
         {
           "adrId": "adr-065-store-v2",
           "missingId": "ADR-040"
         },
         {
-          "adrId": "adr-065-store-v2",
-          "missingId": "ADR-adr-040-storage-and-smt-state-commitments"
+          "adrId": "adr-076-tx-malleability",
+          "missingId": "x/tx/signing/aminojson/internal/aminojsonpb/aminojson.proto"
         },
         {
-          "adrId": "adr-template",
-          "missingId": "ADR-PROCESS"
+          "adrId": "adr-076-tx-malleability",
+          "missingId": "proto/cosmos/tx/v1beta1/tx.proto"
         }
       ],
+      "before": {
+        "edges": 0,
+        "brokenLinks": 92
+      },
       "timing": {
-        "cloneMs": 60,
-        "analysisMs": 37,
-        "totalMs": 97
+        "cloneMs": 54,
+        "analysisMs": 40,
+        "totalMs": 94
       }
     },
     {
@@ -1049,11 +715,11 @@
       "duplicateIdsCount": 0,
       "uniqueIdsCount": 88,
       "nodes": 88,
-      "edges": 12,
+      "edges": 25,
       "hardEdges": 0,
-      "softEdges": 12,
-      "edgeDensity": 0.136,
-      "isolatedNodes": 73,
+      "softEdges": 25,
+      "edgeDensity": 0.284,
+      "isolatedNodes": 60,
       "cyclesFound": false,
       "mutualReferencesCount": 4,
       "mutualReferences": [
@@ -1082,8 +748,19 @@
           ]
         }
       ],
-      "brokenLinks": 4,
+      "resolvedLinks": 39,
+      "nonDecisionLinks": 6,
+      "externalLinks": 260,
+      "brokenLinks": 12,
       "missingDependencies": [
+        {
+          "adrId": "ADR-0027",
+          "missingId": "docs/code-howtos/remote-storage-jabdrive.md"
+        },
+        {
+          "adrId": "ADR-0027",
+          "missingId": "docs/code-howtos/remote-storage-sql.md"
+        },
         {
           "adrId": "ADR-0033",
           "missingId": "ADR-032"
@@ -1093,18 +770,46 @@
           "missingId": "ADR-038"
         },
         {
-          "adrId": "ADR-0036",
-          "missingId": "ADR-0042-use-markdowntextflow-for-summarization-content"
+          "adrId": "ADR-0067",
+          "missingId": "docs/code-howtos/openoffice/code-reorganization.md"
         },
         {
           "adrId": "ADR-0068",
           "missingId": "ADR-64"
+        },
+        {
+          "adrId": "ADR-0077",
+          "missingId": "docs/requirements/pdf-import.md"
+        },
+        {
+          "adrId": "ADR-0079",
+          "missingId": "docs/code-howtos/localization.md"
+        },
+        {
+          "adrId": "ADR-0084",
+          "missingId": "docs/code-howtos/openoffice/order-of-appearance.md"
+        },
+        {
+          "adrId": "ADR-0084",
+          "missingId": "docs/code-howtos/openoffice/overview.md"
+        },
+        {
+          "adrId": "ADR-0084",
+          "missingId": "docs/requirements/openoffice.md"
+        },
+        {
+          "adrId": "ADR-0084",
+          "missingId": "docs/code-howtos/testing.md"
         }
       ],
+      "before": {
+        "edges": 12,
+        "brokenLinks": 4
+      },
       "timing": {
-        "cloneMs": 48,
-        "analysisMs": 48,
-        "totalMs": 96
+        "cloneMs": 50,
+        "analysisMs": 55,
+        "totalMs": 105
       }
     },
     {
@@ -1135,37 +840,27 @@
       "duplicateIdsCount": 0,
       "uniqueIdsCount": 12,
       "nodes": 12,
-      "edges": 0,
+      "edges": 4,
       "hardEdges": 0,
-      "softEdges": 0,
-      "edgeDensity": 0,
-      "isolatedNodes": 9,
+      "softEdges": 4,
+      "edgeDensity": 0.333,
+      "isolatedNodes": 6,
       "cyclesFound": false,
       "mutualReferencesCount": 0,
       "mutualReferences": [],
-      "brokenLinks": 4,
-      "missingDependencies": [
-        {
-          "adrId": "ADR-006",
-          "missingId": "ADR-001-javascript-for-less-capable-browsers"
-        },
-        {
-          "adrId": "ADR-007",
-          "missingId": "ADR-005-repository-organisation-for-v5"
-        },
-        {
-          "adrId": "ADR-007",
-          "missingId": "ADR-006-javascript-compatibility"
-        },
-        {
-          "adrId": "ADR-010",
-          "missingId": "ADR-009-throw-errors-component-constructors"
-        }
-      ],
+      "resolvedLinks": 5,
+      "nonDecisionLinks": 0,
+      "externalLinks": 54,
+      "brokenLinks": 0,
+      "missingDependencies": [],
+      "before": {
+        "edges": 0,
+        "brokenLinks": 4
+      },
       "timing": {
-        "cloneMs": 48,
-        "analysisMs": 7,
-        "totalMs": 55
+        "cloneMs": 59,
+        "analysisMs": 11,
+        "totalMs": 70
       }
     }
   ],

@@ -6,6 +6,7 @@ import {
   parseADRContent,
   deriveFallbackId,
   disambiguateDuplicateIds,
+  resolveBatchLinks,
 } from '../../src/core/adrParser.js';
 export { deriveFallbackId };
 import { validateAndComputeDAG } from '../../src/core/dagEngine.js';
@@ -53,6 +54,9 @@ export interface AnalysisOutcome {
   cyclePath?: string[];
   mutualReferencesCount: number;
   mutualReferences: Array<{ pair: [string, string] }>;
+  resolvedLinks: number;
+  nonDecisionLinks: number;
+  externalLinks: number;
   brokenLinks: number;
   missingDependencies: Array<{ adrId: string; missingId: string }>;
   evidence: AnalysisEvidence;
@@ -136,7 +140,10 @@ function toPercent(count: number, total: number): number {
   return total > 0 ? Number(((count / total) * 100).toFixed(1)) : 0;
 }
 
-export function analyzeDecisionFiles(files: DecisionFileInput[]): AnalysisOutcome {
+export function analyzeDecisionFiles(
+  files: DecisionFileInput[],
+  options?: { repoDir?: string }
+): AnalysisOutcome {
   const filesFound = files.length;
   const parsedADRs: ParsedADR[] = [];
   const parseFailures: FileParseFailure[] = [];
@@ -230,19 +237,35 @@ export function analyzeDecisionFiles(files: DecisionFileInput[]): AnalysisOutcom
       cyclesFound: false,
       mutualReferencesCount: 0,
       mutualReferences: [],
+      resolvedLinks: 0,
+      nonDecisionLinks: 0,
+      externalLinks: 0,
       brokenLinks: 0,
       missingDependencies: [],
       evidence: { cycles: [], mutualReferences: [], brokenLinks: [] },
     };
   }
 
-  // Disambiguate colliding IDs in core, then index final IDs -> record
+  // Disambiguate colliding IDs in core, resolve relative links by path, then index final IDs -> record
   const { duplicateIdsCount } = disambiguateDuplicateIds(parsedADRs);
+  resolveBatchLinks(parsedADRs, { baseDir: options?.repoDir });
+
+  let resolvedLinks = 0;
+  let nonDecisionLinks = 0;
+  let externalLinks = 0;
+  const adrById = new Map<string, ParsedADR>();
+
   for (const adr of parsedADRs) {
+    adrById.set(adr.frontmatter.id, adr);
     idToRecord.set(adr.frontmatter.id, {
       relativePath: adr.filePath || 'unknown',
       content: adr.rawContent,
     });
+    for (const link of adr.links || []) {
+      if (link.classification === 'resolved') resolvedLinks++;
+      else if (link.classification === 'non-decision') nonDecisionLinks++;
+      else if (link.classification === 'external') externalLinks++;
+    }
   }
 
   const { validationResult, engine } = validateAndComputeDAG(parsedADRs);
@@ -308,6 +331,10 @@ export function analyzeDecisionFiles(files: DecisionFileInput[]): AnalysisOutcom
     const [idA, idB] = pair;
     const recA = idToRecord.get(idA);
     const recB = idToRecord.get(idB);
+    const adrA = adrById.get(idA);
+    const adrB = adrById.get(idB);
+    const edgeAB = adrA?.edges?.find((e) => e.targetId === idB && e.rawText)?.rawText;
+    const edgeBA = adrB?.edges?.find((e) => e.targetId === idA && e.rawText)?.rawText;
     return {
       pair,
       edges: [
@@ -316,14 +343,14 @@ export function analyzeDecisionFiles(files: DecisionFileInput[]): AnalysisOutcom
           dependentFile: recA?.relativePath || 'unknown',
           dependencyId: idB,
           dependencyFile: recB?.relativePath || 'unknown',
-          rawLinkText: recA ? findRawLinkText(recA.content, idB) : `unresolved-source (${idB})`,
+          rawLinkText: edgeAB || (recA ? findRawLinkText(recA.content, idB) : `unresolved-source (${idB})`),
         },
         {
           dependentId: idB,
           dependentFile: recB?.relativePath || 'unknown',
           dependencyId: idA,
           dependencyFile: recA?.relativePath || 'unknown',
-          rawLinkText: recB ? findRawLinkText(recB.content, idA) : `unresolved-source (${idA})`,
+          rawLinkText: edgeBA || (recB ? findRawLinkText(recB.content, idA) : `unresolved-source (${idA})`),
         },
       ],
     };
@@ -333,9 +360,13 @@ export function analyzeDecisionFiles(files: DecisionFileInput[]): AnalysisOutcom
     .slice(0, 10)
     .map(({ adrId, missingId }) => {
       const sourceRecord = idToRecord.get(adrId);
-      const rawLinkText = sourceRecord
-        ? findRawLinkText(sourceRecord.content, missingId)
-        : `unresolved-source (${missingId})`;
+      const sourceAdr = adrById.get(adrId);
+      const edgeMatch = sourceAdr?.edges?.find((e) => e.targetId === missingId && e.rawText);
+      const rawLinkText = edgeMatch?.rawText
+        ? edgeMatch.rawText
+        : sourceRecord
+          ? findRawLinkText(sourceRecord.content, missingId)
+          : `unresolved-source (${missingId})`;
       return {
         sourceId: adrId,
         sourceFile: sourceRecord?.relativePath || 'unknown',
@@ -364,6 +395,9 @@ export function analyzeDecisionFiles(files: DecisionFileInput[]): AnalysisOutcom
     cyclePath: validationResult.cyclePath,
     mutualReferencesCount: mutualRefs.length,
     mutualReferences: mutualRefs,
+    resolvedLinks,
+    nonDecisionLinks,
+    externalLinks,
     brokenLinks,
     missingDependencies: allMissing,
     evidence: {

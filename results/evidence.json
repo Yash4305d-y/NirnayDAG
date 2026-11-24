@@ -1,38 +1,36 @@
 {
-  "timestamp": "2026-11-24T20:34:58.721Z",
-  "runnerVersion": "1.0.0-phase2a.2+2b",
+  "timestamp": "2026-11-24T20:46:38.662Z",
+  "runnerVersion": "1.0.0-phase2c.1",
   "repositories": [
     {
       "repo": "backstage/backstage",
       "commitSha": "b3ed9690207fe606362f5785b7cbe91ccc8a8542",
       "cycles": [],
-      "mutualReferences": [],
-      "brokenLinks": [
+      "mutualReferences": [
         {
-          "sourceId": "adrs-adr008",
-          "sourceFile": "docs/architecture-decisions/adr008-default-catalog-file-name.md",
-          "missingId": "ADR-adr002-default-catalog-file-format",
-          "rawLinkText": "(./adr002-default-catalog-file-format.md)"
-        },
-        {
-          "sourceId": "adrs-adr009",
-          "sourceFile": "docs/architecture-decisions/adr009-entity-references.md",
-          "missingId": "ADR-adr002-default-catalog-file-format",
-          "rawLinkText": "(./adr002-default-catalog-file-format.md)"
-        },
-        {
-          "sourceId": "adrs-adr013",
-          "sourceFile": "docs/architecture-decisions/adr013-use-node-fetch.md",
-          "missingId": "ADR-adr014-use-fetch",
-          "rawLinkText": "(./adr014-use-fetch.md)"
-        },
-        {
-          "sourceId": "adrs-adr014",
-          "sourceFile": "docs/architecture-decisions/adr014-use-fetch.md",
-          "missingId": "ADR-adr013-use-node-fetch",
-          "rawLinkText": "(./adr013-use-node-fetch.md)"
+          "pair": [
+            "adrs-adr013",
+            "adrs-adr014"
+          ],
+          "edges": [
+            {
+              "dependentId": "adrs-adr013",
+              "dependentFile": "docs/architecture-decisions/adr013-use-node-fetch.md",
+              "dependencyId": "adrs-adr014",
+              "dependencyFile": "docs/architecture-decisions/adr014-use-fetch.md",
+              "rawLinkText": "(./adr014-use-fetch.md)"
+            },
+            {
+              "dependentId": "adrs-adr014",
+              "dependentFile": "docs/architecture-decisions/adr014-use-fetch.md",
+              "dependencyId": "adrs-adr013",
+              "dependencyFile": "docs/architecture-decisions/adr013-use-node-fetch.md",
+              "rawLinkText": "(./adr013-use-node-fetch.md)"
+            }
+          ]
         }
-      ]
+      ],
+      "brokenLinks": []
     },
     {
       "repo": "adr/madr",
@@ -71,28 +69,64 @@
       "mutualReferences": [],
       "brokenLinks": [
         {
-          "sourceId": "ADR-3627",
-          "sourceFile": "text/3627-match-ergonomics-2024.md",
-          "missingId": "ADR-2005-match-ergonomics",
-          "rawLinkText": "(./2005-match-ergonomics.md#detailed-design)"
+          "sourceId": "ADR-0019",
+          "sourceFile": "text/0019-opt-in-builtin-traits.md",
+          "missingId": "text/0003-opt-in-builtin-traits.md",
+          "rawLinkText": "(0003-opt-in-builtin-traits.md)"
         },
         {
-          "sourceId": "ADR-3654",
-          "sourceFile": "text/3654-return-type-notation.md",
-          "missingId": "ADR-1522-conservative-impl-trait",
-          "rawLinkText": "(./1522-conservative-impl-trait.md)"
+          "sourceId": "ADR-0474",
+          "sourceFile": "text/0474-path-reform.md",
+          "missingId": "text/www.boost.org/doc/libs/1_57_0/libs/filesystem/doc/reference.html",
+          "rawLinkText": "(www.boost.org/doc/libs/1_57_0/libs/filesystem/doc/reference.html)"
         },
         {
-          "sourceId": "ADR-3654",
-          "sourceFile": "text/3654-return-type-notation.md",
-          "missingId": "ADR-2071-impl-trait-type-alias",
-          "rawLinkText": "(./2071-impl-trait-type-alias.md)"
+          "sourceId": "ADR-1558",
+          "sourceFile": "text/1558-closure-to-fn-coercion.md",
+          "missingId": "text/&mut bar",
+          "rawLinkText": "(&mut bar)"
         },
         {
-          "sourceId": "ADR-3764",
-          "sourceFile": "text/3764-Project-Goals-2025h1.md",
-          "missingId": "ADR-build-std",
-          "rawLinkText": "(./build-std.html)"
+          "sourceId": "ADR-1946",
+          "sourceFile": "text/1946-intra-rustdoc-links.md",
+          "missingId": "text/URL",
+          "rawLinkText": "(URL)"
+        },
+        {
+          "sourceId": "ADR-1946",
+          "sourceFile": "text/1946-intra-rustdoc-links.md",
+          "missingId": "text/std::iter::Iterator",
+          "rawLinkText": "(std::iter::Iterator)"
+        },
+        {
+          "sourceId": "ADR-1946",
+          "sourceFile": "text/1946-intra-rustdoc-links.md",
+          "missingId": "text/bars::Bar",
+          "rawLinkText": "(bars::Bar)"
+        },
+        {
+          "sourceId": "ADR-1946",
+          "sourceFile": "text/1946-intra-rustdoc-links.md",
+          "missingId": "text/ipsum::Dolor",
+          "rawLinkText": "(ipsum::Dolor)"
+        },
+        {
+          "sourceId": "ADR-1946",
+          "sourceFile": "text/1946-intra-rustdoc-links.md",
+          "missingId": "text/ipsum::sit",
+          "rawLinkText": "(ipsum::sit)"
+        },
+        {
+          "sourceId": "ADR-1946",
+          "sourceFile": "text/1946-intra-rustdoc-links.md",
+          "missingId": "text/super::ipsum",
+          "rawLinkText": "(super::ipsum)"
+        },
+        {
+          "sourceId": "ADR-1946",
+          "sourceFile": "text/1946-intra-rustdoc-links.md",
+          "missingId": "text/storage::Filesystem.size",
+          "rawLinkText": "(storage::Filesystem.size)"
         }
       ]
     },
@@ -100,67 +134,134 @@
       "repo": "kubernetes/enhancements",
       "commitSha": "cac930cb9d7c70192016865425f943c339414011",
       "cycles": [],
-      "mutualReferences": [],
+      "mutualReferences": [
+        {
+          "pair": [
+            "kubernetes-control-plane-metrics-stability",
+            "metrics-validation-and-verification"
+          ],
+          "edges": [
+            {
+              "dependentId": "kubernetes-control-plane-metrics-stability",
+              "dependentFile": "keps/sig-instrumentation/1209-metrics-stability/kubernetes-control-plane-metrics-stability.md",
+              "dependencyId": "metrics-validation-and-verification",
+              "dependencyFile": "keps/sig-instrumentation/1209-metrics-stability/metrics-validation-and-verification.md",
+              "rawLinkText": "(./metrics-validation-and-verification.md)"
+            },
+            {
+              "dependentId": "metrics-validation-and-verification",
+              "dependentFile": "keps/sig-instrumentation/1209-metrics-stability/metrics-validation-and-verification.md",
+              "dependencyId": "kubernetes-control-plane-metrics-stability",
+              "dependencyFile": "keps/sig-instrumentation/1209-metrics-stability/kubernetes-control-plane-metrics-stability.md",
+              "rawLinkText": "(./kubernetes-control-plane-metrics-stability.md)"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "1645-multi-cluster-services-api",
+            "specification"
+          ],
+          "edges": [
+            {
+              "dependentId": "1645-multi-cluster-services-api",
+              "dependentFile": "keps/sig-multicluster/1645-multi-cluster-services-api/README.md",
+              "dependencyId": "specification",
+              "dependencyFile": "keps/sig-multicluster/1645-multi-cluster-services-api/specification.md",
+              "rawLinkText": "(specification.md)"
+            },
+            {
+              "dependentId": "specification",
+              "dependentFile": "keps/sig-multicluster/1645-multi-cluster-services-api/specification.md",
+              "dependencyId": "1645-multi-cluster-services-api",
+              "dependencyFile": "keps/sig-multicluster/1645-multi-cluster-services-api/README.md",
+              "rawLinkText": "(README.md)"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "3063-dynamic-resource-allocation",
+            "4381-dra-structured-parameters"
+          ],
+          "edges": [
+            {
+              "dependentId": "3063-dynamic-resource-allocation",
+              "dependentFile": "keps/sig-node/3063-dynamic-resource-allocation/README.md",
+              "dependencyId": "4381-dra-structured-parameters",
+              "dependencyFile": "keps/sig-node/4381-dra-structured-parameters/README.md",
+              "rawLinkText": "(../4381-dra-structured-parameters/README.md)"
+            },
+            {
+              "dependentId": "4381-dra-structured-parameters",
+              "dependentFile": "keps/sig-node/4381-dra-structured-parameters/README.md",
+              "dependencyId": "3063-dynamic-resource-allocation",
+              "dependencyFile": "keps/sig-node/3063-dynamic-resource-allocation/README.md",
+              "rawLinkText": "(../3063-dynamic-resource-allocation/README.md)"
+            }
+          ]
+        }
+      ],
       "brokenLinks": [
         {
-          "sourceId": "3157-watch-list",
-          "sourceFile": "keps/sig-api-machinery/3157-watch-list/README.md",
-          "missingId": "ADR-memory_usage_before",
-          "rawLinkText": "(./memory_usage_before.png \"memory consumption during the synthetic test\")"
+          "sourceId": "1040-priority-and-fairness",
+          "sourceFile": "keps/sig-api-machinery/1040-priority-and-fairness/README.md",
+          "missingId": "keps/sig-api-machinery/1040-priority-and-fairness/%v",
+          "rawLinkText": "(%v)"
         },
         {
-          "sourceId": "3157-watch-list",
-          "sourceFile": "keps/sig-api-machinery/3157-watch-list/README.md",
-          "missingId": "ADR-sequence_diagram",
-          "rawLinkText": "(./sequence_diagram.png \"flow between an informer and the watch cache\")"
+          "sourceId": "3716-admission-webhook-match-conditions",
+          "sourceFile": "keps/sig-api-machinery/3716-admission-webhook-match-conditions/README.md",
+          "missingId": "pkg/apis/admission/types.go",
+          "rawLinkText": "(/pkg/apis/admission/types.go#AdmissionRequest)"
         },
         {
-          "sourceId": "3157-watch-list",
-          "sourceFile": "keps/sig-api-machinery/3157-watch-list/README.md",
-          "missingId": "ADR-cacher",
-          "rawLinkText": "(./cacher.png \"watch cache with the proposed changes\")"
+          "sourceId": "4192-svm-in-tree",
+          "sourceFile": "keps/sig-api-machinery/4192-svm-in-tree/README.md",
+          "missingId": "keps/sig-api-machinery/4192-svm-in-tree/(https:/github.com/kubernetes/enhancements/blob/master/keps/sig-api-machinery/3157-watch-list/README.md",
+          "rawLinkText": "((https://github.com/kubernetes/enhancements/blob/master/keps/sig-api-machinery/3157-watch-list/README.md#motivation)"
         },
         {
-          "sourceId": "3157-watch-list",
-          "sourceFile": "keps/sig-api-machinery/3157-watch-list/README.md",
-          "missingId": "ADR-cacher_deep_copy",
-          "rawLinkText": "(./cacher_deep_copy.png \"removing deep copying of object from the watch cache\")"
+          "sourceId": "4988-snapshottable-api-server-cache",
+          "sourceFile": "keps/sig-api-machinery/4988-snapshottable-api-server-cache/README.md",
+          "missingId": "keps/sig-api-machinery/4988-snapshottable-api-server-cache/[https:/pkg.go.dev/hash/fnv](https:/pkg.go.dev/hash/fnv",
+          "rawLinkText": "([https://pkg.go.dev/hash/fnv](https://pkg.go.dev/hash/fnv)"
         },
         {
-          "sourceId": "3157-watch-list",
-          "sourceFile": "keps/sig-api-machinery/3157-watch-list/README.md",
-          "missingId": "ADR-watch_server_allocs",
-          "rawLinkText": "(./watch_server_allocs.png \"memory allocations in the watch server per object\")"
+          "sourceId": "5073-declarative-validation-with-validation-gen",
+          "sourceFile": "keps/sig-api-machinery/5073-declarative-validation-with-validation-gen/README.md",
+          "missingId": "keps/sig-api-machinery/5073-declarative-validation-with-validation-gen/v1.Recreate, v1.RollingUpdate",
+          "rawLinkText": "(v1.Recreate, v1.RollingUpdate)"
         },
         {
-          "sourceId": "3157-watch-list",
-          "sourceFile": "keps/sig-api-machinery/3157-watch-list/README.md",
-          "missingId": "ADR-memory_usage_after",
-          "rawLinkText": "(./memory_usage_after.png \"memory consumption during the synthetic test with the proposed changes\")"
+          "sourceId": "575-crd-defaulting",
+          "sourceFile": "keps/sig-api-machinery/575-crd-defaulting/README.md",
+          "missingId": "keps/sig-api-machinery/20190425-structural-openapi.md",
+          "rawLinkText": "(/keps/sig-api-machinery/20190425-structural-openapi.md)"
         },
         {
-          "sourceId": "4006-transition-spdy-to-websockets",
-          "sourceFile": "keps/sig-api-machinery/4006-transition-spdy-to-websockets/README.md",
-          "missingId": "ADR-spdy-architechtural-diagram",
-          "rawLinkText": "(./spdy-architechtural-diagram.png)"
+          "sourceId": "575-crd-defaulting",
+          "sourceFile": "keps/sig-api-machinery/575-crd-defaulting/README.md",
+          "missingId": "keps/sig-api-machinery/20180731-crd-pruning.md",
+          "rawLinkText": "(/keps/sig-api-machinery/20180731-crd-pruning.md)"
         },
         {
-          "sourceId": "4006-transition-spdy-to-websockets",
-          "sourceFile": "keps/sig-api-machinery/4006-transition-spdy-to-websockets/README.md",
-          "missingId": "ADR-remote-command-subprotocol",
-          "rawLinkText": "(./remote-command-subprotocol.png)"
+          "sourceId": "598-crd-conversion-webhook",
+          "sourceFile": "keps/sig-api-machinery/598-crd-conversion-webhook/README.md",
+          "missingId": "contributors/devel/sig-architecture/api_changes.md",
+          "rawLinkText": "(/contributors/devel/sig-architecture/api_changes.md#backward-compatibility-gotchas)"
         },
         {
-          "sourceId": "4006-transition-spdy-to-websockets",
-          "sourceFile": "keps/sig-api-machinery/4006-transition-spdy-to-websockets/README.md",
-          "missingId": "ADR-stream-translator-proxy-2",
-          "rawLinkText": "(./stream-translator-proxy-2.png)"
+          "sourceId": "2185-random-pod-select-on-replicaset-downscale",
+          "sourceFile": "keps/sig-apps/2185-random-pod-select-on-replicaset-downscale/README.md",
+          "missingId": "keps/sig-apps/2185-random-pod-select-on-replicaset-downscale/git.k8s.io/enhancements/keps/sig-apps/2255-pod-cost",
+          "rawLinkText": "(git.k8s.io/enhancements/keps/sig-apps/2255-pod-cost)"
         },
         {
-          "sourceId": "4080-generic-controlplane",
-          "sourceFile": "keps/sig-api-machinery/4080-generic-controlplane/README.md",
-          "missingId": "ADR-staging-repos",
-          "rawLinkText": "(./staging-repos.svg)"
+          "sourceId": "3335-statefulset-slice",
+          "sourceFile": "keps/sig-apps/3335-statefulset-slice/README.md",
+          "missingId": "keps/sig-apps/3335-statefulset-slice/StatefulSet",
+          "rawLinkText": "(StatefulSet)"
         }
       ]
     },
@@ -168,67 +269,178 @@
       "repo": "cosmos/cosmos-sdk",
       "commitSha": "06a015222f13fe7b41bc3969504da7dee875ae5c",
       "cycles": [],
-      "mutualReferences": [],
+      "mutualReferences": [
+        {
+          "pair": [
+            "PROCESS",
+            "architecture"
+          ],
+          "edges": [
+            {
+              "dependentId": "PROCESS",
+              "dependentFile": "docs/architecture/PROCESS.md",
+              "dependencyId": "architecture",
+              "dependencyFile": "docs/architecture/README.md",
+              "rawLinkText": "(./README.md)"
+            },
+            {
+              "dependentId": "architecture",
+              "dependentFile": "docs/architecture/README.md",
+              "dependencyId": "PROCESS",
+              "dependencyFile": "docs/architecture/PROCESS.md",
+              "rawLinkText": "(./PROCESS.md)"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "adr-007-specialization-groups",
+            "adr-008-dCERT-group"
+          ],
+          "edges": [
+            {
+              "dependentId": "adr-007-specialization-groups",
+              "dependentFile": "docs/architecture/adr-007-specialization-groups.md",
+              "dependencyId": "adr-008-dCERT-group",
+              "dependencyFile": "docs/architecture/adr-008-dCERT-group.md",
+              "rawLinkText": "(./adr-008-dCERT-group.md)"
+            },
+            {
+              "dependentId": "adr-008-dCERT-group",
+              "dependentFile": "docs/architecture/adr-008-dCERT-group.md",
+              "dependencyId": "adr-007-specialization-groups",
+              "dependencyFile": "docs/architecture/adr-007-specialization-groups.md",
+              "rawLinkText": "(./adr-007-specialization-groups.md)"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "adr-020-protobuf-transaction-encoding",
+            "adr-027-deterministic-protobuf-serialization"
+          ],
+          "edges": [
+            {
+              "dependentId": "adr-020-protobuf-transaction-encoding",
+              "dependentFile": "docs/architecture/adr-020-protobuf-transaction-encoding.md",
+              "dependencyId": "adr-027-deterministic-protobuf-serialization",
+              "dependencyFile": "docs/architecture/adr-027-deterministic-protobuf-serialization.md",
+              "rawLinkText": "(./adr-027-deterministic-protobuf-serialization.md)"
+            },
+            {
+              "dependentId": "adr-027-deterministic-protobuf-serialization",
+              "dependentFile": "docs/architecture/adr-027-deterministic-protobuf-serialization.md",
+              "dependencyId": "adr-020-protobuf-transaction-encoding",
+              "dependencyFile": "docs/architecture/adr-020-protobuf-transaction-encoding.md",
+              "rawLinkText": "(./adr-020-protobuf-transaction-encoding.md)"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "adr-050-sign-mode-textual",
+            "adr-050-sign-mode-textual-annex1"
+          ],
+          "edges": [
+            {
+              "dependentId": "adr-050-sign-mode-textual",
+              "dependentFile": "docs/architecture/adr-050-sign-mode-textual.md",
+              "dependencyId": "adr-050-sign-mode-textual-annex1",
+              "dependencyFile": "docs/architecture/adr-050-sign-mode-textual-annex1.md",
+              "rawLinkText": "(./adr-050-sign-mode-textual-annex1.md)"
+            },
+            {
+              "dependentId": "adr-050-sign-mode-textual-annex1",
+              "dependentFile": "docs/architecture/adr-050-sign-mode-textual-annex1.md",
+              "dependencyId": "adr-050-sign-mode-textual",
+              "dependencyFile": "docs/architecture/adr-050-sign-mode-textual.md",
+              "rawLinkText": "(./adr-050-sign-mode-textual.md)"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "adr-057-app-wiring",
+            "adr-063-core-module-api"
+          ],
+          "edges": [
+            {
+              "dependentId": "adr-057-app-wiring",
+              "dependentFile": "docs/architecture/adr-057-app-wiring.md",
+              "dependencyId": "adr-063-core-module-api",
+              "dependencyFile": "docs/architecture/adr-063-core-module-api.md",
+              "rawLinkText": "(./adr-063-core-module-api.md)"
+            },
+            {
+              "dependentId": "adr-063-core-module-api",
+              "dependentFile": "docs/architecture/adr-063-core-module-api.md",
+              "dependencyId": "adr-057-app-wiring",
+              "dependencyFile": "docs/architecture/adr-057-app-wiring.md",
+              "rawLinkText": "(./adr-057-app-wiring.md)"
+            }
+          ]
+        }
+      ],
       "brokenLinks": [
         {
-          "sourceId": "PROCESS",
-          "sourceFile": "docs/architecture/PROCESS.md",
-          "missingId": "ADR-README",
-          "rawLinkText": "(./README.md)"
+          "sourceId": "adr-027-deterministic-protobuf-serialization",
+          "sourceFile": "docs/architecture/adr-027-deterministic-protobuf-serialization.md",
+          "missingId": "ADR-020",
+          "rawLinkText": "[ADR-020]"
         },
         {
-          "sourceId": "architecture",
-          "sourceFile": "docs/architecture/README.md",
-          "missingId": "ADR-PROCESS",
-          "rawLinkText": "(./PROCESS.md)"
+          "sourceId": "adr-031-msg-service",
+          "sourceFile": "docs/architecture/adr-031-msg-service.md",
+          "missingId": "ADR-020",
+          "rawLinkText": "[ADR-020]"
         },
         {
-          "sourceId": "architecture",
-          "sourceFile": "docs/architecture/README.md",
-          "missingId": "ADR-adr-002-docs-structure",
-          "rawLinkText": "(./adr-002-docs-structure.md)"
+          "sourceId": "adr-033-protobuf-inter-module-comm",
+          "sourceFile": "docs/architecture/adr-033-protobuf-inter-module-comm.md",
+          "missingId": "ADR-021",
+          "rawLinkText": "[ADR-021]"
         },
         {
-          "sourceId": "architecture",
-          "sourceFile": "docs/architecture/README.md",
-          "missingId": "ADR-adr-004-split-denomination-keys",
-          "rawLinkText": "(./adr-004-split-denomination-keys.md)"
+          "sourceId": "adr-033-protobuf-inter-module-comm",
+          "sourceFile": "docs/architecture/adr-033-protobuf-inter-module-comm.md",
+          "missingId": "ADR-031",
+          "rawLinkText": "[ADR-031]"
         },
         {
-          "sourceId": "architecture",
-          "sourceFile": "docs/architecture/README.md",
-          "missingId": "ADR-adr-006-secret-store-replacement",
-          "rawLinkText": "(./adr-006-secret-store-replacement.md)"
+          "sourceId": "adr-033-protobuf-inter-module-comm",
+          "sourceFile": "docs/architecture/adr-033-protobuf-inter-module-comm.md",
+          "missingId": "docs/docs/learn/advanced/10-ocap.md",
+          "rawLinkText": "(../docs/learn/advanced/10-ocap.md)"
         },
         {
-          "sourceId": "architecture",
-          "sourceFile": "docs/architecture/README.md",
-          "missingId": "ADR-adr-009-evidence-module",
-          "rawLinkText": "(./adr-009-evidence-module.md)"
+          "sourceId": "adr-042-group-module",
+          "sourceFile": "docs/architecture/adr-042-group-module.md",
+          "missingId": "ADR-033",
+          "rawLinkText": "[ADR-033]"
         },
         {
-          "sourceId": "architecture",
-          "sourceFile": "docs/architecture/README.md",
-          "missingId": "ADR-adr-010-modular-antehandler",
-          "rawLinkText": "(./adr-010-modular-antehandler.md)"
+          "sourceId": "adr-045-check-delivertx-middlewares",
+          "sourceFile": "docs/architecture/adr-045-check-delivertx-middlewares.md",
+          "missingId": "ADR-022",
+          "rawLinkText": "[ADR-022]"
         },
         {
-          "sourceId": "architecture",
-          "sourceFile": "docs/architecture/README.md",
-          "missingId": "ADR-adr-019-protobuf-state-encoding",
-          "rawLinkText": "(./adr-019-protobuf-state-encoding.md)"
+          "sourceId": "adr-045-check-delivertx-middlewares",
+          "sourceFile": "docs/architecture/adr-045-check-delivertx-middlewares.md",
+          "missingId": "ADR-010",
+          "rawLinkText": "[ADR-010]"
         },
         {
-          "sourceId": "architecture",
-          "sourceFile": "docs/architecture/README.md",
-          "missingId": "ADR-adr-020-protobuf-transaction-encoding",
-          "rawLinkText": "(./adr-020-protobuf-transaction-encoding.md)"
+          "sourceId": "adr-050-sign-mode-textual-annex1",
+          "sourceFile": "docs/architecture/adr-050-sign-mode-textual-annex1.md",
+          "missingId": "ADR-050",
+          "rawLinkText": "[ADR-050]"
         },
         {
-          "sourceId": "architecture",
-          "sourceFile": "docs/architecture/README.md",
-          "missingId": "ADR-adr-021-protobuf-query-encoding",
-          "rawLinkText": "(./adr-021-protobuf-query-encoding.md)"
+          "sourceId": "adr-050-sign-mode-textual",
+          "sourceFile": "docs/architecture/adr-050-sign-mode-textual.md",
+          "missingId": "ADR-020",
+          "rawLinkText": "[ADR-020]"
         }
       ]
     },
@@ -328,6 +540,18 @@
       ],
       "brokenLinks": [
         {
+          "sourceId": "ADR-0027",
+          "sourceFile": "docs/decisions/0027-synchronization.md",
+          "missingId": "docs/code-howtos/remote-storage-jabdrive.md",
+          "rawLinkText": "(../code-howtos/remote-storage-jabdrive.md)"
+        },
+        {
+          "sourceId": "ADR-0027",
+          "sourceFile": "docs/decisions/0027-synchronization.md",
+          "missingId": "docs/code-howtos/remote-storage-sql.md",
+          "rawLinkText": "(../code-howtos/remote-storage-sql.md)"
+        },
+        {
           "sourceId": "ADR-0033",
           "sourceFile": "docs/decisions/0033-store-chats-in-mvstore.md",
           "missingId": "ADR-032",
@@ -340,16 +564,40 @@
           "rawLinkText": "[ADR-038]"
         },
         {
-          "sourceId": "ADR-0036",
-          "sourceFile": "docs/decisions/0036-use-markdown-for-chat-content.md",
-          "missingId": "ADR-0042-use-markdowntextflow-for-summarization-content",
-          "rawLinkText": "(./0042-use-markdowntextflow-for-summarization-content.md)"
+          "sourceId": "ADR-0067",
+          "sourceFile": "docs/decisions/0067-use-pandoc-for-bst-conversion.md",
+          "missingId": "docs/code-howtos/openoffice/code-reorganization.md",
+          "rawLinkText": "(../code-howtos/openoffice/code-reorganization.md)"
         },
         {
           "sourceId": "ADR-0068",
           "sourceFile": "docs/decisions/0068-use-a-preference-for-Zotero-compatibility-mode.md",
           "missingId": "ADR-64",
           "rawLinkText": "[ADR-64]"
+        },
+        {
+          "sourceId": "ADR-0077",
+          "sourceFile": "docs/decisions/0077-use-conservative-text-evidence-for-pdf-authors.md",
+          "missingId": "docs/requirements/pdf-import.md",
+          "rawLinkText": "(../requirements/pdf-import.md)"
+        },
+        {
+          "sourceId": "ADR-0079",
+          "sourceFile": "docs/decisions/0079-generate-git-commit-messages-in-english-only.md",
+          "missingId": "docs/code-howtos/localization.md",
+          "rawLinkText": "(../code-howtos/localization.md)"
+        },
+        {
+          "sourceId": "ADR-0084",
+          "sourceFile": "docs/decisions/0084-canonical-writer-citations.md",
+          "missingId": "docs/code-howtos/openoffice/order-of-appearance.md",
+          "rawLinkText": "(../code-howtos/openoffice/order-of-appearance.md)"
+        },
+        {
+          "sourceId": "ADR-0084",
+          "sourceFile": "docs/decisions/0084-canonical-writer-citations.md",
+          "missingId": "docs/code-howtos/openoffice/overview.md",
+          "rawLinkText": "(../code-howtos/openoffice/overview.md)"
         }
       ]
     },
@@ -358,32 +606,7 @@
       "commitSha": "89854bdaa299203bccae8b64bcfb690d4d8c5824",
       "cycles": [],
       "mutualReferences": [],
-      "brokenLinks": [
-        {
-          "sourceId": "ADR-006",
-          "sourceFile": "decision-records/006-javascript-compatibility.md",
-          "missingId": "ADR-001-javascript-for-less-capable-browsers",
-          "rawLinkText": "(./001-javascript-for-less-capable-browsers.md)"
-        },
-        {
-          "sourceId": "ADR-007",
-          "sourceFile": "decision-records/007-javascript-file-formats.md",
-          "missingId": "ADR-005-repository-organisation-for-v5",
-          "rawLinkText": "(./005-repository-organisation-for-v5.md)"
-        },
-        {
-          "sourceId": "ADR-007",
-          "sourceFile": "decision-records/007-javascript-file-formats.md",
-          "missingId": "ADR-006-javascript-compatibility",
-          "rawLinkText": "(./006-javascript-compatibility.md)"
-        },
-        {
-          "sourceId": "ADR-010",
-          "sourceFile": "decision-records/010-remove-init-method.md",
-          "missingId": "ADR-009-throw-errors-component-constructors",
-          "rawLinkText": "(./009-throw-errors-component-constructors.md)"
-        }
-      ]
+      "brokenLinks": []
     }
   ]
 }

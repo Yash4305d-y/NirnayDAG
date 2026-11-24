@@ -63,6 +63,16 @@ export function generateFindingsMarkdown(report: CorpusBenchmarkReport): string 
     .map((r) => `- [ ] **${r.repo}** — Review sample of ${Math.min(10, r.brokenLinks)} of ${r.brokenLinks} broken link(s) in \`results/evidence.json\``)
     .join('\n');
 
+  const linkComparisonRows = results
+    .map((r) => {
+      const resolved = r.resolvedLinks ?? 0;
+      const nonDecision = r.nonDecisionLinks ?? 0;
+      const beforeEdges = r.before ? `${r.before.edges}` : '—';
+      const beforeBroken = r.before ? `${r.before.brokenLinks}` : '—';
+      return `| **${r.repo}** | ${resolved} | ${nonDecision} | ${r.brokenLinks} | ${beforeEdges} → ${r.edges} | ${beforeBroken} → ${r.brokenLinks} |`;
+    })
+    .join('\n');
+
   const droppedRows = droppedRepositories
     .map((d) => `| [${d.name}](${d.url}) | ${d.license} | **Dropped** | ${d.reason} |`)
     .join('\n');
@@ -113,6 +123,17 @@ ${tableRows}
 - **Edges (Hard / Soft)**: Active intra-repo edges split into hard dependencies (frontmatter \`depends_on\` / \`supersedes\` or status \`Supersedes ADR-XXXX\`) and soft references (body markdown links and ID tokens).
 - **Hard Cycles / Mutual Refs**: Hard cycles fail \`ndag validate\`; soft mutual references are informational only.
 - **Checkout Time (cached)**: Time to verify/checkout the pinned commit SHA from the local \`.corpus/\` cache (50–60 ms reflects cached local checkouts, not fresh network clones).
+
+### Link Resolution & Before/After Comparison (Phase 2C-1)
+
+| Repository | Resolved Links | Non-Decision Links | Truly Broken Links | Edges (Before → After) | Broken Links (Before → After) |
+| :--- |:---:|:---:|:---:|:---:|:---:|
+${linkComparisonRows}
+
+*Notes:*
+- **Resolved Links**: Relative Markdown links resolved by file path to a decision node in the same repository (creating soft edges).
+- **Non-Decision Links**: Relative Markdown links whose target exists on disk (e.g., \`PROCESS.md\`, images, diagrams) but is not a decision node.
+- **Truly Broken Links**: Missing decision targets (plus any unresolved hard/ID references); external \`http(s)\` links are excluded.
 
 ---
 
