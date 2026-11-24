@@ -5,6 +5,7 @@ import {
   analyzeDecisionFiles,
   readDirectoryDecisionFiles,
   aggregateFailureReasons,
+  deriveFallbackId,
 } from '../scripts/corpus/analyzer.js';
 import { generateFindingsMarkdown } from '../scripts/corpus/reporter.js';
 import type { CorpusBenchmarkReport } from '../scripts/corpus/types.js';
@@ -206,5 +207,54 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
     const colCounts = tableLines.map((l) => l.split('|').length);
     expect(colCounts[0]).toBe(colCounts[1]);
     expect(colCounts[1]).toBe(colCounts[2]);
+  });
+
+  describe('Fallback ID derivation & collision disambiguation', () => {
+    it('derives fallback ID from parent directory name for generic filenames README.md and index.md', () => {
+      expect(deriveFallbackId('keps/sig-api/1027-api-unions/README.md')).toBe('1027-api-unions');
+      expect(deriveFallbackId('docs/architecture/index.md')).toBe('architecture');
+      expect(deriveFallbackId('README.md')).toBe('README');
+      expect(deriveFallbackId('0001-base.md')).toBe('ADR-0001');
+    });
+
+    it('keeps distinct parent-dir READMEs as distinct nodes without collision', () => {
+      const outcome = analyzeDecisionFiles([
+        {
+          relativePath: 'keps/sig-api/1027-api-unions/README.md',
+          content: '# API Unions\n',
+        },
+        {
+          relativePath: 'keps/sig-node/2001-node-feature/README.md',
+          content: '# Node Feature\n',
+        },
+      ]);
+
+      expect(outcome.filesParsedOK).toBe(2);
+      expect(outcome.nodes).toBe(2);
+      expect(outcome.duplicateIdsCount).toBe(0);
+      expect(outcome.uniqueIdsCount).toBe(2);
+    });
+
+    it('disambiguates remaining ID collisions by appending relative path and counts colliding files', () => {
+      const outcome = analyzeDecisionFiles([
+        {
+          relativePath: 'sig-a/1027-shared/README.md',
+          content: '# First\n',
+        },
+        {
+          relativePath: 'sig-b/1027-shared/README.md',
+          content: '# Second\n',
+        },
+        {
+          relativePath: 'docs/unique.md',
+          content: '---\nid: UNIQUE-1\ntitle: Unique\n---\n# Unique\n',
+        },
+      ]);
+
+      expect(outcome.filesParsedOK).toBe(3);
+      expect(outcome.nodes).toBe(3);
+      expect(outcome.duplicateIdsCount).toBe(2);
+      expect(outcome.uniqueIdsCount).toBe(3);
+    });
   });
 });

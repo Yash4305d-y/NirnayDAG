@@ -34,6 +34,8 @@ export interface AnalysisOutcome {
   parseFailures: FileParseFailure[];
   topFailureReasons: FailureReasonCount[];
   extractionQuality: ExtractionQualityMetrics;
+  duplicateIdsCount: number;
+  uniqueIdsCount: number;
   nodes: number;
   edges: number;
   edgeDensity: number;
@@ -60,7 +62,17 @@ export function aggregateFailureReasons(failures: FileParseFailure[]): FailureRe
 }
 
 export function deriveFallbackId(relativePath: string): string {
-  const baseName = path.basename(relativePath).replace(/\.(md|mdx)$/i, '');
+  const normalized = relativePath.replace(/\\/g, '/');
+  const baseName = path.posix.basename(normalized).replace(/\.(md|mdx)$/i, '');
+  const lower = baseName.toLowerCase();
+
+  if (lower === 'readme' || lower === 'index') {
+    const parentDir = path.posix.basename(path.posix.dirname(normalized));
+    if (parentDir && parentDir !== '.' && parentDir !== '/') {
+      return parentDir;
+    }
+  }
+
   const numMatch = baseName.match(/^(\d+)/);
   if (numMatch) {
     return `ADR-${numMatch[1]}`;
@@ -157,6 +169,8 @@ export function analyzeDecisionFiles(files: DecisionFileInput[]): AnalysisOutcom
         throw new Error('Parser returned incomplete ADR structure');
       }
 
+      parsed.filePath = file.relativePath;
+
       const { data: rawFm } = extractRawFrontmatter(file.content);
 
       if (parsed.frontmatter.title && parsed.frontmatter.title !== 'Untitled ADR') {
@@ -174,11 +188,6 @@ export function analyzeDecisionFiles(files: DecisionFileInput[]): AnalysisOutcom
       } else {
         idGeneratedCount++;
       }
-
-      idToRecord.set(parsed.frontmatter.id, {
-        relativePath: file.relativePath,
-        content: file.content,
-      });
 
       parsedADRs.push(parsed);
     } catch (err: unknown) {
@@ -218,6 +227,8 @@ export function analyzeDecisionFiles(files: DecisionFileInput[]): AnalysisOutcom
       parseFailures,
       topFailureReasons,
       extractionQuality,
+      duplicateIdsCount: 0,
+      uniqueIdsCount: 0,
       nodes: 0,
       edges: 0,
       edgeDensity: 0,
@@ -228,6 +239,45 @@ export function analyzeDecisionFiles(files: DecisionFileInput[]): AnalysisOutcom
       evidence: { cycles: [], brokenLinks: [] },
     };
   }
+
+  // Count initial ID collisions across parsed files, then disambiguate by appending relativePath
+  const initialIdCounts = new Map<string, number>();
+  for (const adr of parsedADRs) {
+    const id = adr.frontmatter.id;
+    initialIdCounts.set(id, (initialIdCounts.get(id) || 0) + 1);
+  }
+
+  let duplicateIdsCount = 0;
+  const usedIds = new Set<string>();
+  const fileContentByPath = new Map<string, string>();
+  for (const file of files) {
+    fileContentByPath.set(file.relativePath, file.content);
+  }
+
+  for (const adr of parsedADRs) {
+    const initialId = adr.frontmatter.id;
+    if ((initialIdCounts.get(initialId) || 0) > 1) {
+      duplicateIdsCount++;
+    }
+
+    let finalId = initialId;
+    if (usedIds.has(finalId)) {
+      finalId = `${initialId}::${adr.filePath || 'unknown'}`;
+      let suffix = 1;
+      while (usedIds.has(finalId)) {
+        finalId = `${initialId}::${adr.filePath || 'unknown'}#${suffix++}`;
+      }
+      adr.frontmatter.id = finalId;
+    }
+
+    usedIds.add(finalId);
+    idToRecord.set(finalId, {
+      relativePath: adr.filePath || 'unknown',
+      content: adr.rawContent,
+    });
+  }
+
+  const uniqueIdsCount = usedIds.size;
 
   const { validationResult, engine, mappedAdrs } = validateAndComputeDAG(parsedADRs);
   const nodes = mappedAdrs.length;
@@ -298,6 +348,8 @@ export function analyzeDecisionFiles(files: DecisionFileInput[]): AnalysisOutcom
     parseFailures,
     topFailureReasons,
     extractionQuality,
+    duplicateIdsCount,
+    uniqueIdsCount,
     nodes,
     edges: totalEdges,
     edgeDensity,
