@@ -5,3 +5,5 @@ export { parseADRMarkdown } from './core/adrParser.js';
 export type { NirnayADR, DecisionStatus } from './core/types.js';
 export { calculateArchitectureRisk } from './core/risk.js';
 export type { ArchitectureRiskResult, RiskFactorBreakdown, RiskLevel, RiskInputParams } from './core/risk.js';
+export { generatePRReport } from './core/report.js';
+export type { ReportOptions, ReportResult } from './core/report.js';

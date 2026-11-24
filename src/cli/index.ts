@@ -10,6 +10,7 @@ import Table from 'cli-table3';
 import { parseBatchADRs } from '../core/adrParser.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
 import { calculateArchitectureRisk } from '../core/risk.js';
+import { generatePRReport } from '../core/report.js';
 import { runInteractiveSession } from './interactive.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -174,26 +175,23 @@ program
   .command('report [dir]')
   .description('Generates nirnay-pr-summary.md directly from the terminal for CI workflows')
   .option('-d, --dir <path>', 'Directory containing ADR markdown files')
-  .action((positionalDir, options) => {
+  .action(async (positionalDir, options) => {
     const targetDir = options.dir || positionalDir || process.env.ADR_DIR || './docs/adr';
-    const isDist = __dirname.endsWith('dist');
-    const projectRoot = isDist ? path.resolve(__dirname, '..') : path.resolve(__dirname, '../../');
-    const scriptPath = path.join(projectRoot, 'scripts/pr-blast-radius.ts');
-    
-    spawnSync('npx', ['tsx', scriptPath, targetDir], { 
-      stdio: 'inherit', 
-      shell: true, 
-      env: { ...process.env, ADR_DIR: targetDir } 
-    });
+    try {
+      const result = await generatePRReport({ adrDir: targetDir });
 
-    if (process.env.ANTIGRAVITY_SESSION) {
-      const reportPath = path.resolve(process.cwd(), 'nirnay-pr-summary.md');
-      if (fs.existsSync(reportPath)) {
-        const artifactsDir = path.resolve(process.cwd(), '.antigravity', 'artifacts');
-        fs.ensureDirSync(artifactsDir);
-        fs.copyFileSync(reportPath, path.join(artifactsDir, 'nirnay-pr-summary.md'));
-        console.log(chalk.green(`\nArtifact saved to .antigravity/artifacts/nirnay-pr-summary.md`));
+      if (process.env.ANTIGRAVITY_SESSION) {
+        const reportPath = path.resolve(process.cwd(), result.summaryFile);
+        if (fs.existsSync(reportPath)) {
+          const artifactsDir = path.resolve(process.cwd(), '.antigravity', 'artifacts');
+          fs.ensureDirSync(artifactsDir);
+          fs.copyFileSync(reportPath, path.join(artifactsDir, 'nirnay-pr-summary.md'));
+          console.log(chalk.green(`\nArtifact saved to .antigravity/artifacts/nirnay-pr-summary.md`));
+        }
       }
+    } catch (err: any) {
+      console.error(chalk.red(`Failed to generate PR blast radius report: ${err.message}`));
+      process.exit(1);
     }
   });
 
