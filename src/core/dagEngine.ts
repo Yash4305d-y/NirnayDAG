@@ -1,20 +1,44 @@
 import type { NirnayADR, ParsedADR } from './types.js';
 
+export interface DuplicateIdError {
+  id: string;
+  files: string[];
+}
+
 export interface DAGValidationResult {
   isValid: boolean;
   hasCycle: boolean;
   cyclePath?: string[];
   missingDependencies: { adrId: string; missingId: string }[];
+  duplicateIds: DuplicateIdError[];
   topologicalOrder: string[];
 }
 
 export class DAGEngine {
   private adrs: Map<string, NirnayADR>;
+  private duplicateIds: DuplicateIdError[];
   private adjacencyList: Map<string, string[]>; // dependency -> dependents (forward)
   private reverseAdjacencyList: Map<string, string[]>; // dependent -> dependencies (backward)
 
   constructor(adrs: NirnayADR[]) {
-    this.adrs = new Map(adrs.map((a) => [a.id, a]));
+    this.adrs = new Map();
+    const idOccurrences = new Map<string, string[]>();
+
+    for (const adr of adrs) {
+      const fileLabel = adr.filePath || '<unknown>';
+      const list = idOccurrences.get(adr.id);
+      if (list) {
+        list.push(fileLabel);
+      } else {
+        idOccurrences.set(adr.id, [fileLabel]);
+        this.adrs.set(adr.id, adr);
+      }
+    }
+
+    this.duplicateIds = Array.from(idOccurrences.entries())
+      .filter(([, files]) => files.length > 1)
+      .map(([id, files]) => ({ id, files }));
+
     this.adjacencyList = new Map();
     this.reverseAdjacencyList = new Map();
 
@@ -93,10 +117,11 @@ export class DAGEngine {
     }
 
     return {
-      isValid: !hasCycle && missingDependencies.length === 0,
+      isValid: !hasCycle && missingDependencies.length === 0 && this.duplicateIds.length === 0,
       hasCycle,
       cyclePath,
       missingDependencies,
+      duplicateIds: this.duplicateIds,
       topologicalOrder,
     };
   }
@@ -140,6 +165,34 @@ export class DAGEngine {
     }
 
     return [];
+  }
+
+  public getNodeIds(): string[] {
+    return Array.from(this.adrs.keys());
+  }
+
+  public getNodeCount(): number {
+    return this.adrs.size;
+  }
+
+  public getEdgeCount(): number {
+    let edges = 0;
+    this.adjacencyList.forEach((dependents) => {
+      edges += dependents.length;
+    });
+    return edges;
+  }
+
+  public getIsolatedNodeCount(): number {
+    let isolated = 0;
+    this.adrs.forEach((_, id) => {
+      const deps = this.reverseAdjacencyList.get(id) || [];
+      const dependents = this.adjacencyList.get(id) || [];
+      if (deps.length === 0 && dependents.length === 0) {
+        isolated++;
+      }
+    });
+    return isolated;
   }
 
   /**
@@ -281,6 +334,7 @@ export function mapParsedToNirnay(parsed: ParsedADR): NirnayADR {
     dependencies: parsed.frontmatter.depends_on || [],
     supersedes: parsed.frontmatter.supersedes?.[0],
     tags: parsed.frontmatter.tags || [],
+    filePath: parsed.filePath,
   };
 }
 

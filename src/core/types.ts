@@ -15,6 +15,7 @@ export interface NirnayADR extends Record<string, unknown> {
   dependencies: string[];
   supersedes?: string;
   tags?: string[];
+  filePath?: string;
 }
 
 export interface NirnayEdge {
@@ -64,6 +65,7 @@ export interface ParsedADR {
   decision: string;
   consequences: ADRConsequences;
   rawContent: string;
+  filePath?: string;
 }
 
 export type BlastRadiusMap = Record<string, {

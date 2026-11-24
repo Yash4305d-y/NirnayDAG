@@ -149,7 +149,7 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
   };
 }
 
-export function parseBatchADRs(files: Array<{ name: string; content: string }>): ParsedADR[] {
+export function parseBatchADRs(files: Array<{ name: string; content: string; filePath?: string }>): ParsedADR[] {
   const parsedADRs: ParsedADR[] = [];
 
   for (const file of files) {
@@ -166,6 +166,7 @@ export function parseBatchADRs(files: Array<{ name: string; content: string }>):
       }
 
       const parsed = parseADRContent(file.content, fallbackId);
+      parsed.filePath = file.filePath ?? file.name;
       parsedADRs.push(parsed);
     } catch (e) {
       console.warn(`Error parsing ADR file ${file.name}:`, e);

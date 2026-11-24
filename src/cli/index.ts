@@ -39,6 +39,7 @@ async function loadAndValidate(dir: string) {
   const fileData = await Promise.all(
     files.map(async (file) => ({
       name: path.basename(file),
+      filePath: path.relative(fullPath, file).replace(/\\/g, '/'),
       content: await fs.readFile(file, 'utf-8'),
     }))
   );
@@ -85,6 +86,12 @@ program
         console.error(chalk.red(`   Broken Links Detected (Missing Dependencies):`));
         validationResult.missingDependencies.forEach(m => {
           console.error(chalk.yellow(`   - ${m.adrId} depends on missing ${m.missingId}`));
+        });
+      }
+      if (validationResult.duplicateIds.length > 0) {
+        console.error(chalk.red(`   Duplicate IDs Detected:`));
+        validationResult.duplicateIds.forEach(d => {
+          console.error(chalk.yellow(`   - Duplicate ID "${d.id}" found in: ${d.files.join(', ')}`));
         });
       }
       process.exit(1);
