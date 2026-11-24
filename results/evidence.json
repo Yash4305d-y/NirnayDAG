@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-11-24T20:14:14.851Z",
-  "runnerVersion": "1.0.0-phase2b",
+  "timestamp": "2026-11-24T20:34:58.721Z",
+  "runnerVersion": "1.0.0-phase2a.2+2b",
   "repositories": [
     {
       "repo": "backstage/backstage",
@@ -103,34 +103,64 @@
       "mutualReferences": [],
       "brokenLinks": [
         {
-          "sourceId": "kubernetes-control-plane-metrics-stability",
-          "sourceFile": "keps/sig-instrumentation/1209-metrics-stability/kubernetes-control-plane-metrics-stability.md",
-          "missingId": "ADR-metrics-validation-and-verification",
-          "rawLinkText": "(./metrics-validation-and-verification.md)"
+          "sourceId": "3157-watch-list",
+          "sourceFile": "keps/sig-api-machinery/3157-watch-list/README.md",
+          "missingId": "ADR-memory_usage_before",
+          "rawLinkText": "(./memory_usage_before.png \"memory consumption during the synthetic test\")"
         },
         {
-          "sourceId": "kubernetes-control-plane-metrics-stability",
-          "sourceFile": "keps/sig-instrumentation/1209-metrics-stability/kubernetes-control-plane-metrics-stability.md",
-          "missingId": "ADR-metrics-stability-to-beta",
-          "rawLinkText": "(./metrics-stability-to-beta.md)"
+          "sourceId": "3157-watch-list",
+          "sourceFile": "keps/sig-api-machinery/3157-watch-list/README.md",
+          "missingId": "ADR-sequence_diagram",
+          "rawLinkText": "(./sequence_diagram.png \"flow between an informer and the watch cache\")"
         },
         {
-          "sourceId": "metrics-stability-migration",
-          "sourceFile": "keps/sig-instrumentation/1209-metrics-stability/metrics-stability-migration.md",
-          "missingId": "ADR-kubernetes-control-plane-metrics-stability",
-          "rawLinkText": "(./kubernetes-control-plane-metrics-stability.md)"
+          "sourceId": "3157-watch-list",
+          "sourceFile": "keps/sig-api-machinery/3157-watch-list/README.md",
+          "missingId": "ADR-cacher",
+          "rawLinkText": "(./cacher.png \"watch cache with the proposed changes\")"
         },
         {
-          "sourceId": "metrics-stability-migration",
-          "sourceFile": "keps/sig-instrumentation/1209-metrics-stability/metrics-stability-migration.md",
-          "missingId": "ADR-metrics-validation-and-verification",
-          "rawLinkText": "(./metrics-validation-and-verification.md)"
+          "sourceId": "3157-watch-list",
+          "sourceFile": "keps/sig-api-machinery/3157-watch-list/README.md",
+          "missingId": "ADR-cacher_deep_copy",
+          "rawLinkText": "(./cacher_deep_copy.png \"removing deep copying of object from the watch cache\")"
         },
         {
-          "sourceId": "metrics-validation-and-verification",
-          "sourceFile": "keps/sig-instrumentation/1209-metrics-stability/metrics-validation-and-verification.md",
-          "missingId": "ADR-kubernetes-control-plane-metrics-stability",
-          "rawLinkText": "(./kubernetes-control-plane-metrics-stability.md)"
+          "sourceId": "3157-watch-list",
+          "sourceFile": "keps/sig-api-machinery/3157-watch-list/README.md",
+          "missingId": "ADR-watch_server_allocs",
+          "rawLinkText": "(./watch_server_allocs.png \"memory allocations in the watch server per object\")"
+        },
+        {
+          "sourceId": "3157-watch-list",
+          "sourceFile": "keps/sig-api-machinery/3157-watch-list/README.md",
+          "missingId": "ADR-memory_usage_after",
+          "rawLinkText": "(./memory_usage_after.png \"memory consumption during the synthetic test with the proposed changes\")"
+        },
+        {
+          "sourceId": "4006-transition-spdy-to-websockets",
+          "sourceFile": "keps/sig-api-machinery/4006-transition-spdy-to-websockets/README.md",
+          "missingId": "ADR-spdy-architechtural-diagram",
+          "rawLinkText": "(./spdy-architechtural-diagram.png)"
+        },
+        {
+          "sourceId": "4006-transition-spdy-to-websockets",
+          "sourceFile": "keps/sig-api-machinery/4006-transition-spdy-to-websockets/README.md",
+          "missingId": "ADR-remote-command-subprotocol",
+          "rawLinkText": "(./remote-command-subprotocol.png)"
+        },
+        {
+          "sourceId": "4006-transition-spdy-to-websockets",
+          "sourceFile": "keps/sig-api-machinery/4006-transition-spdy-to-websockets/README.md",
+          "missingId": "ADR-stream-translator-proxy-2",
+          "rawLinkText": "(./stream-translator-proxy-2.png)"
+        },
+        {
+          "sourceId": "4080-generic-controlplane",
+          "sourceFile": "keps/sig-api-machinery/4080-generic-controlplane/README.md",
+          "missingId": "ADR-staging-repos",
+          "rawLinkText": "(./staging-repos.svg)"
         }
       ]
     },
@@ -147,55 +177,55 @@
           "rawLinkText": "(./README.md)"
         },
         {
-          "sourceId": "README",
+          "sourceId": "architecture",
           "sourceFile": "docs/architecture/README.md",
           "missingId": "ADR-PROCESS",
           "rawLinkText": "(./PROCESS.md)"
         },
         {
-          "sourceId": "README",
+          "sourceId": "architecture",
           "sourceFile": "docs/architecture/README.md",
           "missingId": "ADR-adr-002-docs-structure",
           "rawLinkText": "(./adr-002-docs-structure.md)"
         },
         {
-          "sourceId": "README",
+          "sourceId": "architecture",
           "sourceFile": "docs/architecture/README.md",
           "missingId": "ADR-adr-004-split-denomination-keys",
           "rawLinkText": "(./adr-004-split-denomination-keys.md)"
         },
         {
-          "sourceId": "README",
+          "sourceId": "architecture",
           "sourceFile": "docs/architecture/README.md",
           "missingId": "ADR-adr-006-secret-store-replacement",
           "rawLinkText": "(./adr-006-secret-store-replacement.md)"
         },
         {
-          "sourceId": "README",
+          "sourceId": "architecture",
           "sourceFile": "docs/architecture/README.md",
           "missingId": "ADR-adr-009-evidence-module",
           "rawLinkText": "(./adr-009-evidence-module.md)"
         },
         {
-          "sourceId": "README",
+          "sourceId": "architecture",
           "sourceFile": "docs/architecture/README.md",
           "missingId": "ADR-adr-010-modular-antehandler",
           "rawLinkText": "(./adr-010-modular-antehandler.md)"
         },
         {
-          "sourceId": "README",
+          "sourceId": "architecture",
           "sourceFile": "docs/architecture/README.md",
           "missingId": "ADR-adr-019-protobuf-state-encoding",
           "rawLinkText": "(./adr-019-protobuf-state-encoding.md)"
         },
         {
-          "sourceId": "README",
+          "sourceId": "architecture",
           "sourceFile": "docs/architecture/README.md",
           "missingId": "ADR-adr-020-protobuf-transaction-encoding",
           "rawLinkText": "(./adr-020-protobuf-transaction-encoding.md)"
         },
         {
-          "sourceId": "README",
+          "sourceId": "architecture",
           "sourceFile": "docs/architecture/README.md",
           "missingId": "ADR-adr-021-protobuf-query-encoding",
           "rawLinkText": "(./adr-021-protobuf-query-encoding.md)"

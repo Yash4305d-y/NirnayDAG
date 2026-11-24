@@ -75,7 +75,7 @@ export async function generatePRReport(options: ReportOptions = {}): Promise<Rep
       summaryFile,
       changedCount: 0,
       totalCount: 0,
-      validationResult: { isValid: false, hasCycle: false, missingDependencies: [], topologicalOrder: [] },
+      validationResult: { isValid: false, hasCycle: false, missingDependencies: [], duplicateIds: [], topologicalOrder: [] },
       changedAdrs: [],
     };
   }

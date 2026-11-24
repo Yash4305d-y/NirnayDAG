@@ -157,6 +157,8 @@ export async function benchmarkSingleRepo(
         parseFailures: [{ file: repo.url, reason: errMsg }],
         topFailureReasons: [{ reason: errMsg, count: 1 }],
         extractionQuality: { ...EMPTY_EXTRACTION_QUALITY },
+        duplicateIdsCount: 0,
+        uniqueIdsCount: 0,
         nodes: 0,
         edges: 0,
         hardEdges: 0,
@@ -229,7 +231,7 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
   await fs.ensureDir(corpusCacheDir);
 
   console.log(chalk.bold.magenta('\n======================================================'));
-  console.log(chalk.bold.magenta('  NirnayDAG Corpus Benchmark Runner (Phase 2B)'));
+  console.log(chalk.bold.magenta('  NirnayDAG Corpus Benchmark Runner (Phase 2A.2 + 2B)'));
   console.log(chalk.bold.magenta('======================================================'));
   console.log(chalk.gray(`Target Repositories: ${registry.repositories.length}`));
   console.log(chalk.gray(`Cache Directory: ${corpusCacheDir}`));
@@ -258,6 +260,8 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
         parseFailures: [{ file: repo.name, reason: msg }],
         topFailureReasons: [{ reason: msg, count: 1 }],
         extractionQuality: { ...EMPTY_EXTRACTION_QUALITY },
+        duplicateIdsCount: 0,
+        uniqueIdsCount: 0,
         nodes: 0,
         edges: 0,
         hardEdges: 0,
@@ -285,6 +289,8 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
   const totalFilesParsedOK = results.reduce((acc, r) => acc + r.filesParsedOK, 0);
   const totalNodes = results.reduce((acc, r) => acc + r.nodes, 0);
   const totalEdges = results.reduce((acc, r) => acc + r.edges, 0);
+  const totalDuplicateIds = results.reduce((acc, r) => acc + r.duplicateIdsCount, 0);
+  const totalUniqueIds = results.reduce((acc, r) => acc + r.uniqueIdsCount, 0);
   const totalHardEdges = results.reduce((acc, r) => acc + r.hardEdges, 0);
   const totalSoftEdges = results.reduce((acc, r) => acc + r.softEdges, 0);
   const totalBrokenLinks = results.reduce((acc, r) => acc + r.brokenLinks, 0);
@@ -295,7 +301,7 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
     : 0;
 
   const timestamp = new Date().toISOString();
-  const runnerVersion = '1.0.0-phase2b';
+  const runnerVersion = '1.0.0-phase2a.2+2b';
 
   const report: CorpusBenchmarkReport = {
     timestamp,
@@ -308,6 +314,8 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
       averageParseRatePercent,
       totalNodes,
       totalEdges,
+      totalDuplicateIds,
+      totalUniqueIds,
       totalHardEdges,
       totalSoftEdges,
       totalBrokenLinks,

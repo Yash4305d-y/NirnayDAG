@@ -5,6 +5,7 @@ import {
   analyzeDecisionFiles,
   readDirectoryDecisionFiles,
   aggregateFailureReasons,
+  deriveFallbackId,
 } from '../scripts/corpus/analyzer.js';
 import { generateFindingsMarkdown } from '../scripts/corpus/reporter.js';
 import type { CorpusBenchmarkReport } from '../scripts/corpus/types.js';
@@ -143,7 +144,7 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
   it('generates Markdown report with accurate table rows, matching column counts, and manual validation checkboxes', () => {
     const mockReport: CorpusBenchmarkReport = {
       timestamp: '2026-11-24T00:00:00.000Z',
-      runnerVersion: '1.0.0-phase2b',
+      runnerVersion: '1.0.0-phase2a.2+2b',
       licenseNotice: 'License notice for benchmark test',
       summary: {
         totalReposAnalyzed: 1,
@@ -152,6 +153,8 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
         averageParseRatePercent: 66.7,
         totalNodes: 4,
         totalEdges: 1,
+        totalDuplicateIds: 0,
+        totalUniqueIds: 4,
         totalHardEdges: 1,
         totalSoftEdges: 0,
         totalBrokenLinks: 1,
@@ -188,6 +191,8 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
             idGeneratedPercent: 0,
             edgeSourceBreakdownSupported: true,
           },
+          duplicateIdsCount: 0,
+          uniqueIdsCount: 4,
           nodes: 4,
           edges: 1,
           hardEdges: 1,
@@ -213,7 +218,12 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
     };
 
     const markdown = generateFindingsMarkdown(mockReport);
-    expect(markdown).toContain('| [test-org/test-repo](https://github.com/test-org/test-repo.git) | `abc1234` | `madr` | MIT | 6 | 4 | 66.7% | 75% | 50% | 25% / 75% / 0% | 4 | 1 / 0 | 0.25 | 2 | None | 0 | 1 | 15ms | 50ms |');
+    expect(markdown).toContain('| [test-org/test-repo](https://github.com/test-org/test-repo.git) | `abc1234` | `madr` | MIT | 6 | 4 | 66.7% | 75% | 50% | 25% / 75% / 0% | 0 | 4 | 4 | 1 / 0 | 0.25 | 2 | None | 0 | 1 | 15ms | 50ms |');
+    expect(markdown).toContain('Duplicate IDs');
+    expect(markdown).toContain('Unique IDs');
+    expect(markdown).toContain('Checkout Time (cached)');
+    expect(markdown).not.toContain('| Clone Time |');
+    expect(markdown).toContain('Data Quality');
     expect(markdown).toContain('Total Decision Files Found:** 6');
     expect(markdown).toContain('Parsed OK:** 4 (66.7%)');
     expect(markdown).toContain('Definition — "Parsed OK":');
@@ -234,5 +244,53 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
     const colCounts = tableLines.map((l) => l.split('|').length);
     expect(colCounts[0]).toBe(colCounts[1]);
     expect(colCounts[1]).toBe(colCounts[2]);
+  });
+  describe('Fallback ID derivation & collision disambiguation', () => {
+    it('derives fallback ID from parent directory name for generic filenames README.md and index.md', () => {
+      expect(deriveFallbackId('keps/sig-api/1027-api-unions/README.md')).toBe('1027-api-unions');
+      expect(deriveFallbackId('docs/architecture/index.md')).toBe('architecture');
+      expect(deriveFallbackId('README.md')).toBe('README');
+      expect(deriveFallbackId('0001-base.md')).toBe('ADR-0001');
+    });
+
+    it('keeps distinct parent-dir READMEs as distinct nodes without collision', () => {
+      const outcome = analyzeDecisionFiles([
+        {
+          relativePath: 'keps/sig-api/1027-api-unions/README.md',
+          content: '# API Unions\n',
+        },
+        {
+          relativePath: 'keps/sig-node/2001-node-feature/README.md',
+          content: '# Node Feature\n',
+        },
+      ]);
+
+      expect(outcome.filesParsedOK).toBe(2);
+      expect(outcome.nodes).toBe(2);
+      expect(outcome.duplicateIdsCount).toBe(0);
+      expect(outcome.uniqueIdsCount).toBe(2);
+    });
+
+    it('disambiguates remaining ID collisions by appending relative path and counts colliding files', () => {
+      const outcome = analyzeDecisionFiles([
+        {
+          relativePath: 'sig-a/1027-shared/README.md',
+          content: '# First\n',
+        },
+        {
+          relativePath: 'sig-b/1027-shared/README.md',
+          content: '# Second\n',
+        },
+        {
+          relativePath: 'docs/unique.md',
+          content: '---\nid: UNIQUE-1\ntitle: Unique\n---\n# Unique\n',
+        },
+      ]);
+
+      expect(outcome.filesParsedOK).toBe(3);
+      expect(outcome.nodes).toBe(3);
+      expect(outcome.duplicateIdsCount).toBe(2);
+      expect(outcome.uniqueIdsCount).toBe(3);
+    });
   });
 });

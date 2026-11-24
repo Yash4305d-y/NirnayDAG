@@ -96,6 +96,8 @@ export interface RepoBenchmarkResult {
   parseFailures: FileParseFailure[];
   topFailureReasons: FailureReasonCount[];
   extractionQuality: ExtractionQualityMetrics;
+  duplicateIdsCount: number;
+  uniqueIdsCount: number;
   nodes: number;
   edges: number;
   hardEdges: number;
@@ -126,6 +128,8 @@ export interface CorpusBenchmarkReport {
     averageParseRatePercent: number;
     totalNodes: number;
     totalEdges: number;
+    totalDuplicateIds: number;
+    totalUniqueIds: number;
     totalHardEdges: number;
     totalSoftEdges: number;
     totalBrokenLinks: number;

@@ -306,6 +306,35 @@ describe('DAGEngine', () => {
     });
   });
 
+  describe('Duplicate ID Detection', () => {
+    it('should report duplicate IDs with every file path involved as a validation error', () => {
+      const adrs = [
+        createMockAdr({ id: 'README', filePath: 'keps/sig-api/001/README.md', dependencies: [] }),
+        createMockAdr({ id: 'README', filePath: 'keps/sig-node/002/README.md', dependencies: [] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      const result = engine.validate();
+      expect(result.isValid).toBe(false);
+      expect(result.duplicateIds).toEqual([
+        {
+          id: 'README',
+          files: ['keps/sig-api/001/README.md', 'keps/sig-node/002/README.md'],
+        },
+      ]);
+    });
+
+    it('should leave unique IDs valid with an empty duplicateIds list', () => {
+      const adrs = [
+        createMockAdr({ id: 'ADR-001', filePath: '0001.md', dependencies: [] }),
+        createMockAdr({ id: 'ADR-002', filePath: '0002.md', dependencies: ['ADR-001'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      const result = engine.validate();
+      expect(result.isValid).toBe(true);
+      expect(result.duplicateIds).toEqual([]);
+    });
+  });
+
   describe('Hard vs Soft Edges (Phase 2B)', () => {
     it('(a) still detects a real hard cycle even when soft edges exist', () => {
       const adrs = [
