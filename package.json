@@ -52,6 +52,7 @@
     "dev": "vite",
     "dev:cli": "tsx watch src/cli/index.ts",
     "demo": "tsx scripts/demo.ts",
+    "corpus": "tsx scripts/corpus/run.ts",
     "mcp:inspect": "npx @modelcontextprotocol/inspector node dist/mcp.js"
   },
   "dependencies": {

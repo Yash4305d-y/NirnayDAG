@@ -1,0 +1,288 @@
+{
+  "timestamp": "2026-11-24T19:54:25.054Z",
+  "runnerVersion": "1.0.0-phase2a.1",
+  "repositories": [
+    {
+      "repo": "backstage/backstage",
+      "commitSha": "b3ed9690207fe606362f5785b7cbe91ccc8a8542",
+      "cycles": [],
+      "brokenLinks": [
+        {
+          "sourceId": "adrs-adr008",
+          "sourceFile": "docs/architecture-decisions/adr008-default-catalog-file-name.md",
+          "missingId": "ADR-adr002-default-catalog-file-format",
+          "rawLinkText": "(./adr002-default-catalog-file-format.md)"
+        },
+        {
+          "sourceId": "adrs-adr009",
+          "sourceFile": "docs/architecture-decisions/adr009-entity-references.md",
+          "missingId": "ADR-adr002-default-catalog-file-format",
+          "rawLinkText": "(./adr002-default-catalog-file-format.md)"
+        },
+        {
+          "sourceId": "adrs-adr013",
+          "sourceFile": "docs/architecture-decisions/adr013-use-node-fetch.md",
+          "missingId": "ADR-adr014-use-fetch",
+          "rawLinkText": "(./adr014-use-fetch.md)"
+        },
+        {
+          "sourceId": "adrs-adr014",
+          "sourceFile": "docs/architecture-decisions/adr014-use-fetch.md",
+          "missingId": "ADR-adr013-use-node-fetch",
+          "rawLinkText": "(./adr013-use-node-fetch.md)"
+        }
+      ]
+    },
+    {
+      "repo": "adr/madr",
+      "commitSha": "ba75bb1b20d42af5746b246ad348c202419ae681",
+      "cycles": [
+        {
+          "cyclePath": [
+            "ADR-0008",
+            "ADR-0013",
+            "ADR-0008"
+          ],
+          "edges": [
+            {
+              "dependentId": "ADR-0013",
+              "dependentFile": "docs/decisions/0013-use-yaml-front-matter-for-meta-data.md",
+              "dependencyId": "ADR-0008",
+              "dependencyFile": "docs/decisions/0008-add-status-field.md",
+              "rawLinkText": "[ADR-0008]"
+            },
+            {
+              "dependentId": "ADR-0008",
+              "dependentFile": "docs/decisions/0008-add-status-field.md",
+              "dependencyId": "ADR-0013",
+              "dependencyFile": "docs/decisions/0013-use-yaml-front-matter-for-meta-data.md",
+              "rawLinkText": "[ADR-0013]"
+            }
+          ]
+        }
+      ],
+      "brokenLinks": []
+    },
+    {
+      "repo": "rust-lang/rfcs",
+      "commitSha": "f43d5789b838fb0d80962e3d4b45fb9ddfcc9a07",
+      "cycles": [],
+      "brokenLinks": [
+        {
+          "sourceId": "ADR-3627",
+          "sourceFile": "text/3627-match-ergonomics-2024.md",
+          "missingId": "ADR-2005-match-ergonomics",
+          "rawLinkText": "(./2005-match-ergonomics.md#detailed-design)"
+        },
+        {
+          "sourceId": "ADR-3654",
+          "sourceFile": "text/3654-return-type-notation.md",
+          "missingId": "ADR-1522-conservative-impl-trait",
+          "rawLinkText": "(./1522-conservative-impl-trait.md)"
+        },
+        {
+          "sourceId": "ADR-3654",
+          "sourceFile": "text/3654-return-type-notation.md",
+          "missingId": "ADR-2071-impl-trait-type-alias",
+          "rawLinkText": "(./2071-impl-trait-type-alias.md)"
+        },
+        {
+          "sourceId": "ADR-3764",
+          "sourceFile": "text/3764-Project-Goals-2025h1.md",
+          "missingId": "ADR-build-std",
+          "rawLinkText": "(./build-std.html)"
+        }
+      ]
+    },
+    {
+      "repo": "kubernetes/enhancements",
+      "commitSha": "cac930cb9d7c70192016865425f943c339414011",
+      "cycles": [],
+      "brokenLinks": [
+        {
+          "sourceId": "kubernetes-control-plane-metrics-stability",
+          "sourceFile": "keps/sig-instrumentation/1209-metrics-stability/kubernetes-control-plane-metrics-stability.md",
+          "missingId": "ADR-metrics-validation-and-verification",
+          "rawLinkText": "(./metrics-validation-and-verification.md)"
+        },
+        {
+          "sourceId": "kubernetes-control-plane-metrics-stability",
+          "sourceFile": "keps/sig-instrumentation/1209-metrics-stability/kubernetes-control-plane-metrics-stability.md",
+          "missingId": "ADR-metrics-stability-to-beta",
+          "rawLinkText": "(./metrics-stability-to-beta.md)"
+        },
+        {
+          "sourceId": "metrics-stability-migration",
+          "sourceFile": "keps/sig-instrumentation/1209-metrics-stability/metrics-stability-migration.md",
+          "missingId": "ADR-kubernetes-control-plane-metrics-stability",
+          "rawLinkText": "(./kubernetes-control-plane-metrics-stability.md)"
+        },
+        {
+          "sourceId": "metrics-stability-migration",
+          "sourceFile": "keps/sig-instrumentation/1209-metrics-stability/metrics-stability-migration.md",
+          "missingId": "ADR-metrics-validation-and-verification",
+          "rawLinkText": "(./metrics-validation-and-verification.md)"
+        },
+        {
+          "sourceId": "metrics-validation-and-verification",
+          "sourceFile": "keps/sig-instrumentation/1209-metrics-stability/metrics-validation-and-verification.md",
+          "missingId": "ADR-kubernetes-control-plane-metrics-stability",
+          "rawLinkText": "(./kubernetes-control-plane-metrics-stability.md)"
+        }
+      ]
+    },
+    {
+      "repo": "cosmos/cosmos-sdk",
+      "commitSha": "06a015222f13fe7b41bc3969504da7dee875ae5c",
+      "cycles": [],
+      "brokenLinks": [
+        {
+          "sourceId": "PROCESS",
+          "sourceFile": "docs/architecture/PROCESS.md",
+          "missingId": "ADR-README",
+          "rawLinkText": "(./README.md)"
+        },
+        {
+          "sourceId": "README",
+          "sourceFile": "docs/architecture/README.md",
+          "missingId": "ADR-PROCESS",
+          "rawLinkText": "(./PROCESS.md)"
+        },
+        {
+          "sourceId": "README",
+          "sourceFile": "docs/architecture/README.md",
+          "missingId": "ADR-adr-002-docs-structure",
+          "rawLinkText": "(./adr-002-docs-structure.md)"
+        },
+        {
+          "sourceId": "README",
+          "sourceFile": "docs/architecture/README.md",
+          "missingId": "ADR-adr-004-split-denomination-keys",
+          "rawLinkText": "(./adr-004-split-denomination-keys.md)"
+        },
+        {
+          "sourceId": "README",
+          "sourceFile": "docs/architecture/README.md",
+          "missingId": "ADR-adr-006-secret-store-replacement",
+          "rawLinkText": "(./adr-006-secret-store-replacement.md)"
+        },
+        {
+          "sourceId": "README",
+          "sourceFile": "docs/architecture/README.md",
+          "missingId": "ADR-adr-009-evidence-module",
+          "rawLinkText": "(./adr-009-evidence-module.md)"
+        },
+        {
+          "sourceId": "README",
+          "sourceFile": "docs/architecture/README.md",
+          "missingId": "ADR-adr-010-modular-antehandler",
+          "rawLinkText": "(./adr-010-modular-antehandler.md)"
+        },
+        {
+          "sourceId": "README",
+          "sourceFile": "docs/architecture/README.md",
+          "missingId": "ADR-adr-019-protobuf-state-encoding",
+          "rawLinkText": "(./adr-019-protobuf-state-encoding.md)"
+        },
+        {
+          "sourceId": "README",
+          "sourceFile": "docs/architecture/README.md",
+          "missingId": "ADR-adr-020-protobuf-transaction-encoding",
+          "rawLinkText": "(./adr-020-protobuf-transaction-encoding.md)"
+        },
+        {
+          "sourceId": "README",
+          "sourceFile": "docs/architecture/README.md",
+          "missingId": "ADR-adr-021-protobuf-query-encoding",
+          "rawLinkText": "(./adr-021-protobuf-query-encoding.md)"
+        }
+      ]
+    },
+    {
+      "repo": "JabRef/jabref",
+      "commitSha": "d0584506a13a7fb0dc6f404b89e3e47d6f7d129d",
+      "cycles": [
+        {
+          "cyclePath": [
+            "ADR-0036",
+            "ADR-0042",
+            "ADR-0036"
+          ],
+          "edges": [
+            {
+              "dependentId": "ADR-0042",
+              "dependentFile": "docs/decisions/0042-use-markdowntextflow-for-summarization-content.md",
+              "dependencyId": "ADR-0036",
+              "dependencyFile": "docs/decisions/0036-use-markdown-for-chat-content.md",
+              "rawLinkText": "[ADR-0036]"
+            },
+            {
+              "dependentId": "ADR-0036",
+              "dependentFile": "docs/decisions/0036-use-markdown-for-chat-content.md",
+              "dependencyId": "ADR-0042",
+              "dependencyFile": "docs/decisions/0042-use-markdowntextflow-for-summarization-content.md",
+              "rawLinkText": "[ADR-0042]"
+            }
+          ]
+        }
+      ],
+      "brokenLinks": [
+        {
+          "sourceId": "ADR-0033",
+          "sourceFile": "docs/decisions/0033-store-chats-in-mvstore.md",
+          "missingId": "ADR-032",
+          "rawLinkText": "[ADR-032]"
+        },
+        {
+          "sourceId": "ADR-0034",
+          "sourceFile": "docs/decisions/0034-use-citation-key-for-grouping-chat-messages.md",
+          "missingId": "ADR-038",
+          "rawLinkText": "[ADR-038]"
+        },
+        {
+          "sourceId": "ADR-0036",
+          "sourceFile": "docs/decisions/0036-use-markdown-for-chat-content.md",
+          "missingId": "ADR-0042-use-markdowntextflow-for-summarization-content",
+          "rawLinkText": "(./0042-use-markdowntextflow-for-summarization-content.md)"
+        },
+        {
+          "sourceId": "ADR-0068",
+          "sourceFile": "docs/decisions/0068-use-a-preference-for-Zotero-compatibility-mode.md",
+          "missingId": "ADR-64",
+          "rawLinkText": "[ADR-64]"
+        }
+      ]
+    },
+    {
+      "repo": "alphagov/govuk-design-system-architecture",
+      "commitSha": "89854bdaa299203bccae8b64bcfb690d4d8c5824",
+      "cycles": [],
+      "brokenLinks": [
+        {
+          "sourceId": "ADR-006",
+          "sourceFile": "decision-records/006-javascript-compatibility.md",
+          "missingId": "ADR-001-javascript-for-less-capable-browsers",
+          "rawLinkText": "(./001-javascript-for-less-capable-browsers.md)"
+        },
+        {
+          "sourceId": "ADR-007",
+          "sourceFile": "decision-records/007-javascript-file-formats.md",
+          "missingId": "ADR-005-repository-organisation-for-v5",
+          "rawLinkText": "(./005-repository-organisation-for-v5.md)"
+        },
+        {
+          "sourceId": "ADR-007",
+          "sourceFile": "decision-records/007-javascript-file-formats.md",
+          "missingId": "ADR-006-javascript-compatibility",
+          "rawLinkText": "(./006-javascript-compatibility.md)"
+        },
+        {
+          "sourceId": "ADR-010",
+          "sourceFile": "decision-records/010-remove-init-method.md",
+          "missingId": "ADR-009-throw-errors-component-constructors",
+          "rawLinkText": "(./009-throw-errors-component-constructors.md)"
+        }
+      ]
+    }
+  ]
+}
