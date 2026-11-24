@@ -3,7 +3,7 @@ import { Command } from 'commander';
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { spawn, spawnSync } from 'child_process';
+import { spawnSync } from 'child_process';
 import chalk from 'chalk';
 import glob from 'fast-glob';
 import Table from 'cli-table3';
@@ -11,6 +11,7 @@ import { parseBatchADRs } from '../core/adrParser.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
 import { calculateArchitectureRisk } from '../core/risk.js';
 import { generatePRReport } from '../core/report.js';
+import { startServer } from '../server/serve.js';
 import { runInteractiveSession } from './interactive.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -146,12 +147,14 @@ program
   .option('-p, --port <port>', 'Port to run the server on', '5173')
   .option('--open', 'Automatically open browser')
   .option('-d, --dir <path>', 'Directory containing ADR markdown files')
-  .action((positionalDir, options) => {
+  .action(async (positionalDir, options) => {
     const targetDir = options.dir || positionalDir || process.env.ADR_DIR || './docs/adr';
-    console.log(chalk.cyan(`Starting NirnayDAG UI on port ${options.port} for ADRs in ${targetDir}...`));
-    const args = ['run', 'dev', '--', '--port', options.port];
-    if (options.open) args.push('--open');
-    spawn('npm', args, { stdio: 'inherit', shell: true, env: { ...process.env, ADR_DIR: targetDir } });
+    try {
+      await startServer({ dir: targetDir, port: options.port, open: options.open });
+    } catch (err: any) {
+      console.error(chalk.red(`Failed to start NirnayDAG server: ${err.message}`));
+      process.exit(1);
+    }
   });
 
 // 4. mcp
