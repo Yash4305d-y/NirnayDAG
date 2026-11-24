@@ -51,7 +51,7 @@ const EMPTY_EXTRACTION_QUALITY: ExtractionQualityMetrics = {
   idFromFilenamePercent: 0,
   idGeneratedCount: 0,
   idGeneratedPercent: 0,
-  edgeSourceBreakdownSupported: false,
+  edgeSourceBreakdownSupported: true,
 };
 
 export async function cloneOrUpdateRepo(
@@ -159,9 +159,13 @@ export async function benchmarkSingleRepo(
         extractionQuality: { ...EMPTY_EXTRACTION_QUALITY },
         nodes: 0,
         edges: 0,
+        hardEdges: 0,
+        softEdges: 0,
         edgeDensity: 0,
         isolatedNodes: 0,
         cyclesFound: false,
+        mutualReferencesCount: 0,
+        mutualReferences: [],
         brokenLinks: 0,
         missingDependencies: [],
         timing: { cloneMs, analysisMs: 0, totalMs: cloneMs },
@@ -170,6 +174,7 @@ export async function benchmarkSingleRepo(
         repo: repo.name,
         commitSha: 'failed',
         cycles: [],
+        mutualReferences: [],
         brokenLinks: [],
       },
     };
@@ -207,6 +212,7 @@ export async function benchmarkSingleRepo(
       repo: repo.name,
       commitSha,
       cycles: evidence.cycles,
+      mutualReferences: evidence.mutualReferences,
       brokenLinks: evidence.brokenLinks,
     },
   };
@@ -223,7 +229,7 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
   await fs.ensureDir(corpusCacheDir);
 
   console.log(chalk.bold.magenta('\n======================================================'));
-  console.log(chalk.bold.magenta('  NirnayDAG Corpus Benchmark Runner (Phase 2A.1)'));
+  console.log(chalk.bold.magenta('  NirnayDAG Corpus Benchmark Runner (Phase 2B)'));
   console.log(chalk.bold.magenta('======================================================'));
   console.log(chalk.gray(`Target Repositories: ${registry.repositories.length}`));
   console.log(chalk.gray(`Cache Directory: ${corpusCacheDir}`));
@@ -254,9 +260,13 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
         extractionQuality: { ...EMPTY_EXTRACTION_QUALITY },
         nodes: 0,
         edges: 0,
+        hardEdges: 0,
+        softEdges: 0,
         edgeDensity: 0,
         isolatedNodes: 0,
         cyclesFound: false,
+        mutualReferencesCount: 0,
+        mutualReferences: [],
         brokenLinks: 0,
         missingDependencies: [],
         timing: { cloneMs: 0, analysisMs: 0, totalMs: 0 },
@@ -265,6 +275,7 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
         repo: repo.name,
         commitSha: 'failed',
         cycles: [],
+        mutualReferences: [],
         brokenLinks: [],
       });
     }
@@ -274,14 +285,17 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
   const totalFilesParsedOK = results.reduce((acc, r) => acc + r.filesParsedOK, 0);
   const totalNodes = results.reduce((acc, r) => acc + r.nodes, 0);
   const totalEdges = results.reduce((acc, r) => acc + r.edges, 0);
+  const totalHardEdges = results.reduce((acc, r) => acc + r.hardEdges, 0);
+  const totalSoftEdges = results.reduce((acc, r) => acc + r.softEdges, 0);
   const totalBrokenLinks = results.reduce((acc, r) => acc + r.brokenLinks, 0);
   const totalCyclesDetected = results.filter((r) => r.cyclesFound).length;
+  const totalMutualReferences = results.reduce((acc, r) => acc + r.mutualReferencesCount, 0);
   const averageParseRatePercent = totalFilesFound > 0
     ? Number(((totalFilesParsedOK / totalFilesFound) * 100).toFixed(1))
     : 0;
 
   const timestamp = new Date().toISOString();
-  const runnerVersion = '1.0.0-phase2a.1';
+  const runnerVersion = '1.0.0-phase2b';
 
   const report: CorpusBenchmarkReport = {
     timestamp,
@@ -294,8 +308,11 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
       averageParseRatePercent,
       totalNodes,
       totalEdges,
+      totalHardEdges,
+      totalSoftEdges,
       totalBrokenLinks,
       totalCyclesDetected,
+      totalMutualReferences,
     },
     results,
     droppedRepositories: registry.evaluatedAndDropped,

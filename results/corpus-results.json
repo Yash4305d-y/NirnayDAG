@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-11-24T19:54:25.054Z",
-  "runnerVersion": "1.0.0-phase2a.1",
+  "timestamp": "2026-11-24T20:14:14.851Z",
+  "runnerVersion": "1.0.0-phase2b",
   "licenseNotice": "All repositories listed are publicly hosted open-source projects analyzed under their respective open-source licenses for evaluation and research purposes. NirnayDAG benchmarks local clones and does not redistribute repository contents.",
   "summary": {
     "totalReposAnalyzed": 7,
@@ -9,8 +9,11 @@
     "averageParseRatePercent": 100,
     "totalNodes": 1565,
     "totalEdges": 15,
+    "totalHardEdges": 0,
+    "totalSoftEdges": 15,
     "totalBrokenLinks": 113,
-    "totalCyclesDetected": 2
+    "totalCyclesDetected": 0,
+    "totalMutualReferences": 5
   },
   "results": [
     {
@@ -36,13 +39,17 @@
         "idFromFilenamePercent": 0,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
-        "edgeSourceBreakdownSupported": false
+        "edgeSourceBreakdownSupported": true
       },
       "nodes": 17,
       "edges": 0,
+      "hardEdges": 0,
+      "softEdges": 0,
       "edgeDensity": 0,
       "isolatedNodes": 13,
       "cyclesFound": false,
+      "mutualReferencesCount": 0,
+      "mutualReferences": [],
       "brokenLinks": 4,
       "missingDependencies": [
         {
@@ -63,9 +70,9 @@
         }
       ],
       "timing": {
-        "cloneMs": 60,
-        "analysisMs": 22,
-        "totalMs": 82
+        "cloneMs": 82,
+        "analysisMs": 31,
+        "totalMs": 113
       }
     },
     {
@@ -91,24 +98,30 @@
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
-        "edgeSourceBreakdownSupported": false
+        "edgeSourceBreakdownSupported": true
       },
       "nodes": 21,
       "edges": 3,
+      "hardEdges": 0,
+      "softEdges": 3,
       "edgeDensity": 0.143,
       "isolatedNodes": 18,
-      "cyclesFound": true,
-      "cyclePath": [
-        "ADR-0008",
-        "ADR-0013",
-        "ADR-0008"
+      "cyclesFound": false,
+      "mutualReferencesCount": 1,
+      "mutualReferences": [
+        {
+          "pair": [
+            "ADR-0008",
+            "ADR-0013"
+          ]
+        }
       ],
       "brokenLinks": 0,
       "missingDependencies": [],
       "timing": {
-        "cloneMs": 50,
-        "analysisMs": 21,
-        "totalMs": 71
+        "cloneMs": 64,
+        "analysisMs": 25,
+        "totalMs": 89
       }
     },
     {
@@ -134,13 +147,17 @@
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
-        "edgeSourceBreakdownSupported": false
+        "edgeSourceBreakdownSupported": true
       },
       "nodes": 654,
       "edges": 0,
+      "hardEdges": 0,
+      "softEdges": 0,
       "edgeDensity": 0,
       "isolatedNodes": 651,
       "cyclesFound": false,
+      "mutualReferencesCount": 0,
+      "mutualReferences": [],
       "brokenLinks": 4,
       "missingDependencies": [
         {
@@ -161,9 +178,9 @@
         }
       ],
       "timing": {
-        "cloneMs": 51,
-        "analysisMs": 360,
-        "totalMs": 411
+        "cloneMs": 64,
+        "analysisMs": 730,
+        "totalMs": 794
       }
     },
     {
@@ -189,13 +206,17 @@
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
-        "edgeSourceBreakdownSupported": false
+        "edgeSourceBreakdownSupported": true
       },
       "nodes": 708,
       "edges": 0,
+      "hardEdges": 0,
+      "softEdges": 0,
       "edgeDensity": 0,
       "isolatedNodes": 705,
       "cyclesFound": false,
+      "mutualReferencesCount": 0,
+      "mutualReferences": [],
       "brokenLinks": 5,
       "missingDependencies": [
         {
@@ -220,9 +241,9 @@
         }
       ],
       "timing": {
-        "cloneMs": 60,
-        "analysisMs": 527,
-        "totalMs": 587
+        "cloneMs": 81,
+        "analysisMs": 675,
+        "totalMs": 756
       }
     },
     {
@@ -248,13 +269,17 @@
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
-        "edgeSourceBreakdownSupported": false
+        "edgeSourceBreakdownSupported": true
       },
       "nodes": 65,
       "edges": 0,
+      "hardEdges": 0,
+      "softEdges": 0,
       "edgeDensity": 0,
       "isolatedNodes": 45,
       "cyclesFound": false,
+      "mutualReferencesCount": 0,
+      "mutualReferences": [],
       "brokenLinks": 92,
       "missingDependencies": [
         {
@@ -627,9 +652,9 @@
         }
       ],
       "timing": {
-        "cloneMs": 54,
-        "analysisMs": 48,
-        "totalMs": 102
+        "cloneMs": 71,
+        "analysisMs": 72,
+        "totalMs": 143
       }
     },
     {
@@ -655,17 +680,41 @@
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
-        "edgeSourceBreakdownSupported": false
+        "edgeSourceBreakdownSupported": true
       },
       "nodes": 88,
       "edges": 12,
+      "hardEdges": 0,
+      "softEdges": 12,
       "edgeDensity": 0.136,
       "isolatedNodes": 73,
-      "cyclesFound": true,
-      "cyclePath": [
-        "ADR-0036",
-        "ADR-0042",
-        "ADR-0036"
+      "cyclesFound": false,
+      "mutualReferencesCount": 4,
+      "mutualReferences": [
+        {
+          "pair": [
+            "ADR-0036",
+            "ADR-0042"
+          ]
+        },
+        {
+          "pair": [
+            "ADR-0045",
+            "ADR-0057"
+          ]
+        },
+        {
+          "pair": [
+            "ADR-0067",
+            "ADR-0084"
+          ]
+        },
+        {
+          "pair": [
+            "ADR-0068",
+            "ADR-0084"
+          ]
+        }
       ],
       "brokenLinks": 4,
       "missingDependencies": [
@@ -687,9 +736,9 @@
         }
       ],
       "timing": {
-        "cloneMs": 55,
-        "analysisMs": 48,
-        "totalMs": 103
+        "cloneMs": 66,
+        "analysisMs": 98,
+        "totalMs": 164
       }
     },
     {
@@ -715,13 +764,17 @@
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
-        "edgeSourceBreakdownSupported": false
+        "edgeSourceBreakdownSupported": true
       },
       "nodes": 12,
       "edges": 0,
+      "hardEdges": 0,
+      "softEdges": 0,
       "edgeDensity": 0,
       "isolatedNodes": 9,
       "cyclesFound": false,
+      "mutualReferencesCount": 0,
+      "mutualReferences": [],
       "brokenLinks": 4,
       "missingDependencies": [
         {
@@ -742,9 +795,9 @@
         }
       ],
       "timing": {
-        "cloneMs": 61,
-        "analysisMs": 8,
-        "totalMs": 69
+        "cloneMs": 73,
+        "analysisMs": 17,
+        "totalMs": 90
       }
     }
   ],

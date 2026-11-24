@@ -119,6 +119,7 @@ Dec
     expect(typeof res.affectedSystems).toBe('object');
     expect(res.riskBreakdown).toBeDefined();
     expect(res.riskLevel).toBeDefined();
+    expect(Array.isArray(res.alsoReferencedBy)).toBe(true);
   });
 
   it('should handle get_blast_radius with invalid id gracefully', async () => {
@@ -141,5 +142,6 @@ Dec
     expect(Array.isArray(res.rootDecisions)).toBe(true);
     expect(res.rootDecisions.length).toBeGreaterThan(0);
     expect(res.rootDecisions).toContain('ADR-001');
+    expect(Array.isArray(res.mutualReferences)).toBe(true);
   });
 });

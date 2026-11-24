@@ -1,5 +1,13 @@
 import * as yaml from 'js-yaml';
-import type { ParsedADR, ADRFrontmatter, ADRStatus, ADRConsequences, NirnayADR, DecisionStatus } from './types.js';
+import type {
+  ParsedADR,
+  ADRFrontmatter,
+  ADRStatus,
+  ADRConsequences,
+  NirnayADR,
+  DecisionStatus,
+  ADREdgeRef,
+} from './types.js';
 
 function extractSection(content: string, headings: string[]): string {
   const headingsRe = headings.map(h => h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
@@ -90,36 +98,99 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
     status = 'superseded';
   }
 
-  // Process Dependencies with Aliases
-  let dependsOn: string[] = frontmatterData.depends_on || frontmatterData['depends-on'] || frontmatterData.dependencies || frontmatterData.requires || [];
-  if (!Array.isArray(dependsOn)) {
-    dependsOn = [dependsOn];
+  // Process Dependencies with Aliases (Hard edges)
+  let rawDependsOn: unknown = frontmatterData.depends_on || frontmatterData['depends-on'] || frontmatterData.dependencies || frontmatterData.requires || [];
+  if (!Array.isArray(rawDependsOn)) {
+    rawDependsOn = [rawDependsOn];
+  }
+  const dependsOn: string[] = Array.from(
+    new Set((rawDependsOn as unknown[]).map((d) => String(d).trim()).filter(Boolean))
+  );
+
+  // Process Supersedes with Aliases (Hard edges)
+  let rawSupersedes: unknown = frontmatterData.supersedes || frontmatterData.replaces || frontmatterData['superseded-by'] || [];
+  if (!Array.isArray(rawSupersedes)) {
+    rawSupersedes = [rawSupersedes];
+  }
+  const supersedesSet = new Set<string>(
+    (rawSupersedes as unknown[]).map((s) => String(s).trim()).filter(Boolean)
+  );
+
+  const edges: ADREdgeRef[] = [];
+  const hardTargets = new Set<string>();
+
+  for (const depId of dependsOn) {
+    hardTargets.add(depId);
+    edges.push({
+      targetId: depId,
+      kind: 'hard',
+      source: 'frontmatter:depends_on',
+      rawText: `depends_on: ${depId}`,
+    });
   }
 
-  // Process Supersedes with Aliases
-  let supersedes: string[] = frontmatterData.supersedes || frontmatterData.replaces || frontmatterData['superseded-by'] || [];
-  if (!Array.isArray(supersedes)) {
-    supersedes = [supersedes];
+  for (const supId of supersedesSet) {
+    hardTargets.add(supId);
+    edges.push({
+      targetId: supId,
+      kind: 'hard',
+      source: 'frontmatter:supersedes',
+      rawText: `supersedes: ${supId}`,
+    });
   }
 
-  // Fallback: Infer dependencies from markdown body links if frontmatter is empty
-  if (dependsOn.length === 0 && bodyContent) {
+  // Explicit "Supersedes ADR-XXXX" status line in body (Hard edge)
+  if (bodyContent) {
+    const statusSupersedesRegex = /^\s*(?:[-*]\s*)?(Supersedes\s+(ADR-[\w-]+))\b/gim;
+    let supMatch: RegExpExecArray | null;
+    while ((supMatch = statusSupersedesRegex.exec(bodyContent)) !== null) {
+      const targetId = supMatch[2];
+      if (!supersedesSet.has(targetId)) {
+        supersedesSet.add(targetId);
+        hardTargets.add(targetId);
+        edges.push({
+          targetId,
+          kind: 'hard',
+          source: 'status:supersedes',
+          rawText: supMatch[1].trim(),
+        });
+      }
+    }
+  }
+
+  const supersedes = Array.from(supersedesSet);
+
+  // Extract soft reference edges from markdown body links and ID tokens
+  if (bodyContent) {
     const linkRegex = /(?:\[ADR-[\w-]+\]|\(\.\/[\w-]+[^)]*\))/g;
     const matches = bodyContent.match(linkRegex);
+    const seenSoft = new Set<string>();
     if (matches) {
-      matches.forEach(m => {
-        // extract the actual ADR-XXXX or 000X from the match
+      for (const m of matches) {
+        let targetId: string | null = null;
+        let source: 'body:id' | 'body:link' = 'body:id';
+
         if (m.startsWith('[ADR-')) {
-          dependsOn.push(m.substring(1, m.length - 1));
+          targetId = m.substring(1, m.length - 1);
+          source = 'body:id';
         } else if (m.startsWith('(./')) {
           const numMatch = m.match(/\(\.\/([^/.)]+)/);
           if (numMatch) {
-            dependsOn.push(`ADR-${numMatch[1]}`);
+            targetId = `ADR-${numMatch[1]}`;
+            source = 'body:link';
           }
         }
-      });
-      // Deduplicate
-      dependsOn = Array.from(new Set(dependsOn));
+
+        if (targetId && !hardTargets.has(targetId) && !seenSoft.has(targetId)) {
+          seenSoft.add(targetId);
+          edges.push({
+            targetId,
+            kind: 'soft',
+            source,
+            rawText: m,
+          });
+        }
+      }
     }
   }
 
@@ -145,7 +216,8 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
     context,
     decision,
     consequences,
-    rawContent: content
+    rawContent: content,
+    edges,
   };
 }
 

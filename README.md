@@ -196,6 +196,13 @@ requirements defined in [ADR-0001](./ADR-0001-microservices-core.md).
 * `deprecated`
 * `superseded`
 
+### Dependency Edge Kinds (Hard vs. Soft)
+
+NirnayDAG distinguishes structural architectural dependencies from informational cross-references:
+
+* **Hard edges** (`frontmatter:depends_on`, `frontmatter:supersedes`, or an explicit `Supersedes ADR-XXXX` status line): used for DAG validation, cycle detection, topological ordering, blast radius, and risk scoring.
+* **Soft edges** (Markdown links `(./...)` and `[ADR-XXXX]` ID tokens found in the document body): tracked separately as informational references (`alsoReferencedBy` / `mutualReferences`) and do **not** cause cycle errors or inflate blast radius unless `--include-soft` (`includeSoft: true`) is requested.
+
 ---
 
 # 🚀 Quick Start
@@ -236,17 +243,23 @@ npx nirnay-dag serve ./sample-adrs --open
 
 ## 3. Graph Validation & Cycle Detection
 
-Validate graph integrity, detect circular references, and identify missing dependency IDs:
+Validate graph integrity, detect hard circular references, and identify missing hard dependency IDs:
 
 ```bash
 npx nirnay-dag validate ./docs/adr
 ```
 
+Soft mutual references (two ADRs that mention each other only in body links) are reported as informational `mutualReferences` and do not fail validation. Use `--strict-refs` to emit warnings for soft mutual references (combine with `--strict` to fail on warnings):
+
+```bash
+npx nirnay-dag validate ./docs/adr --strict-refs
+```
+
 Exit codes:
 
 ```text
-0 — Graph is structurally valid
-1 — Cycle, broken link, or invalid schema detected
+0 — Graph is structurally valid (soft mutual references ignored by default)
+1 — Hard cycle, missing hard dependency, or invalid schema detected
 ```
 
 ---
@@ -261,8 +274,9 @@ npx nirnay-dag blast ADR-0001 ./docs/adr
 
 Output includes:
 
-* **Direct dependents**: Count of decisions directly depending on this ADR
-* **Cascade count & list**: Total number and IDs of cascading downstream decisions
+* **Direct dependents**: Count of decisions directly depending on this ADR (hard edges)
+* **Also referenced by (soft)**: Decisions that mention this ADR only via body links/tokens
+* **Cascade count & list**: Total number and IDs of cascading downstream decisions (pass `--include-soft` to include soft references in blast radius and risk calculation)
 * **Impact hierarchy depth**: Longest path through dependents from this node
 * **Affected systems**: Tag-based system grouping of affected decisions
 * **Architectural risk score**: Score from 0–100, risk level (Low / Medium / High), and explainable factor breakdown
