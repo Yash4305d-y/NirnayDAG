@@ -11,6 +11,7 @@ import type {
   ExtractionQualityMetrics,
   CycleEdgeEvidence,
   BrokenLinkEvidence,
+  MutualReferenceEvidence,
 } from './types.js';
 
 export interface DecisionFileInput {
@@ -23,6 +24,7 @@ export interface AnalysisEvidence {
     cyclePath: string[];
     edges: CycleEdgeEvidence[];
   }>;
+  mutualReferences: MutualReferenceEvidence[];
   brokenLinks: BrokenLinkEvidence[];
 }
 
@@ -36,10 +38,14 @@ export interface AnalysisOutcome {
   extractionQuality: ExtractionQualityMetrics;
   nodes: number;
   edges: number;
+  hardEdges: number;
+  softEdges: number;
   edgeDensity: number;
   isolatedNodes: number;
   cyclesFound: boolean;
   cyclePath?: string[];
+  mutualReferencesCount: number;
+  mutualReferences: Array<{ pair: [string, string] }>;
   brokenLinks: number;
   missingDependencies: Array<{ adrId: string; missingId: string }>;
   evidence: AnalysisEvidence;
@@ -206,7 +212,7 @@ export function analyzeDecisionFiles(files: DecisionFileInput[]): AnalysisOutcom
     idFromFilenamePercent: toPercent(idFromFilenameCount, filesParsedOK),
     idGeneratedCount,
     idGeneratedPercent: toPercent(idGeneratedCount, filesParsedOK),
-    edgeSourceBreakdownSupported: false,
+    edgeSourceBreakdownSupported: true,
   };
 
   if (parsedADRs.length === 0) {
@@ -220,33 +226,48 @@ export function analyzeDecisionFiles(files: DecisionFileInput[]): AnalysisOutcom
       extractionQuality,
       nodes: 0,
       edges: 0,
+      hardEdges: 0,
+      softEdges: 0,
       edgeDensity: 0,
       isolatedNodes: 0,
       cyclesFound: false,
+      mutualReferencesCount: 0,
+      mutualReferences: [],
       brokenLinks: 0,
       missingDependencies: [],
-      evidence: { cycles: [], brokenLinks: [] },
+      evidence: { cycles: [], mutualReferences: [], brokenLinks: [] },
     };
   }
 
   const { validationResult, engine, mappedAdrs } = validateAndComputeDAG(parsedADRs);
   const nodes = mappedAdrs.length;
 
-  let totalEdges = 0;
+  let hardEdgesCount = 0;
+  let softEdgesCount = 0;
   let isolatedNodesCount = 0;
 
   for (const adr of mappedAdrs) {
-    const deps = engine.getDirectDependencies(adr.id);
-    const dependents = engine.getDirectDependents(adr.id);
-    totalEdges += dependents.length;
+    const hardDeps = engine.getDirectDependencies(adr.id);
+    const hardDependents = engine.getDirectDependents(adr.id);
+    const allDeps = engine.getDirectDependencies(adr.id, { includeSoft: true });
+    const allDependents = engine.getDirectDependents(adr.id, { includeSoft: true });
+    const softDependents = engine.getSoftDependents(adr.id);
 
-    if (deps.length === 0 && dependents.length === 0) {
+    hardEdgesCount += hardDependents.length;
+    softEdgesCount += softDependents.length;
+
+    if (allDeps.length === 0 && allDependents.length === 0 && hardDeps.length === 0) {
       isolatedNodesCount++;
     }
   }
 
+  const totalEdges = hardEdgesCount + softEdgesCount;
   const edgeDensity = nodes > 0 ? Number((totalEdges / nodes).toFixed(3)) : 0;
-  const brokenLinks = validationResult.missingDependencies.length;
+  const allMissing = [
+    ...validationResult.missingDependencies,
+    ...(validationResult.missingSoftReferences || []),
+  ];
+  const brokenLinks = allMissing.length;
 
   const cycleEvidence: AnalysisEvidence['cycles'] = [];
   if (validationResult.hasCycle && validationResult.cyclePath && validationResult.cyclePath.length >= 2) {
@@ -275,7 +296,33 @@ export function analyzeDecisionFiles(files: DecisionFileInput[]): AnalysisOutcom
     });
   }
 
-  const brokenLinkEvidence: BrokenLinkEvidence[] = validationResult.missingDependencies
+  const mutualRefs = validationResult.mutualReferences || [];
+  const mutualRefEvidence: MutualReferenceEvidence[] = mutualRefs.map(({ pair }) => {
+    const [idA, idB] = pair;
+    const recA = idToRecord.get(idA);
+    const recB = idToRecord.get(idB);
+    return {
+      pair,
+      edges: [
+        {
+          dependentId: idA,
+          dependentFile: recA?.relativePath || 'unknown',
+          dependencyId: idB,
+          dependencyFile: recB?.relativePath || 'unknown',
+          rawLinkText: recA ? findRawLinkText(recA.content, idB) : `unresolved-source (${idB})`,
+        },
+        {
+          dependentId: idB,
+          dependentFile: recB?.relativePath || 'unknown',
+          dependencyId: idA,
+          dependencyFile: recA?.relativePath || 'unknown',
+          rawLinkText: recB ? findRawLinkText(recB.content, idA) : `unresolved-source (${idA})`,
+        },
+      ],
+    };
+  });
+
+  const brokenLinkEvidence: BrokenLinkEvidence[] = allMissing
     .slice(0, 10)
     .map(({ adrId, missingId }) => {
       const sourceRecord = idToRecord.get(adrId);
@@ -300,14 +347,19 @@ export function analyzeDecisionFiles(files: DecisionFileInput[]): AnalysisOutcom
     extractionQuality,
     nodes,
     edges: totalEdges,
+    hardEdges: hardEdgesCount,
+    softEdges: softEdgesCount,
     edgeDensity,
     isolatedNodes: isolatedNodesCount,
     cyclesFound: validationResult.hasCycle,
     cyclePath: validationResult.cyclePath,
+    mutualReferencesCount: mutualRefs.length,
+    mutualReferences: mutualRefs,
     brokenLinks,
-    missingDependencies: validationResult.missingDependencies,
+    missingDependencies: allMissing,
     evidence: {
       cycles: cycleEvidence,
+      mutualReferences: mutualRefEvidence,
       brokenLinks: brokenLinkEvidence,
     },
   };
