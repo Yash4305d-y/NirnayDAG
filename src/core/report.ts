@@ -42,10 +42,26 @@ export async function generatePRReport(options: ReportOptions = {}): Promise<Rep
     changedFilesList = process.env.MOCK_CHANGED_FILES.split(',');
   } else {
     try {
-      const diffOut = execSync(`git diff --name-only ${baseRef}...HEAD`, { encoding: 'utf-8', cwd });
+      const diffOut = execSync(`git diff --name-only ${baseRef}...HEAD`, {
+        encoding: 'utf-8',
+        cwd,
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
       changedFilesList = diffOut.split('\n').filter(Boolean);
     } catch (e: any) {
-      console.warn(`⚠️ Could not detect changed files via git (${e.message}). Proceeding with all ADRs for report.`);
+      const rawErr = (typeof e.stderr === 'string' ? e.stderr : e.stderr?.toString('utf-8')) || e.message || '';
+      const lines = rawErr.split(/\r?\n/).map((l: string) => l.trim()).filter(Boolean);
+      const firstErrorLine = lines.find((line: string) => {
+        const lower = line.toLowerCase();
+        return (
+          !lower.startsWith('command failed') &&
+          !lower.startsWith('usage:') &&
+          !lower.startsWith("use '--'") &&
+          !lower.startsWith('diff output format options')
+        );
+      }) || '';
+      const details = firstErrorLine ? ` (${firstErrorLine})` : '';
+      console.warn(`⚠️ Could not detect changed files via git${details}. Proceeding with all ADRs for report.`);
     }
   }
 
