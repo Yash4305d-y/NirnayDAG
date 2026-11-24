@@ -277,23 +277,11 @@ export function analyzeDecisionFiles(files: DecisionFileInput[]): AnalysisOutcom
     });
   }
 
-  const uniqueIdsCount = usedIds.size;
-
-  const { validationResult, engine, mappedAdrs } = validateAndComputeDAG(parsedADRs);
-  const nodes = mappedAdrs.length;
-
-  let totalEdges = 0;
-  let isolatedNodesCount = 0;
-
-  for (const adr of mappedAdrs) {
-    const deps = engine.getDirectDependencies(adr.id);
-    const dependents = engine.getDirectDependents(adr.id);
-    totalEdges += dependents.length;
-
-    if (deps.length === 0 && dependents.length === 0) {
-      isolatedNodesCount++;
-    }
-  }
+  const { validationResult, engine } = validateAndComputeDAG(parsedADRs);
+  const nodes = engine.getNodeCount();
+  const uniqueIdsCount = nodes;
+  const totalEdges = engine.getEdgeCount();
+  const isolatedNodesCount = engine.getIsolatedNodeCount();
 
   const edgeDensity = nodes > 0 ? Number((totalEdges / nodes).toFixed(3)) : 0;
   const brokenLinks = validationResult.missingDependencies.length;

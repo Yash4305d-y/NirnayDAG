@@ -36,7 +36,7 @@ export function generateFindingsMarkdown(report: CorpusBenchmarkReport): string 
       const idSourceDisplay = `${eq.idFromFrontmatterPercent}% / ${eq.idFromFilenamePercent}% / ${eq.idGeneratedPercent}%`;
       const cycleDisplay = r.cyclesFound ? `Detected (${r.cyclePath?.length || 0} nodes, unvalidated)` : 'None';
       const brokenDisplay = `${r.brokenLinks}`;
-      return `| [${r.repo}](${r.url}) | ${shortSha} | \`${r.format}\` | ${r.license} | ${r.filesFound} | ${r.filesParsedOK} | ${r.parseRatePercent}% | ${eq.realTitlePercent}% | ${eq.statusFoundPercent}% | ${idSourceDisplay} | ${r.nodes} | ${r.edges} | ${r.edgeDensity} | ${r.isolatedNodes} | ${cycleDisplay} | ${brokenDisplay} | ${r.timing.analysisMs}ms | ${r.timing.cloneMs}ms |`;
+      return `| [${r.repo}](${r.url}) | ${shortSha} | \`${r.format}\` | ${r.license} | ${r.filesFound} | ${r.filesParsedOK} | ${r.parseRatePercent}% | ${eq.realTitlePercent}% | ${eq.statusFoundPercent}% | ${idSourceDisplay} | ${r.duplicateIdsCount} | ${r.uniqueIdsCount} | ${r.nodes} | ${r.edges} | ${r.edgeDensity} | ${r.isolatedNodes} | ${cycleDisplay} | ${brokenDisplay} | ${r.timing.analysisMs}ms | ${r.timing.cloneMs}ms |`;
     })
     .join('\n');
 
@@ -67,11 +67,11 @@ export function generateFindingsMarkdown(report: CorpusBenchmarkReport): string 
 
   const formatList = Array.from(new Set(results.map((r) => `\`${r.format}\``))).join(', ');
 
-  return `# NirnayDAG Corpus Benchmark Findings (Phase 2A.1)
+  return `# NirnayDAG Corpus Benchmark Findings (Phase 2A.2)
 
 > Benchmark Executed: ${timestamp}  
 > Runner Version: \`${report.runnerVersion}\`  
-> Scope: **Measurement Only** across pinned open-source decision-record commits without modifying \`src/core/adrParser.ts\` or \`src/core/dagEngine.ts\`.
+> Scope: **Measurement & Data-Integrity Fixes** across pinned open-source decision-record commits without modifying \`src/core/adrParser.ts\`.
 
 ---
 
@@ -81,7 +81,7 @@ NirnayDAG's existing parser and DAG engine were run against **${summary.totalRep
 
 - **Total Decision Files Found:** ${summary.totalFilesFound}
 - **Parsed OK:** ${summary.totalFilesParsedOK} (${summary.averageParseRatePercent}%) — *see definition below*
-- **Total Graph Nodes:** ${summary.totalNodes}
+- **Total Graph Nodes:** ${summary.totalNodes} (${summary.totalUniqueIds} unique IDs; ${summary.totalDuplicateIds} files with initial ID collisions before disambiguation)
 - **Total Active Graph Edges:** ${summary.totalEdges}
 - **Total Isolated Nodes:** ${totalIsolated}
 - **Unresolved References (Broken Links):** ${summary.totalBrokenLinks} (unvalidated)
@@ -89,18 +89,25 @@ NirnayDAG's existing parser and DAG engine were run against **${summary.totalRep
 
 > **Definition — "Parsed OK":** A non-empty file where \`parseADRContent()\` did not throw and returned a non-null \`ParsedADR\` object with a non-empty \`frontmatter.id\` (whether from frontmatter, filename fallback, or generated ID). **"Parsed OK" measures parser survival, not metadata extraction quality**—which is reported separately in the extraction-quality columns immediately next to it.
 
+### Data Quality
+
+In Phase 2A.1, \`kubernetes/enhancements\` had 708 markdown files, 689 of which were named \`README.md\` inside KEP subdirectories. All 689 received the fallback ID \`"README"\`, and \`DAGEngine\`'s \`Map\` silently overwrote colliding entries—collapsing 708 files down to 19 graph nodes while the corpus report counted \`mappedAdrs.length\` (708) instead of the engine's actual graph size. In Phase 2A.2, this was fixed in three ways: (1) \`DAGEngine\` now records duplicate IDs (with every file path involved) as a validation error and \`ndag validate\` fails on them rather than silently overwriting; (2) the corpus analyzer derives fallback IDs for generic filenames (\`README.md\`, \`index.md\`) from their parent directory name (e.g., \`keps/sig-api/1027-api-unions/README.md\` → \`1027-api-unions\`) and disambiguates any remaining collisions by appending the relative file path; and (3) \`Nodes\`, \`Edges\`, \`Isolated Nodes\`, and \`Edge Density\` are read directly from \`DAGEngine\`'s graph.
+
 ---
 
 ## 2. Benchmark Results & Extraction Quality
 
-| Repository | Commit | Format | License | Files Found | Parsed OK | Parse Rate | Real Title % | Status Found % | ID Source (FM / File / Gen) | Nodes | Edges | Edge Density | Isolated Nodes | Cycles | Broken Links | Analysis Time | Clone Time |
-| :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| Repository | Commit | Format | License | Files Found | Parsed OK | Parse Rate | Real Title % | Status Found % | ID Source (FM / File / Gen) | Duplicate IDs | Unique IDs | Nodes | Edges | Edge Density | Isolated Nodes | Cycles | Broken Links | Analysis Time | Checkout Time (cached) |
+| :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 ${tableRows}
 
 *Column notes:*
 - **Real Title %**: % of parsed files whose extracted title is not the parser fallback \`'Untitled ADR'\`.
 - **Status Found %**: % of parsed files with an explicit \`status\`, \`stage\`, or \`state\` key in YAML frontmatter (the parser defaults missing frontmatter status to \`'accepted'\`).
 - **ID Source (FM / File / Gen)**: % of parsed files whose ID came from YAML frontmatter (\`FM\`), filename fallback (\`File\`), or random generation (\`Gen\`).
+- **Duplicate IDs**: Count of parsed files whose initial ID collided with another file before relative-path disambiguation.
+- **Unique IDs**: Count of distinct node IDs in \`DAGEngine\`'s graph after disambiguation.
+- **Checkout Time (cached)**: Time to verify/checkout the pinned commit SHA from the local \`.corpus/\` cache (50–60 ms reflects cached local checkouts, not fresh network clones).
 
 ---
 

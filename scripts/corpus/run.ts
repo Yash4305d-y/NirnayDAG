@@ -157,6 +157,8 @@ export async function benchmarkSingleRepo(
         parseFailures: [{ file: repo.url, reason: errMsg }],
         topFailureReasons: [{ reason: errMsg, count: 1 }],
         extractionQuality: { ...EMPTY_EXTRACTION_QUALITY },
+        duplicateIdsCount: 0,
+        uniqueIdsCount: 0,
         nodes: 0,
         edges: 0,
         edgeDensity: 0,
@@ -252,6 +254,8 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
         parseFailures: [{ file: repo.name, reason: msg }],
         topFailureReasons: [{ reason: msg, count: 1 }],
         extractionQuality: { ...EMPTY_EXTRACTION_QUALITY },
+        duplicateIdsCount: 0,
+        uniqueIdsCount: 0,
         nodes: 0,
         edges: 0,
         edgeDensity: 0,
@@ -274,6 +278,8 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
   const totalFilesParsedOK = results.reduce((acc, r) => acc + r.filesParsedOK, 0);
   const totalNodes = results.reduce((acc, r) => acc + r.nodes, 0);
   const totalEdges = results.reduce((acc, r) => acc + r.edges, 0);
+  const totalDuplicateIds = results.reduce((acc, r) => acc + r.duplicateIdsCount, 0);
+  const totalUniqueIds = results.reduce((acc, r) => acc + r.uniqueIdsCount, 0);
   const totalBrokenLinks = results.reduce((acc, r) => acc + r.brokenLinks, 0);
   const totalCyclesDetected = results.filter((r) => r.cyclesFound).length;
   const averageParseRatePercent = totalFilesFound > 0
@@ -281,7 +287,7 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
     : 0;
 
   const timestamp = new Date().toISOString();
-  const runnerVersion = '1.0.0-phase2a.1';
+  const runnerVersion = '1.0.0-phase2a.2';
 
   const report: CorpusBenchmarkReport = {
     timestamp,
@@ -294,6 +300,8 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
       averageParseRatePercent,
       totalNodes,
       totalEdges,
+      totalDuplicateIds,
+      totalUniqueIds,
       totalBrokenLinks,
       totalCyclesDetected,
     },

@@ -132,6 +132,8 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
         averageParseRatePercent: 66.7,
         totalNodes: 4,
         totalEdges: 1,
+        totalDuplicateIds: 0,
+        totalUniqueIds: 4,
         totalBrokenLinks: 1,
         totalCyclesDetected: 0,
       },
@@ -165,6 +167,8 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
             idGeneratedPercent: 0,
             edgeSourceBreakdownSupported: false,
           },
+          duplicateIdsCount: 0,
+          uniqueIdsCount: 4,
           nodes: 4,
           edges: 1,
           edgeDensity: 0.25,
@@ -186,7 +190,12 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
     };
 
     const markdown = generateFindingsMarkdown(mockReport);
-    expect(markdown).toContain('| [test-org/test-repo](https://github.com/test-org/test-repo.git) | `abc1234` | `madr` | MIT | 6 | 4 | 66.7% | 75% | 50% | 25% / 75% / 0% | 4 | 1 | 0.25 | 2 | None | 1 | 15ms | 50ms |');
+    expect(markdown).toContain('| [test-org/test-repo](https://github.com/test-org/test-repo.git) | `abc1234` | `madr` | MIT | 6 | 4 | 66.7% | 75% | 50% | 25% / 75% / 0% | 0 | 4 | 4 | 1 | 0.25 | 2 | None | 1 | 15ms | 50ms |');
+    expect(markdown).toContain('Duplicate IDs');
+    expect(markdown).toContain('Unique IDs');
+    expect(markdown).toContain('Checkout Time (cached)');
+    expect(markdown).not.toContain('| Clone Time |');
+    expect(markdown).toContain('Data Quality');
     expect(markdown).toContain('Total Decision Files Found:** 6');
     expect(markdown).toContain('Parsed OK:** 4 (66.7%)');
     expect(markdown).toContain('Definition — "Parsed OK":');
