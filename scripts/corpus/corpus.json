@@ -1,0 +1,98 @@
+{
+  "$schema": "./corpus.schema.json",
+  "description": "NirnayDAG Phase 2A decision-record corpus benchmark registry",
+  "licenseNotice": "All repositories listed are publicly hosted open-source projects analyzed under their respective open-source licenses for evaluation and research purposes. NirnayDAG benchmarks local clones and does not redistribute repository contents.",
+  "repositories": [
+    {
+      "name": "backstage/backstage",
+      "url": "https://github.com/backstage/backstage.git",
+      "commitSha": "b3ed9690207fe606362f5785b7cbe91ccc8a8542",
+      "subfolders": [
+        "docs/architecture-decisions"
+      ],
+      "format": "madr",
+      "license": "Apache-2.0",
+      "description": "Spotify Backstage architecture decision records"
+    },
+    {
+      "name": "adr/madr",
+      "url": "https://github.com/adr/madr.git",
+      "commitSha": "ba75bb1b20d42af5746b246ad348c202419ae681",
+      "subfolders": [
+        "docs/decisions"
+      ],
+      "format": "madr",
+      "license": "MIT",
+      "description": "Markdown Architectural Decision Records specification decisions"
+    },
+    {
+      "name": "rust-lang/rfcs",
+      "url": "https://github.com/rust-lang/rfcs.git",
+      "commitSha": "f43d5789b838fb0d80962e3d4b45fb9ddfcc9a07",
+      "subfolders": [
+        "text"
+      ],
+      "format": "rfc",
+      "license": "MIT / Apache-2.0",
+      "description": "Rust RFC (Request for Comments) decision documents"
+    },
+    {
+      "name": "kubernetes/enhancements",
+      "url": "https://github.com/kubernetes/enhancements.git",
+      "commitSha": "cac930cb9d7c70192016865425f943c339414011",
+      "subfolders": [
+        "keps"
+      ],
+      "format": "kep",
+      "license": "Apache-2.0",
+      "description": "Kubernetes Enhancement Proposals (KEPs) across SIG working groups"
+    },
+    {
+      "name": "cosmos/cosmos-sdk",
+      "url": "https://github.com/cosmos/cosmos-sdk.git",
+      "commitSha": "06a015222f13fe7b41bc3969504da7dee875ae5c",
+      "subfolders": [
+        "docs/architecture"
+      ],
+      "format": "adr",
+      "license": "Apache-2.0",
+      "description": "Cosmos SDK architectural decision records"
+    },
+    {
+      "name": "JabRef/jabref",
+      "url": "https://github.com/JabRef/jabref.git",
+      "commitSha": "d0584506a13a7fb0dc6f404b89e3e47d6f7d129d",
+      "subfolders": [
+        "docs/decisions"
+      ],
+      "format": "madr",
+      "license": "MIT",
+      "description": "JabRef open-source reference manager MADR records"
+    },
+    {
+      "name": "alphagov/govuk-design-system-architecture",
+      "url": "https://github.com/alphagov/govuk-design-system-architecture.git",
+      "commitSha": "89854bdaa299203bccae8b64bcfb690d4d8c5824",
+      "subfolders": [
+        "decision-records"
+      ],
+      "format": "nygard",
+      "license": "MIT",
+      "description": "UK Government Digital Service (GDS) Michael Nygard-style ADRs"
+    }
+  ],
+  "evaluatedAndDropped": [
+    {
+      "name": "python/peps",
+      "url": "https://github.com/python/peps.git",
+      "license": "CC0-1.0 / Public Domain",
+      "reason": "PEPs in python/peps are authored in reStructuredText (.rst) format (e.g. pep-0008.rst), not Markdown (.md or .mdx). NirnayDAG is designed for Markdown-based decision records and cannot parse .rst files without format changes."
+    },
+    {
+      "name": "joelparkerhenderson/architecture-decision-record",
+      "url": "https://github.com/joelparkerhenderson/architecture-decision-record.git",
+      "license": "MIT",
+      "reason": "This repository is an educational compilation and template directory containing over 35,000 localized translation files and guides rather than an active engineering project's architectural decision record DAG."
+    }
+  ]
+}

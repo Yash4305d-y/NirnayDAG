@@ -34,3 +34,5 @@ smoke-test-env/
 test-mcp.ts
 .antigravity/
 .env
+.corpus/
+.corpus
