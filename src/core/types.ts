@@ -1,5 +1,21 @@
 export type DecisionStatus = 'accepted' | 'proposed' | 'superseded' | 'deprecated';
 
+export type EdgeKind = 'hard' | 'soft';
+
+export type EdgeSource =
+  | 'frontmatter:depends_on'
+  | 'frontmatter:supersedes'
+  | 'status:supersedes'
+  | 'body:link'
+  | 'body:id';
+
+export interface ADREdgeRef {
+  targetId: string;
+  kind: EdgeKind;
+  source: EdgeSource;
+  rawText?: string;
+}
+
 export interface NirnayADR extends Record<string, unknown> {
   id: string;
   title: string;
@@ -13,6 +29,8 @@ export interface NirnayADR extends Record<string, unknown> {
     cons: string[];
   };
   dependencies: string[];
+  softDependencies?: string[];
+  edgeRefs?: ADREdgeRef[];
   supersedes?: string;
   tags?: string[];
   filePath?: string;
@@ -66,6 +84,7 @@ export interface ParsedADR {
   consequences: ADRConsequences;
   rawContent: string;
   filePath?: string;
+  edges?: ADREdgeRef[];
 }
 
 export type BlastRadiusMap = Record<string, {

@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-11-24T20:27:30.592Z",
-  "runnerVersion": "1.0.0-phase2a.2",
+  "timestamp": "2026-11-24T20:34:58.721Z",
+  "runnerVersion": "1.0.0-phase2a.2+2b",
   "licenseNotice": "All repositories listed are publicly hosted open-source projects analyzed under their respective open-source licenses for evaluation and research purposes. NirnayDAG benchmarks local clones and does not redistribute repository contents.",
   "summary": {
     "totalReposAnalyzed": 7,
@@ -11,8 +11,11 @@
     "totalEdges": 15,
     "totalDuplicateIds": 4,
     "totalUniqueIds": 1565,
+    "totalHardEdges": 0,
+    "totalSoftEdges": 15,
     "totalBrokenLinks": 201,
-    "totalCyclesDetected": 2
+    "totalCyclesDetected": 0,
+    "totalMutualReferences": 5
   },
   "results": [
     {
@@ -38,15 +41,19 @@
         "idFromFilenamePercent": 0,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
-        "edgeSourceBreakdownSupported": false
+        "edgeSourceBreakdownSupported": true
       },
       "duplicateIdsCount": 0,
       "uniqueIdsCount": 17,
       "nodes": 17,
       "edges": 0,
+      "hardEdges": 0,
+      "softEdges": 0,
       "edgeDensity": 0,
       "isolatedNodes": 13,
       "cyclesFound": false,
+      "mutualReferencesCount": 0,
+      "mutualReferences": [],
       "brokenLinks": 4,
       "missingDependencies": [
         {
@@ -67,9 +74,9 @@
         }
       ],
       "timing": {
-        "cloneMs": 68,
-        "analysisMs": 25,
-        "totalMs": 93
+        "cloneMs": 58,
+        "analysisMs": 21,
+        "totalMs": 79
       }
     },
     {
@@ -95,26 +102,32 @@
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
-        "edgeSourceBreakdownSupported": false
+        "edgeSourceBreakdownSupported": true
       },
       "duplicateIdsCount": 0,
       "uniqueIdsCount": 21,
       "nodes": 21,
       "edges": 3,
+      "hardEdges": 0,
+      "softEdges": 3,
       "edgeDensity": 0.143,
       "isolatedNodes": 18,
-      "cyclesFound": true,
-      "cyclePath": [
-        "ADR-0008",
-        "ADR-0013",
-        "ADR-0008"
+      "cyclesFound": false,
+      "mutualReferencesCount": 1,
+      "mutualReferences": [
+        {
+          "pair": [
+            "ADR-0008",
+            "ADR-0013"
+          ]
+        }
       ],
       "brokenLinks": 0,
       "missingDependencies": [],
       "timing": {
-        "cloneMs": 70,
-        "analysisMs": 24,
-        "totalMs": 94
+        "cloneMs": 50,
+        "analysisMs": 14,
+        "totalMs": 64
       }
     },
     {
@@ -140,15 +153,19 @@
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
-        "edgeSourceBreakdownSupported": false
+        "edgeSourceBreakdownSupported": true
       },
       "duplicateIdsCount": 2,
       "uniqueIdsCount": 654,
       "nodes": 654,
       "edges": 0,
+      "hardEdges": 0,
+      "softEdges": 0,
       "edgeDensity": 0,
       "isolatedNodes": 651,
       "cyclesFound": false,
+      "mutualReferencesCount": 0,
+      "mutualReferences": [],
       "brokenLinks": 4,
       "missingDependencies": [
         {
@@ -169,9 +186,9 @@
         }
       ],
       "timing": {
-        "cloneMs": 67,
-        "analysisMs": 518,
-        "totalMs": 585
+        "cloneMs": 47,
+        "analysisMs": 370,
+        "totalMs": 417
       }
     },
     {
@@ -197,15 +214,19 @@
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
-        "edgeSourceBreakdownSupported": false
+        "edgeSourceBreakdownSupported": true
       },
       "duplicateIdsCount": 2,
       "uniqueIdsCount": 708,
       "nodes": 708,
       "edges": 0,
+      "hardEdges": 0,
+      "softEdges": 0,
       "edgeDensity": 0,
       "isolatedNodes": 678,
       "cyclesFound": false,
+      "mutualReferencesCount": 0,
+      "mutualReferences": [],
       "brokenLinks": 93,
       "missingDependencies": [
         {
@@ -582,9 +603,9 @@
         }
       ],
       "timing": {
-        "cloneMs": 54,
-        "analysisMs": 621,
-        "totalMs": 675
+        "cloneMs": 50,
+        "analysisMs": 479,
+        "totalMs": 529
       }
     },
     {
@@ -610,15 +631,19 @@
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
-        "edgeSourceBreakdownSupported": false
+        "edgeSourceBreakdownSupported": true
       },
       "duplicateIdsCount": 0,
       "uniqueIdsCount": 65,
       "nodes": 65,
       "edges": 0,
+      "hardEdges": 0,
+      "softEdges": 0,
       "edgeDensity": 0,
       "isolatedNodes": 45,
       "cyclesFound": false,
+      "mutualReferencesCount": 0,
+      "mutualReferences": [],
       "brokenLinks": 92,
       "missingDependencies": [
         {
@@ -991,9 +1016,9 @@
         }
       ],
       "timing": {
-        "cloneMs": 51,
-        "analysisMs": 47,
-        "totalMs": 98
+        "cloneMs": 60,
+        "analysisMs": 37,
+        "totalMs": 97
       }
     },
     {
@@ -1019,19 +1044,43 @@
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
-        "edgeSourceBreakdownSupported": false
+        "edgeSourceBreakdownSupported": true
       },
       "duplicateIdsCount": 0,
       "uniqueIdsCount": 88,
       "nodes": 88,
       "edges": 12,
+      "hardEdges": 0,
+      "softEdges": 12,
       "edgeDensity": 0.136,
       "isolatedNodes": 73,
-      "cyclesFound": true,
-      "cyclePath": [
-        "ADR-0036",
-        "ADR-0042",
-        "ADR-0036"
+      "cyclesFound": false,
+      "mutualReferencesCount": 4,
+      "mutualReferences": [
+        {
+          "pair": [
+            "ADR-0036",
+            "ADR-0042"
+          ]
+        },
+        {
+          "pair": [
+            "ADR-0045",
+            "ADR-0057"
+          ]
+        },
+        {
+          "pair": [
+            "ADR-0067",
+            "ADR-0084"
+          ]
+        },
+        {
+          "pair": [
+            "ADR-0068",
+            "ADR-0084"
+          ]
+        }
       ],
       "brokenLinks": 4,
       "missingDependencies": [
@@ -1053,9 +1102,9 @@
         }
       ],
       "timing": {
-        "cloneMs": 56,
-        "analysisMs": 60,
-        "totalMs": 116
+        "cloneMs": 48,
+        "analysisMs": 48,
+        "totalMs": 96
       }
     },
     {
@@ -1081,15 +1130,19 @@
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
-        "edgeSourceBreakdownSupported": false
+        "edgeSourceBreakdownSupported": true
       },
       "duplicateIdsCount": 0,
       "uniqueIdsCount": 12,
       "nodes": 12,
       "edges": 0,
+      "hardEdges": 0,
+      "softEdges": 0,
       "edgeDensity": 0,
       "isolatedNodes": 9,
       "cyclesFound": false,
+      "mutualReferencesCount": 0,
+      "mutualReferences": [],
       "brokenLinks": 4,
       "missingDependencies": [
         {
@@ -1110,9 +1163,9 @@
         }
       ],
       "timing": {
-        "cloneMs": 49,
-        "analysisMs": 9,
-        "totalMs": 58
+        "cloneMs": 48,
+        "analysisMs": 7,
+        "totalMs": 55
       }
     }
   ],

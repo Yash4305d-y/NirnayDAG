@@ -61,6 +61,11 @@ export interface BrokenLinkEvidence {
   rawLinkText: string;
 }
 
+export interface MutualReferenceEvidence {
+  pair: [string, string];
+  edges: CycleEdgeEvidence[];
+}
+
 export interface RepoEvidence {
   repo: string;
   commitSha: string;
@@ -68,6 +73,7 @@ export interface RepoEvidence {
     cyclePath: string[];
     edges: CycleEdgeEvidence[];
   }>;
+  mutualReferences: MutualReferenceEvidence[];
   brokenLinks: BrokenLinkEvidence[];
 }
 
@@ -94,10 +100,14 @@ export interface RepoBenchmarkResult {
   uniqueIdsCount: number;
   nodes: number;
   edges: number;
+  hardEdges: number;
+  softEdges: number;
   edgeDensity: number;
   isolatedNodes: number;
   cyclesFound: boolean;
   cyclePath?: string[];
+  mutualReferencesCount: number;
+  mutualReferences: Array<{ pair: [string, string] }>;
   brokenLinks: number;
   missingDependencies: Array<{ adrId: string; missingId: string }>;
   timing: {
@@ -120,8 +130,11 @@ export interface CorpusBenchmarkReport {
     totalEdges: number;
     totalDuplicateIds: number;
     totalUniqueIds: number;
+    totalHardEdges: number;
+    totalSoftEdges: number;
     totalBrokenLinks: number;
     totalCyclesDetected: number;
+    totalMutualReferences: number;
   };
   results: RepoBenchmarkResult[];
   droppedRepositories: DroppedRepoConfig[];

@@ -53,25 +53,42 @@ program
   .command('validate [dir]')
   .description('Validate the ADR DAG structure')
   .option('--strict', 'fail on warnings', false)
+  .option('--strict-refs', 'turn soft mutual references into warnings', false)
   .option('--json', 'Outputs raw JSON')
   .option('-d, --dir <path>', 'Directory containing ADR markdown files')
   .action(async (positionalDir, options) => {
     const targetDir = options.dir || positionalDir || process.env.ADR_DIR || './docs/adr';
     const isStrict = options.strict;
+    const strictRefs = options.strictRefs;
     if (isStrict) console.debug(chalk.gray('Strict mode enabled'));
     const { validationResult, parsedADRs } = await loadAndValidate(targetDir);
+    const mutualRefs = validationResult.mutualReferences || [];
+    const warnings = strictRefs
+      ? mutualRefs.map((m) => `Soft mutual reference between ${m.pair[0]} and ${m.pair[1]}`)
+      : [];
 
     if (validationResult.isValid) {
+      const hasStrictFailure = isStrict && warnings.length > 0;
       if (options.json || process.env.NDAG_OUTPUT === 'json') {
-        console.log(JSON.stringify({ valid: true, nodes: parsedADRs.length }, null, 2));
-        process.exit(0);
+        console.log(JSON.stringify({
+          valid: !hasStrictFailure,
+          nodes: parsedADRs.length,
+          mutualReferences: mutualRefs,
+          ...(warnings.length > 0 ? { warnings } : {}),
+        }, null, 2));
+        process.exit(hasStrictFailure ? 1 : 0);
       }
       const rootNodes = parsedADRs.filter(adr => !adr.frontmatter.depends_on || adr.frontmatter.depends_on.length === 0);
       console.log(chalk.green(`✅ Architecture DAG validated successfully.`));
       console.log(chalk.green(`   - Total ADRs: ${parsedADRs.length}`));
       console.log(chalk.green(`   - Root Decisions: ${rootNodes.length}`));
       console.log(chalk.green(`   - Zero Cycles: Verified`));
-      process.exit(0);
+      if (warnings.length > 0) {
+        warnings.forEach((w) => console.warn(chalk.yellow(`⚠️  Warning: ${w}`)));
+      } else if (mutualRefs.length > 0) {
+        console.log(chalk.gray(`   - Mutual References (soft, informational): ${mutualRefs.map(m => `${m.pair[0]} <-> ${m.pair[1]}`).join(', ')}`));
+      }
+      process.exit(hasStrictFailure ? 1 : 0);
     } else {
       if (options.json || process.env.NDAG_OUTPUT === 'json') {
         console.log(JSON.stringify(validationResult, null, 2));
@@ -94,6 +111,9 @@ program
           console.error(chalk.yellow(`   - Duplicate ID "${d.id}" found in: ${d.files.join(', ')}`));
         });
       }
+      if (warnings.length > 0) {
+        warnings.forEach((w) => console.warn(chalk.yellow(`⚠️  Warning: ${w}`)));
+      }
       process.exit(1);
     }
   });
@@ -103,17 +123,21 @@ program
   .command('blast <adrId> [dir]')
   .description('Computes and prints the blast radius for an ADR')
   .option('--json', 'Outputs raw JSON')
+  .option('--include-soft', 'Include soft body references in blast radius', false)
   .option('--depth <number>', 'Limits traversal depth', parseInt)
   .option('-d, --dir <path>', 'Directory containing ADR markdown files')
   .action(async (adrId, positionalDir, options) => {
     const targetDir = options.dir || positionalDir || process.env.ADR_DIR || './docs/adr';
     const { engine } = await loadAndValidate(targetDir);
+    const includeSoft = !!options.includeSoft;
+    const queryOpts = { includeSoft };
     
-    const downstreamIds = engine.getBlastRadius(adrId);
-    const direct = engine.getDirectDependents(adrId);
-    const depth = engine.getDepth(adrId);
+    const downstreamIds = engine.getBlastRadius(adrId, queryOpts);
+    const direct = engine.getDirectDependents(adrId, queryOpts);
+    const alsoReferencedBy = includeSoft ? [] : engine.getSoftDependents(adrId);
+    const depth = engine.getDepth(adrId, queryOpts);
     const risk = calculateArchitectureRisk({ directDependentsCount: direct.length, cascadeCount: downstreamIds.length, depth });
-    const affectedSystems = engine.getAffectedSystems(adrId);
+    const affectedSystems = engine.getAffectedSystems(adrId, queryOpts);
     const affectedSystemsSummary = Object.keys(affectedSystems).map(tag => `${tag} (${affectedSystems[tag].length})`).join(', ') || 'None';
     
     if (options.json || process.env.NDAG_OUTPUT === 'json') {
@@ -121,6 +145,7 @@ program
         adrId,
         directDependents: direct.length,
         cascadeCount: downstreamIds.length,
+        alsoReferencedBy,
         depth,
         affectedSystems,
         affectedSystemsCount: Object.keys(affectedSystems).length,
@@ -134,6 +159,7 @@ program
     const table = new Table({ head: [chalk.cyan('Metric'), chalk.cyan('Value')] });
     table.push(['ADR ID', adrId]);
     table.push(['Direct Dependents', direct.length]);
+    table.push(['Also Referenced By (soft)', alsoReferencedBy.length]);
     table.push(['Cascade Count', downstreamIds.length]);
     table.push(['Max Depth', depth]);
     table.push(['Affected Systems', affectedSystemsSummary]);
@@ -144,6 +170,10 @@ program
     if (downstreamIds.length > 0) {
       console.log(chalk.yellow('\nCascading Impacts:'));
       downstreamIds.forEach(id => console.log(` - ${id}`));
+    }
+    if (alsoReferencedBy.length > 0) {
+      console.log(chalk.gray('\nAlso Referenced By (soft):'));
+      alsoReferencedBy.forEach(id => console.log(` - ${id}`));
     }
   });
 

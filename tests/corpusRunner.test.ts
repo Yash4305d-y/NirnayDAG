@@ -59,7 +59,10 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
     // Extraction quality metrics
     expect(outcome.extractionQuality.realTitleCount).toBe(4);
     expect(outcome.extractionQuality.realTitlePercent).toBe(100);
-    expect(outcome.extractionQuality.edgeSourceBreakdownSupported).toBe(false);
+    expect(outcome.extractionQuality.edgeSourceBreakdownSupported).toBe(true);
+    expect(outcome.hardEdges).toBe(1);
+    expect(outcome.softEdges).toBe(0);
+    expect(outcome.mutualReferencesCount).toBe(0);
 
     // Evidence for broken links
     expect(outcome.evidence.cycles).toEqual([]);
@@ -85,22 +88,22 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
     ]);
   });
 
-  it('extracts cycle evidence with exact file paths and raw link text', () => {
-    const outcome = analyzeDecisionFiles([
+  it('extracts hard cycle evidence and separates soft mutual references', () => {
+    const hardOutcome = analyzeDecisionFiles([
       {
         relativePath: '0001-a.md',
         content: '---\nid: ADR-0001\ntitle: A\nstatus: accepted\ndepends_on:\n  - ADR-0002\n---\n# A\n',
       },
       {
         relativePath: '0002-b.md',
-        content: '---\nid: ADR-0002\ntitle: B\nstatus: proposed\n---\n# B\nSee [ADR-0001]\n',
+        content: '---\nid: ADR-0002\ntitle: B\nstatus: proposed\ndepends_on:\n  - ADR-0001\n---\n# B\n',
       },
     ]);
 
-    expect(outcome.cyclesFound).toBe(true);
-    expect(outcome.evidence.cycles.length).toBe(1);
-    expect(outcome.evidence.cycles[0].edges.length).toBe(2);
-    expect(outcome.evidence.cycles[0].edges).toEqual(
+    expect(hardOutcome.cyclesFound).toBe(true);
+    expect(hardOutcome.evidence.cycles.length).toBe(1);
+    expect(hardOutcome.evidence.cycles[0].edges.length).toBe(2);
+    expect(hardOutcome.evidence.cycles[0].edges).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           dependentId: 'ADR-0001',
@@ -114,16 +117,34 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
           dependentFile: '0002-b.md',
           dependencyId: 'ADR-0001',
           dependencyFile: '0001-a.md',
-          rawLinkText: '[ADR-0001]',
+          rawLinkText: 'frontmatter depends_on: ADR-0001',
         }),
       ])
     );
+
+    const softOutcome = analyzeDecisionFiles([
+      {
+        relativePath: '0008-a.md',
+        content: '---\nid: ADR-0008\ntitle: A\nstatus: accepted\n---\n# A\nSee [ADR-0013]\n',
+      },
+      {
+        relativePath: '0013-b.md',
+        content: '---\nid: ADR-0013\ntitle: B\nstatus: accepted\n---\n# B\nSee [ADR-0008]\n',
+      },
+    ]);
+
+    expect(softOutcome.cyclesFound).toBe(false);
+    expect(softOutcome.hardEdges).toBe(0);
+    expect(softOutcome.softEdges).toBe(2);
+    expect(softOutcome.mutualReferencesCount).toBe(1);
+    expect(softOutcome.evidence.mutualReferences.length).toBe(1);
+    expect(softOutcome.evidence.mutualReferences[0].pair).toEqual(['ADR-0008', 'ADR-0013']);
   });
 
   it('generates Markdown report with accurate table rows, matching column counts, and manual validation checkboxes', () => {
     const mockReport: CorpusBenchmarkReport = {
       timestamp: '2026-11-24T00:00:00.000Z',
-      runnerVersion: '1.0.0-phase2a.1',
+      runnerVersion: '1.0.0-phase2a.2+2b',
       licenseNotice: 'License notice for benchmark test',
       summary: {
         totalReposAnalyzed: 1,
@@ -134,8 +155,11 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
         totalEdges: 1,
         totalDuplicateIds: 0,
         totalUniqueIds: 4,
+        totalHardEdges: 1,
+        totalSoftEdges: 0,
         totalBrokenLinks: 1,
         totalCyclesDetected: 0,
+        totalMutualReferences: 0,
       },
       results: [
         {
@@ -165,15 +189,19 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
             idFromFilenamePercent: 75,
             idGeneratedCount: 0,
             idGeneratedPercent: 0,
-            edgeSourceBreakdownSupported: false,
+            edgeSourceBreakdownSupported: true,
           },
           duplicateIdsCount: 0,
           uniqueIdsCount: 4,
           nodes: 4,
           edges: 1,
+          hardEdges: 1,
+          softEdges: 0,
           edgeDensity: 0.25,
           isolatedNodes: 2,
           cyclesFound: false,
+          mutualReferencesCount: 0,
+          mutualReferences: [],
           brokenLinks: 1,
           missingDependencies: [{ adrId: 'ADR-0003', missingId: 'ADR-9999' }],
           timing: { cloneMs: 50, analysisMs: 15, totalMs: 65 },
@@ -190,7 +218,7 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
     };
 
     const markdown = generateFindingsMarkdown(mockReport);
-    expect(markdown).toContain('| [test-org/test-repo](https://github.com/test-org/test-repo.git) | `abc1234` | `madr` | MIT | 6 | 4 | 66.7% | 75% | 50% | 25% / 75% / 0% | 0 | 4 | 4 | 1 | 0.25 | 2 | None | 1 | 15ms | 50ms |');
+    expect(markdown).toContain('| [test-org/test-repo](https://github.com/test-org/test-repo.git) | `abc1234` | `madr` | MIT | 6 | 4 | 66.7% | 75% | 50% | 25% / 75% / 0% | 0 | 4 | 4 | 1 / 0 | 0.25 | 2 | None | 0 | 1 | 15ms | 50ms |');
     expect(markdown).toContain('Duplicate IDs');
     expect(markdown).toContain('Unique IDs');
     expect(markdown).toContain('Checkout Time (cached)');
@@ -217,7 +245,6 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
     expect(colCounts[0]).toBe(colCounts[1]);
     expect(colCounts[1]).toBe(colCounts[2]);
   });
-
   describe('Fallback ID derivation & collision disambiguation', () => {
     it('derives fallback ID from parent directory name for generic filenames README.md and index.md', () => {
       expect(deriveFallbackId('keps/sig-api/1027-api-unions/README.md')).toBe('1027-api-unions');

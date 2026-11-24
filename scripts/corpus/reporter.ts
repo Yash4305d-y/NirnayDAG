@@ -34,9 +34,11 @@ export function generateFindingsMarkdown(report: CorpusBenchmarkReport): string 
       const shortSha = r.commitSha ? `\`${r.commitSha.substring(0, 7)}\`` : '`unknown`';
       const eq = r.extractionQuality;
       const idSourceDisplay = `${eq.idFromFrontmatterPercent}% / ${eq.idFromFilenamePercent}% / ${eq.idGeneratedPercent}%`;
-      const cycleDisplay = r.cyclesFound ? `Detected (${r.cyclePath?.length || 0} nodes, unvalidated)` : 'None';
+      const edgesDisplay = `${r.hardEdges} / ${r.softEdges}`;
+      const cycleDisplay = r.cyclesFound ? `Detected (${r.cyclePath?.length || 0} nodes)` : 'None';
+      const mutualDisplay = `${r.mutualReferencesCount}`;
       const brokenDisplay = `${r.brokenLinks}`;
-      return `| [${r.repo}](${r.url}) | ${shortSha} | \`${r.format}\` | ${r.license} | ${r.filesFound} | ${r.filesParsedOK} | ${r.parseRatePercent}% | ${eq.realTitlePercent}% | ${eq.statusFoundPercent}% | ${idSourceDisplay} | ${r.duplicateIdsCount} | ${r.uniqueIdsCount} | ${r.nodes} | ${r.edges} | ${r.edgeDensity} | ${r.isolatedNodes} | ${cycleDisplay} | ${brokenDisplay} | ${r.timing.analysisMs}ms | ${r.timing.cloneMs}ms |`;
+      return `| [${r.repo}](${r.url}) | ${shortSha} | \`${r.format}\` | ${r.license} | ${r.filesFound} | ${r.filesParsedOK} | ${r.parseRatePercent}% | ${eq.realTitlePercent}% | ${eq.statusFoundPercent}% | ${idSourceDisplay} | ${r.duplicateIdsCount} | ${r.uniqueIdsCount} | ${r.nodes} | ${edgesDisplay} | ${r.edgeDensity} | ${r.isolatedNodes} | ${cycleDisplay} | ${mutualDisplay} | ${brokenDisplay} | ${r.timing.analysisMs}ms | ${r.timing.cloneMs}ms |`;
     })
     .join('\n');
 
@@ -67,25 +69,26 @@ export function generateFindingsMarkdown(report: CorpusBenchmarkReport): string 
 
   const formatList = Array.from(new Set(results.map((r) => `\`${r.format}\``))).join(', ');
 
-  return `# NirnayDAG Corpus Benchmark Findings (Phase 2A.2)
+  return `# NirnayDAG Corpus Benchmark Findings (Phase 2A.2 + 2B)
 
 > Benchmark Executed: ${timestamp}  
 > Runner Version: \`${report.runnerVersion}\`  
-> Scope: **Measurement & Data-Integrity Fixes** across pinned open-source decision-record commits without modifying \`src/core/adrParser.ts\`.
+> Scope: Hard vs. Soft dependency edge classification and Data-Integrity Fixes across pinned open-source decision-record commits.
 
 ---
 
 ## 1. Executive Summary
 
-NirnayDAG's existing parser and DAG engine were run against **${summary.totalReposAnalyzed} open-source repositories** pinned to exact commit SHAs across ${formatList} formats.
+NirnayDAG's parser and DAG engine were run against **${summary.totalReposAnalyzed} open-source repositories** pinned to exact commit SHAs across ${formatList} formats.
 
 - **Total Decision Files Found:** ${summary.totalFilesFound}
 - **Parsed OK:** ${summary.totalFilesParsedOK} (${summary.averageParseRatePercent}%) — *see definition below*
 - **Total Graph Nodes:** ${summary.totalNodes} (${summary.totalUniqueIds} unique IDs; ${summary.totalDuplicateIds} files with initial ID collisions before disambiguation)
-- **Total Active Graph Edges:** ${summary.totalEdges}
+- **Total Active Graph Edges:** ${summary.totalEdges} (${summary.totalHardEdges} hard, ${summary.totalSoftEdges} soft)
 - **Total Isolated Nodes:** ${totalIsolated}
 - **Unresolved References (Broken Links):** ${summary.totalBrokenLinks} (unvalidated)
-- **Repositories with Detected Cycles:** ${summary.totalCyclesDetected} (unvalidated; pending manual review)
+- **Repositories with Hard Cycles:** ${summary.totalCyclesDetected}
+- **Soft Mutual References:** ${summary.totalMutualReferences} pair(s) (informational, non-failing)
 
 > **Definition — "Parsed OK":** A non-empty file where \`parseADRContent()\` did not throw and returned a non-null \`ParsedADR\` object with a non-empty \`frontmatter.id\` (whether from frontmatter, filename fallback, or generated ID). **"Parsed OK" measures parser survival, not metadata extraction quality**—which is reported separately in the extraction-quality columns immediately next to it.
 
@@ -97,8 +100,8 @@ In Phase 2A.1, \`kubernetes/enhancements\` had 708 markdown files, 689 of which 
 
 ## 2. Benchmark Results & Extraction Quality
 
-| Repository | Commit | Format | License | Files Found | Parsed OK | Parse Rate | Real Title % | Status Found % | ID Source (FM / File / Gen) | Duplicate IDs | Unique IDs | Nodes | Edges | Edge Density | Isolated Nodes | Cycles | Broken Links | Analysis Time | Checkout Time (cached) |
-| :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| Repository | Commit | Format | License | Files Found | Parsed OK | Parse Rate | Real Title % | Status Found % | ID Source (FM / File / Gen) | Duplicate IDs | Unique IDs | Nodes | Edges (Hard / Soft) | Edge Density | Isolated Nodes | Hard Cycles | Mutual Refs | Broken Links | Analysis Time | Checkout Time (cached) |
+| :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 ${tableRows}
 
 *Column notes:*
@@ -107,6 +110,8 @@ ${tableRows}
 - **ID Source (FM / File / Gen)**: % of parsed files whose ID came from YAML frontmatter (\`FM\`), filename fallback (\`File\`), or random generation (\`Gen\`).
 - **Duplicate IDs**: Count of parsed files whose initial ID collided with another file before relative-path disambiguation.
 - **Unique IDs**: Count of distinct node IDs in \`DAGEngine\`'s graph after disambiguation.
+- **Edges (Hard / Soft)**: Active intra-repo edges split into hard dependencies (frontmatter \`depends_on\` / \`supersedes\` or status \`Supersedes ADR-XXXX\`) and soft references (body markdown links and ID tokens).
+- **Hard Cycles / Mutual Refs**: Hard cycles fail \`ndag validate\`; soft mutual references are informational only.
 - **Checkout Time (cached)**: Time to verify/checkout the pinned commit SHA from the local \`.corpus/\` cache (50–60 ms reflects cached local checkouts, not fresh network clones).
 
 ---
@@ -121,17 +126,16 @@ ${topFailureSections.length > 0 ? `### Parse Failures Observed\n\n${topFailureSe
 ### Unresolved References (Broken Links)
 - **${summary.totalBrokenLinks}** dependency targets could not be matched to any parsed node ID in the same repository. Samples (up to 10 per repository, with source file path and raw link text) are recorded in \`results/evidence.json\`.
 
-### Detected Cycles (Unvalidated)
-- The DAG engine flagged cycles in **${summary.totalCyclesDetected}** repository(ies). Exact file paths and raw link text for each cycle edge are recorded in \`results/evidence.json\` for manual verification.
+### Hard Cycles vs. Soft Mutual References
+- The DAG engine flagged **${summary.totalCyclesDetected}** repository(ies) with hard circular dependencies and **${summary.totalMutualReferences}** soft mutual reference pair(s) (see-also body links recorded in \`results/evidence.json\`).
 
 ---
 
 ## 4. Limitations
 
-1. **No Edge-Source Provenance:** \`src/core/adrParser.ts\` returns \`depends_on: string[]\` without recording whether each edge came from YAML frontmatter, a markdown body link, or an ID token. Therefore, edge counts are not broken down by source in this report.
-2. **Silent Parser Defaults:** \`parseADRContent()\` defaults missing \`status\` to \`'accepted'\` and missing \`title\` to \`'Untitled ADR'\`, and falls back to filename-derived IDs when frontmatter \`id\` is absent. Without separate extraction-quality metrics, \`Parsed OK\` alone overstates structured metadata coverage.
-3. **Unvalidated Detections:** Detected cycles and broken links reflect raw parser/engine output and have not yet been manually verified as true positives vs. parser false positives (e.g., relative links or non-ADR markdown files).
-4. **Non-ADR Markdown Files:** Subfolders may contain index or template files (e.g., \`README.md\`, templates) that are included in \`Files Found\` and assigned fallback IDs.
+1. **Silent Parser Defaults:** \`parseADRContent()\` defaults missing \`status\` to \`'accepted'\` and missing \`title\` to \`'Untitled ADR'\`, and falls back to filename-derived IDs when frontmatter \`id\` is absent. Without separate extraction-quality metrics, \`Parsed OK\` alone overstates structured metadata coverage.
+2. **Unvalidated Broken Links:** Broken links reflect raw parser/engine output and have not yet been manually verified as true positives vs. relative links to non-ADR files.
+3. **Non-ADR Markdown Files:** Subfolders may contain index or template files (e.g., \`README.md\`, templates) that are included in \`Files Found\` and assigned fallback IDs.
 
 ---
 

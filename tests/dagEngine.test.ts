@@ -334,4 +334,75 @@ describe('DAGEngine', () => {
       expect(result.duplicateIds).toEqual([]);
     });
   });
+
+  describe('Hard vs Soft Edges (Phase 2B)', () => {
+    it('(a) still detects a real hard cycle even when soft edges exist', () => {
+      const adrs = [
+        createMockAdr({ id: 'ADR-001', dependencies: ['ADR-002'], softDependencies: ['ADR-003'] }),
+        createMockAdr({ id: 'ADR-002', dependencies: ['ADR-001'] }),
+        createMockAdr({ id: 'ADR-003', dependencies: [], softDependencies: ['ADR-001'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      const result = engine.validate();
+      expect(result.isValid).toBe(false);
+      expect(result.hasCycle).toBe(true);
+      expect(result.cyclePath).toEqual(['ADR-001', 'ADR-002', 'ADR-001']);
+    });
+
+    it('(b) does not fail validation for two ADRs with soft mutual references only', () => {
+      const adrs = [
+        createMockAdr({ id: 'ADR-0008', dependencies: [], softDependencies: ['ADR-0013'] }),
+        createMockAdr({ id: 'ADR-0013', dependencies: [], softDependencies: ['ADR-0008'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      const result = engine.validate();
+      expect(result.isValid).toBe(true);
+      expect(result.hasCycle).toBe(false);
+      expect(result.cyclePath).toBeUndefined();
+      expect(result.topologicalOrder).toEqual(['ADR-0008', 'ADR-0013']);
+      expect(result.mutualReferences).toEqual([
+        { pair: ['ADR-0008', 'ADR-0013'] },
+      ]);
+    });
+
+    it('(c) keeps blast radius, depth, and direct dependents unchanged by soft links unless includeSoft is true', () => {
+      const adrs = [
+        createMockAdr({ id: 'ADR-001', dependencies: [], tags: ['core'] }),
+        createMockAdr({ id: 'ADR-002', dependencies: ['ADR-001'], tags: ['api'] }),
+        createMockAdr({ id: 'ADR-003', dependencies: ['ADR-002'], tags: ['db'] }),
+        createMockAdr({ id: 'ADR-004', dependencies: [], softDependencies: ['ADR-001'], tags: ['docs'] }),
+        createMockAdr({ id: 'ADR-005', dependencies: ['ADR-004'], tags: ['ui'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+
+      // Default (hard edges only)
+      expect(engine.getDirectDependents('ADR-001')).toEqual(['ADR-002']);
+      expect(engine.getBlastRadius('ADR-001')).toEqual(['ADR-002', 'ADR-003']);
+      expect(engine.getDepth('ADR-001')).toBe(2);
+      expect(engine.getAffectedSystems('ADR-001')).toEqual({ api: ['ADR-002'], db: ['ADR-003'] });
+      expect(engine.getSoftDependents('ADR-001')).toEqual(['ADR-004']);
+
+      // With includeSoft: true
+      expect(engine.getDirectDependents('ADR-001', { includeSoft: true })).toEqual(['ADR-002', 'ADR-004']);
+      expect(engine.getBlastRadius('ADR-001', { includeSoft: true })).toEqual(['ADR-002', 'ADR-004', 'ADR-003', 'ADR-005']);
+      expect(engine.getDepth('ADR-001', { includeSoft: true })).toBe(2);
+      expect(engine.getAffectedSystems('ADR-001', { includeSoft: true })).toEqual({
+        api: ['ADR-002'],
+        db: ['ADR-003'],
+        docs: ['ADR-004'],
+        ui: ['ADR-005'],
+      });
+    });
+
+    it('does not fail validation on missing soft references', () => {
+      const adrs = [
+        createMockAdr({ id: 'ADR-001', dependencies: [], softDependencies: ['ADR-999'] }),
+      ];
+      const engine = new DAGEngine(adrs);
+      const result = engine.validate();
+      expect(result.isValid).toBe(true);
+      expect(result.missingDependencies).toEqual([]);
+      expect(result.missingSoftReferences).toEqual([{ adrId: 'ADR-001', missingId: 'ADR-999' }]);
+    });
+  });
 });

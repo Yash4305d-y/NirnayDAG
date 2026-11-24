@@ -1,11 +1,12 @@
 {
-  "timestamp": "2026-11-24T20:27:30.592Z",
-  "runnerVersion": "1.0.0-phase2a.2",
+  "timestamp": "2026-11-24T20:34:58.721Z",
+  "runnerVersion": "1.0.0-phase2a.2+2b",
   "repositories": [
     {
       "repo": "backstage/backstage",
       "commitSha": "b3ed9690207fe606362f5785b7cbe91ccc8a8542",
       "cycles": [],
+      "mutualReferences": [],
       "brokenLinks": [
         {
           "sourceId": "adrs-adr008",
@@ -36,27 +37,27 @@
     {
       "repo": "adr/madr",
       "commitSha": "ba75bb1b20d42af5746b246ad348c202419ae681",
-      "cycles": [
+      "cycles": [],
+      "mutualReferences": [
         {
-          "cyclePath": [
+          "pair": [
             "ADR-0008",
-            "ADR-0013",
-            "ADR-0008"
+            "ADR-0013"
           ],
           "edges": [
-            {
-              "dependentId": "ADR-0013",
-              "dependentFile": "docs/decisions/0013-use-yaml-front-matter-for-meta-data.md",
-              "dependencyId": "ADR-0008",
-              "dependencyFile": "docs/decisions/0008-add-status-field.md",
-              "rawLinkText": "[ADR-0008]"
-            },
             {
               "dependentId": "ADR-0008",
               "dependentFile": "docs/decisions/0008-add-status-field.md",
               "dependencyId": "ADR-0013",
               "dependencyFile": "docs/decisions/0013-use-yaml-front-matter-for-meta-data.md",
               "rawLinkText": "[ADR-0013]"
+            },
+            {
+              "dependentId": "ADR-0013",
+              "dependentFile": "docs/decisions/0013-use-yaml-front-matter-for-meta-data.md",
+              "dependencyId": "ADR-0008",
+              "dependencyFile": "docs/decisions/0008-add-status-field.md",
+              "rawLinkText": "[ADR-0008]"
             }
           ]
         }
@@ -67,6 +68,7 @@
       "repo": "rust-lang/rfcs",
       "commitSha": "f43d5789b838fb0d80962e3d4b45fb9ddfcc9a07",
       "cycles": [],
+      "mutualReferences": [],
       "brokenLinks": [
         {
           "sourceId": "ADR-3627",
@@ -98,6 +100,7 @@
       "repo": "kubernetes/enhancements",
       "commitSha": "cac930cb9d7c70192016865425f943c339414011",
       "cycles": [],
+      "mutualReferences": [],
       "brokenLinks": [
         {
           "sourceId": "3157-watch-list",
@@ -165,6 +168,7 @@
       "repo": "cosmos/cosmos-sdk",
       "commitSha": "06a015222f13fe7b41bc3969504da7dee875ae5c",
       "cycles": [],
+      "mutualReferences": [],
       "brokenLinks": [
         {
           "sourceId": "PROCESS",
@@ -231,27 +235,93 @@
     {
       "repo": "JabRef/jabref",
       "commitSha": "d0584506a13a7fb0dc6f404b89e3e47d6f7d129d",
-      "cycles": [
+      "cycles": [],
+      "mutualReferences": [
         {
-          "cyclePath": [
+          "pair": [
             "ADR-0036",
-            "ADR-0042",
-            "ADR-0036"
+            "ADR-0042"
           ],
           "edges": [
-            {
-              "dependentId": "ADR-0042",
-              "dependentFile": "docs/decisions/0042-use-markdowntextflow-for-summarization-content.md",
-              "dependencyId": "ADR-0036",
-              "dependencyFile": "docs/decisions/0036-use-markdown-for-chat-content.md",
-              "rawLinkText": "[ADR-0036]"
-            },
             {
               "dependentId": "ADR-0036",
               "dependentFile": "docs/decisions/0036-use-markdown-for-chat-content.md",
               "dependencyId": "ADR-0042",
               "dependencyFile": "docs/decisions/0042-use-markdowntextflow-for-summarization-content.md",
               "rawLinkText": "[ADR-0042]"
+            },
+            {
+              "dependentId": "ADR-0042",
+              "dependentFile": "docs/decisions/0042-use-markdowntextflow-for-summarization-content.md",
+              "dependencyId": "ADR-0036",
+              "dependencyFile": "docs/decisions/0036-use-markdown-for-chat-content.md",
+              "rawLinkText": "[ADR-0036]"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "ADR-0045",
+            "ADR-0057"
+          ],
+          "edges": [
+            {
+              "dependentId": "ADR-0045",
+              "dependentFile": "docs/decisions/0045-use-input-flag-always-for-input-files.md",
+              "dependencyId": "ADR-0057",
+              "dependencyFile": "docs/decisions/0057-allow-positional-input-file-argument.md",
+              "rawLinkText": "[ADR-0057]"
+            },
+            {
+              "dependentId": "ADR-0057",
+              "dependentFile": "docs/decisions/0057-allow-positional-input-file-argument.md",
+              "dependencyId": "ADR-0045",
+              "dependencyFile": "docs/decisions/0045-use-input-flag-always-for-input-files.md",
+              "rawLinkText": "[ADR-0045]"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "ADR-0067",
+            "ADR-0084"
+          ],
+          "edges": [
+            {
+              "dependentId": "ADR-0067",
+              "dependentFile": "docs/decisions/0067-use-pandoc-for-bst-conversion.md",
+              "dependencyId": "ADR-0084",
+              "dependencyFile": "docs/decisions/0084-canonical-writer-citations.md",
+              "rawLinkText": "[ADR-0084]"
+            },
+            {
+              "dependentId": "ADR-0084",
+              "dependentFile": "docs/decisions/0084-canonical-writer-citations.md",
+              "dependencyId": "ADR-0067",
+              "dependencyFile": "docs/decisions/0067-use-pandoc-for-bst-conversion.md",
+              "rawLinkText": "[ADR-0067]"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "ADR-0068",
+            "ADR-0084"
+          ],
+          "edges": [
+            {
+              "dependentId": "ADR-0068",
+              "dependentFile": "docs/decisions/0068-use-a-preference-for-Zotero-compatibility-mode.md",
+              "dependencyId": "ADR-0084",
+              "dependencyFile": "docs/decisions/0084-canonical-writer-citations.md",
+              "rawLinkText": "[ADR-0084]"
+            },
+            {
+              "dependentId": "ADR-0084",
+              "dependentFile": "docs/decisions/0084-canonical-writer-citations.md",
+              "dependencyId": "ADR-0068",
+              "dependencyFile": "docs/decisions/0068-use-a-preference-for-Zotero-compatibility-mode.md",
+              "rawLinkText": "[ADR-0068]"
             }
           ]
         }
@@ -287,6 +357,7 @@
       "repo": "alphagov/govuk-design-system-architecture",
       "commitSha": "89854bdaa299203bccae8b64bcfb690d4d8c5824",
       "cycles": [],
+      "mutualReferences": [],
       "brokenLinks": [
         {
           "sourceId": "ADR-006",
