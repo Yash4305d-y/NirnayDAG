@@ -188,4 +188,35 @@ describe('PR Blast Radius Report Generator', () => {
       warnSpy.mockRestore();
     }
   });
+
+  it('separates hard dependents from also referenced by and ignores soft mutual cycles', async () => {
+    const softDir = path.join(tmpDir, 'soft-adrs');
+    await fs.ensureDir(softDir);
+    await fs.writeFile(
+      path.join(softDir, '0001-base.md'),
+      `---\nid: ADR-0001\ntitle: Base\nstatus: accepted\n---\n# Base\nSee [ADR-0002].\n`
+    );
+    await fs.writeFile(
+      path.join(softDir, '0002-soft.md'),
+      `---\nid: ADR-0002\ntitle: Soft\nstatus: accepted\n---\n# Soft\nSee [ADR-0001].\n`
+    );
+    await fs.writeFile(
+      path.join(softDir, '0003-hard.md'),
+      `---\nid: ADR-0003\ntitle: Hard Child\nstatus: accepted\ndepends_on:\n  - ADR-0001\n---\n# Hard Child\n`
+    );
+
+    const outputFile = path.join(tmpDir, 'soft-summary.md');
+    const result = await generatePRReport({
+      adrDir: softDir,
+      outputFile,
+      mockChangedFiles: ['0001-base.md'],
+    });
+
+    expect(result.validationResult.isValid).toBe(true);
+    expect(result.validationResult.hasCycle).toBe(false);
+    expect(result.markdown).toContain('Architecture DAG Validated Successfully');
+    expect(result.markdown).toContain('Also Referenced By');
+    expect(result.markdown).toContain('ADR-0002');
+    expect(result.markdown).toContain('Mutual References');
+  });
 });

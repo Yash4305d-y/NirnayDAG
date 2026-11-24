@@ -256,7 +256,7 @@ export class DAGEngine {
       const current = queue.shift()!;
       const dependents = this.getDependentsList(current, options?.includeSoft);
       dependents.forEach((childId) => {
-        if (!impacted.has(childId)) {
+        if (childId !== rootId && !impacted.has(childId)) {
           impacted.add(childId);
           queue.push(childId);
         }

@@ -133,7 +133,7 @@ export async function generatePRReport(options: ReportOptions = {}): Promise<Rep
     md += `| ADR ID | Title | Status | Cascade Count | Max Depth | Affected Systems | Risk Level |\n`;
     md += `|--------|-------|--------|---------------|-----------|------------------|------------|\n`;
 
-    const impactDetails: { id: string; title: string; downstream: string[] }[] = [];
+    const impactDetails: { id: string; title: string; downstream: string[]; softRefs: string[] }[] = [];
 
     changedAdrs.forEach((adr) => {
       const id = adr.frontmatter.id;
@@ -142,6 +142,7 @@ export async function generatePRReport(options: ReportOptions = {}): Promise<Rep
 
       const downstreamIds = engine.getBlastRadius(id);
       const direct = engine.getDirectDependents(id);
+      const softRefs = engine.getSoftDependents(id);
       const maxDepth = engine.getDepth(id);
       const affectedSystems = engine.getAffectedSystems(id);
       const affectedSummary = Object.keys(affectedSystems).join(', ') || 'None';
@@ -156,8 +157,8 @@ export async function generatePRReport(options: ReportOptions = {}): Promise<Rep
 
       md += `| **${id}** | ${title} | ${status} | ${downstreamIds.length} | ${maxDepth} | ${affectedSummary} | ${riskLevel} (${risk.score}) |\n`;
 
-      if (downstreamIds.length > 0) {
-        impactDetails.push({ id, title, downstream: downstreamIds });
+      if (downstreamIds.length > 0 || softRefs.length > 0) {
+        impactDetails.push({ id, title, downstream: downstreamIds, softRefs });
       }
     });
 
@@ -166,8 +167,20 @@ export async function generatePRReport(options: ReportOptions = {}): Promise<Rep
       impactDetails.forEach((detail) => {
         md += `<details>\n`;
         md += `<summary><strong>${detail.id} (${detail.title})</strong> cascades to ${detail.downstream.length} decisions</summary>\n\n`;
-        md += `- ` + detail.downstream.join('\n- ') + `\n\n`;
+        if (detail.downstream.length > 0) {
+          md += `**Hard Dependents:**\n- ` + detail.downstream.join('\n- ') + `\n\n`;
+        }
+        if (detail.softRefs.length > 0) {
+          md += `**Also Referenced By (soft):**\n- ` + detail.softRefs.join('\n- ') + `\n\n`;
+        }
         md += `</details>\n`;
+      });
+    }
+
+    if (validationResult.mutualReferences && validationResult.mutualReferences.length > 0) {
+      md += `\n### Mutual References (Informational)\n\n`;
+      validationResult.mutualReferences.forEach((m) => {
+        md += `- ${m.pair[0]} <-> ${m.pair[1]} (soft body references)\n`;
       });
     }
   }

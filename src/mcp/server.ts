@@ -79,7 +79,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: 'object',
           properties: {
-            id: { type: 'string', description: 'ADR ID' }
+            id: { type: 'string', description: 'ADR ID' },
+            includeSoft: { type: 'boolean', description: 'Include soft body references in blast radius' }
           },
           required: ['id']
         }
@@ -142,16 +143,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     if (name === 'query_blast_radius') {
       const id = args?.id as string;
+      const includeSoft = Boolean(args?.includeSoft);
+      const queryOpts = { includeSoft };
       const { engine } = validateAndComputeDAG(adrs);
-      const deps = engine.getBlastRadius(id);
-      const direct = engine.getDirectDependents(id);
-      const depth = engine.getDepth(id);
-      const affectedSystems = engine.getAffectedSystems(id);
+      const deps = engine.getBlastRadius(id, queryOpts);
+      const direct = engine.getDirectDependents(id, queryOpts);
+      const alsoReferencedBy = includeSoft ? [] : engine.getSoftDependents(id);
+      const depth = engine.getDepth(id, queryOpts);
+      const affectedSystems = engine.getAffectedSystems(id, queryOpts);
       const risk = calculateArchitectureRisk({ directDependentsCount: direct.length, cascadeCount: deps.length, depth });
       return {
         content: [{
           type: 'text', text: JSON.stringify({
             directDependents: direct,
+            alsoReferencedBy,
             totalCascadingDownstream: deps,
             maxDepth: depth,
             affectedSystems,
@@ -173,6 +178,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             hasCycles: validationResult.hasCycle,
             cyclePath: validationResult.cyclePath,
             missingDependencies: validationResult.missingDependencies,
+            mutualReferences: validationResult.mutualReferences || [],
             rootDecisions: rootNodes,
             topologicalOrder: validationResult.topologicalOrder
           }, null, 2)
