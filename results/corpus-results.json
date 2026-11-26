@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-11-26T12:32:19.588Z",
-  "runnerVersion": "1.0.0-phase2c.1.1",
+  "timestamp": "2026-11-26T13:47:36.090Z",
+  "runnerVersion": "1.0.0-phase2c.2b",
   "licenseNotice": "All repositories listed are publicly hosted open-source projects analyzed under their respective open-source licenses for evaluation and research purposes. NirnayDAG benchmarks local clones and does not redistribute repository contents.",
   "summary": {
     "totalReposAnalyzed": 7,
@@ -8,19 +8,19 @@
     "totalFilesParsedOK": 1565,
     "averageParseRatePercent": 100,
     "totalNodes": 1565,
-    "totalEdges": 353,
+    "totalEdges": 629,
     "totalDuplicateIds": 4,
     "totalUniqueIds": 1565,
-    "totalHardEdges": 0,
-    "totalSoftEdges": 353,
+    "totalHardEdges": 9,
+    "totalSoftEdges": 620,
     "totalResolvedLinks": 456,
     "totalNonDecisionLinks": 176,
     "totalOutsideScopeLinks": 16,
     "totalAmbiguousLinks": 0,
     "totalExternalLinks": 38682,
-    "totalBrokenLinks": 73,
+    "totalBrokenLinks": 186,
     "totalCyclesDetected": 0,
-    "totalMutualReferences": 14
+    "totalMutualReferences": 36
   },
   "results": [
     {
@@ -40,6 +40,15 @@
         "realTitlePercent": 100,
         "statusFoundCount": 0,
         "statusFoundPercent": 0,
+        "statusFromFrontmatterPercent": 0,
+        "statusFromSectionPercent": 0,
+        "statusFromLinePercent": 0,
+        "statusFromKepYamlPercent": 0,
+        "titleFromFrontmatterPercent": 100,
+        "titleFromHeadingPercent": 0,
+        "titleFromMetadataLinePercent": 0,
+        "titleFromKepYamlPercent": 0,
+        "titleFromSlugPercent": 0,
         "idFromFrontmatterCount": 17,
         "idFromFrontmatterPercent": 100,
         "idFromFilenameCount": 0,
@@ -75,12 +84,15 @@
       "missingDependencies": [],
       "before": {
         "edges": 0,
-        "brokenLinks": 4
+        "brokenLinks": 4,
+        "realTitlePercent": 100,
+        "statusFoundPercent": 0,
+        "hardEdges": 0
       },
       "timing": {
-        "cloneMs": 96,
-        "analysisMs": 126,
-        "totalMs": 222
+        "cloneMs": 58,
+        "analysisMs": 107,
+        "totalMs": 165
       }
     },
     {
@@ -98,8 +110,17 @@
       "extractionQuality": {
         "realTitleCount": 21,
         "realTitlePercent": 100,
-        "statusFoundCount": 1,
-        "statusFoundPercent": 4.8,
+        "statusFoundCount": 2,
+        "statusFoundPercent": 9.5,
+        "statusFromFrontmatterPercent": 4.8,
+        "statusFromSectionPercent": 0,
+        "statusFromLinePercent": 4.8,
+        "statusFromKepYamlPercent": 0,
+        "titleFromFrontmatterPercent": 4.8,
+        "titleFromHeadingPercent": 95.2,
+        "titleFromMetadataLinePercent": 0,
+        "titleFromKepYamlPercent": 0,
+        "titleFromSlugPercent": 0,
         "idFromFrontmatterCount": 0,
         "idFromFrontmatterPercent": 0,
         "idFromFilenameCount": 21,
@@ -135,12 +156,15 @@
       "missingDependencies": [],
       "before": {
         "edges": 3,
-        "brokenLinks": 0
+        "brokenLinks": 0,
+        "realTitlePercent": 100,
+        "statusFoundPercent": 4.8,
+        "hardEdges": 0
       },
       "timing": {
-        "cloneMs": 89,
-        "analysisMs": 85,
-        "totalMs": 174
+        "cloneMs": 45,
+        "analysisMs": 64,
+        "totalMs": 109
       }
     },
     {
@@ -156,10 +180,19 @@
       "parseFailures": [],
       "topFailureReasons": [],
       "extractionQuality": {
-        "realTitleCount": 49,
-        "realTitlePercent": 7.5,
+        "realTitleCount": 495,
+        "realTitlePercent": 75.7,
         "statusFoundCount": 0,
         "statusFoundPercent": 0,
+        "statusFromFrontmatterPercent": 0,
+        "statusFromSectionPercent": 0,
+        "statusFromLinePercent": 0,
+        "statusFromKepYamlPercent": 0,
+        "titleFromFrontmatterPercent": 0.2,
+        "titleFromHeadingPercent": 7.3,
+        "titleFromMetadataLinePercent": 68.2,
+        "titleFromKepYamlPercent": 0,
+        "titleFromSlugPercent": 24.3,
         "idFromFrontmatterCount": 0,
         "idFromFrontmatterPercent": 0,
         "idFromFilenameCount": 654,
@@ -273,12 +306,15 @@
       ],
       "before": {
         "edges": 0,
-        "brokenLinks": 4
+        "brokenLinks": 4,
+        "realTitlePercent": 7.5,
+        "statusFoundPercent": 0,
+        "hardEdges": 0
       },
       "timing": {
-        "cloneMs": 88,
-        "analysisMs": 662,
-        "totalMs": 750
+        "cloneMs": 46,
+        "analysisMs": 347,
+        "totalMs": 393
       }
     },
     {
@@ -294,10 +330,19 @@
       "parseFailures": [],
       "topFailureReasons": [],
       "extractionQuality": {
-        "realTitleCount": 693,
-        "realTitlePercent": 97.9,
-        "statusFoundCount": 0,
-        "statusFoundPercent": 0,
+        "realTitleCount": 699,
+        "realTitlePercent": 98.7,
+        "statusFoundCount": 681,
+        "statusFoundPercent": 96.2,
+        "statusFromFrontmatterPercent": 0,
+        "statusFromSectionPercent": 0,
+        "statusFromLinePercent": 0,
+        "statusFromKepYamlPercent": 96.2,
+        "titleFromFrontmatterPercent": 0,
+        "titleFromHeadingPercent": 2,
+        "titleFromMetadataLinePercent": 0,
+        "titleFromKepYamlPercent": 96.8,
+        "titleFromSlugPercent": 1.3,
         "idFromFrontmatterCount": 0,
         "idFromFrontmatterPercent": 0,
         "idFromFilenameCount": 708,
@@ -309,14 +354,62 @@
       "duplicateIdsCount": 2,
       "uniqueIdsCount": 708,
       "nodes": 708,
-      "edges": 216,
-      "hardEdges": 0,
-      "softEdges": 216,
-      "edgeDensity": 0.305,
-      "isolatedNodes": 461,
+      "edges": 492,
+      "hardEdges": 9,
+      "softEdges": 483,
+      "edgeDensity": 0.695,
+      "isolatedNodes": 290,
       "cyclesFound": false,
-      "mutualReferencesCount": 3,
+      "mutualReferencesCount": 25,
       "mutualReferences": [
+        {
+          "pair": [
+            "2232-suspend-jobs",
+            "5440-mutable-job-pod-resource-updates"
+          ]
+        },
+        {
+          "pair": [
+            "3329-retriable-and-non-retriable-failures",
+            "3939-allow-replacement-when-fully-terminated"
+          ]
+        },
+        {
+          "pair": [
+            "3973-consider-terminating-pods-deployment",
+            "5882-deployment-pod-replacement-policy"
+          ]
+        },
+        {
+          "pair": [
+            "2926-job-mutable-scheduling-directives",
+            "5440-mutable-job-pod-resource-updates"
+          ]
+        },
+        {
+          "pair": [
+            "5547-integrate-workload-with-job",
+            "6089-was-controller-apis"
+          ]
+        },
+        {
+          "pair": [
+            "6089-was-controller-apis",
+            "6276-integrate-workload-with-deployment"
+          ]
+        },
+        {
+          "pair": [
+            "2299-kustomize-plugin-composition",
+            "993-kustomize-generators-transformers"
+          ]
+        },
+        {
+          "pair": [
+            "2384-kustomize-file-processing-integration",
+            "2386-kustomize-subcommand-integration"
+          ]
+        },
         {
           "pair": [
             "kubernetes-control-plane-metrics-stability",
@@ -331,8 +424,92 @@
         },
         {
           "pair": [
+            "2625-cpumanager-policies-thread-placement",
+            "2902-cpumanager-distribute-cpus-policy-option"
+          ]
+        },
+        {
+          "pair": [
+            "2625-cpumanager-policies-thread-placement",
+            "4622-topologymanager-max-allowable-numa-nodes"
+          ]
+        },
+        {
+          "pair": [
+            "2902-cpumanager-distribute-cpus-policy-option",
+            "4622-topologymanager-max-allowable-numa-nodes"
+          ]
+        },
+        {
+          "pair": [
             "3063-dynamic-resource-allocation",
             "4381-dra-structured-parameters"
+          ]
+        },
+        {
+          "pair": [
+            "4603-tune-crashloopbackoff",
+            "5593-configure-the-max-crashloopbackoff-delay"
+          ]
+        },
+        {
+          "pair": [
+            "5075-dra-consumable-capacity",
+            "5677-dra-resource-availability-visibility"
+          ]
+        },
+        {
+          "pair": [
+            "5491-dra-list-types-for-attributes",
+            "6072-dra-standard-numanode"
+          ]
+        },
+        {
+          "pair": [
+            "1451-multi-scheduling-profiles",
+            "785-scheduler-component-config-api"
+          ]
+        },
+        {
+          "pair": [
+            "4671-gang-scheduling",
+            "5710-workload-aware-preemption"
+          ]
+        },
+        {
+          "pair": [
+            "5027-dra-admin-controlled-device-attributes",
+            "5055-dra-device-taints-and-tolerations"
+          ]
+        },
+        {
+          "pair": [
+            "5491-dra-list-types-for-attributes",
+            "6080-dra-derived-attributes"
+          ]
+        },
+        {
+          "pair": [
+            "5710-workload-aware-preemption",
+            "5732-topology-aware-workload-scheduling"
+          ]
+        },
+        {
+          "pair": [
+            "5710-workload-aware-preemption",
+            "6012-composite-podgroup-api"
+          ]
+        },
+        {
+          "pair": [
+            "5732-topology-aware-workload-scheduling",
+            "6012-composite-podgroup-api"
+          ]
+        },
+        {
+          "pair": [
+            "177-volume-snapshot",
+            "1900-volume-snapshot-validation-webhook"
           ]
         }
       ],
@@ -341,11 +518,183 @@
       "outsideScopeLinks": 0,
       "ambiguousLinks": 0,
       "externalLinks": 32259,
-      "brokenLinks": 51,
+      "brokenLinks": 164,
       "missingDependencies": [
+        {
+          "adrId": "NNNN-kep-template",
+          "missingId": "/keps/sig-ccc/3456-replaced-kep"
+        },
+        {
+          "adrId": "1152-less-object-serializations",
+          "missingId": "n/a"
+        },
+        {
+          "adrId": "4020-unknown-version-interoperability-proxy",
+          "missingId": "none"
+        },
+        {
+          "adrId": "555-server-side-apply",
+          "missingId": "n/a"
+        },
+        {
+          "adrId": "598-crd-conversion-webhook",
+          "missingId": "(https://github.com/kubernetes/design-proposals-archive/blob/master/api-machinery/customresource-conversion-webhook.md)"
+        },
+        {
+          "adrId": "956-watch-bookmark",
+          "missingId": "n/a"
+        },
+        {
+          "adrId": "592-ttl-after-finish",
+          "missingId": "n/a"
+        },
+        {
+          "adrId": "2377-Kustomize",
+          "missingId": "kinflate"
+        },
+        {
+          "adrId": "2379-kubectl-plugins",
+          "missingId": "n/a"
+        },
+        {
+          "adrId": "2384-kustomize-file-processing-integration",
+          "missingId": "n/a"
+        },
+        {
+          "adrId": "2386-kustomize-subcommand-integration",
+          "missingId": "0008-kustomize.md"
+        },
+        {
+          "adrId": "2386-kustomize-subcommand-integration",
+          "missingId": "n/a"
+        },
+        {
+          "adrId": "2392-cloud-controller-manager",
+          "missingId": "contributors/design-proposals/cloud-provider/cloud-provider-refactoring.md"
+        },
+        {
+          "adrId": "0000-cloud-provider-template",
+          "missingId": "KEP-3"
+        },
+        {
+          "adrId": "0000-cloud-provider-template",
+          "missingId": "KEP-100"
+        },
+        {
+          "adrId": "1739-customization-with-patches",
+          "missingId": "/keps/sig-cluster-lifecycle/kubeadm/20190722-Advanced-configurations-with-kubeadm-(Kustomize).md"
+        },
+        {
+          "adrId": "1797-configure-fqdn-as-hostname-for-pods",
+          "missingId": "N/A"
+        },
+        {
+          "adrId": "2133-kubelet-credential-providers",
+          "missingId": "/keps/sig-cloud-provider/20191004-out-of-tree-credential-providers.md"
+        },
+        {
+          "adrId": "2371-cri-pod-container-stats",
+          "missingId": "N/A"
+        },
+        {
+          "adrId": "3085-pod-conditions-for-starting-completition-of-sandbox-creation",
+          "missingId": "none"
+        },
+        {
+          "adrId": "3570-cpumanager",
+          "missingId": "kubernetes/community/contributors/design-proposals/node/cpu-manager.md"
+        },
+        {
+          "adrId": "3570-cpumanager",
+          "missingId": "kubernetes/enhancements/keps/sig-node/375-cpumanager/README.md"
+        },
+        {
+          "adrId": "3573-device-plugin",
+          "missingId": "kubernetes/design-proposals-archive/blob/main/resource-management/device-plugin.md"
+        },
+        {
+          "adrId": "5365-ImageVolume-with-image-digest",
+          "missingId": "/keps/sig-ccc/3456-replaced-kep"
+        },
+        {
+          "adrId": "589-efficient-node-heartbeats",
+          "missingId": "n/a"
+        },
+        {
+          "adrId": "6035-exec-session-identity",
+          "missingId": "6090"
+        },
+        {
+          "adrId": "727-resource-metrics-endpoint",
+          "missingId": "none"
+        },
+        {
+          "adrId": "2763-ambient-capabilities",
+          "missingId": "TBD"
+        },
+        {
+          "adrId": "1495-volume-populators",
+          "missingId": "/keps/sig-storage/20200120-generic-data-populators.md"
+        },
+        {
+          "adrId": "557-csi-topology",
+          "missingId": "n/a"
+        },
+        {
+          "adrId": "559-volume-subpath-expansion",
+          "missingId": "n/a"
+        },
+        {
+          "adrId": "962-execution-hook",
+          "missingId": "n/a"
+        },
+        {
+          "adrId": "NNNN-kep-template",
+          "missingId": "/keps/sig-aaa/1234-we-heard-you-like-keps"
+        },
+        {
+          "adrId": "NNNN-kep-template",
+          "missingId": "/keps/sig-bbb/2345-everyone-gets-a-kep"
+        },
+        {
+          "adrId": "1027-api-unions",
+          "missingId": "/keps/sig-api-machinery/0006-apply.md"
+        },
         {
           "adrId": "1040-priority-and-fairness",
           "missingId": "keps/sig-api-machinery/1040-priority-and-fairness/%v"
+        },
+        {
+          "adrId": "1101-immutable-fields",
+          "missingId": "/keps/sig-api-machinery/0006-apply.md"
+        },
+        {
+          "adrId": "1152-less-object-serializations",
+          "missingId": "TODO"
+        },
+        {
+          "adrId": "1904-efficient-watch-resumption",
+          "missingId": "/keps/sig-api-machinery/20191210-consistent-reads-from-cache.md"
+        },
+        {
+          "adrId": "1929-built-in-default",
+          "missingId": "/keps/sig-api-machinery/20190426-crd-defaulting.md"
+        },
+        {
+          "adrId": "2155-clientgo-apply",
+          "missingId": "/keps/sig-api-machinery/0006-apply.md"
+        },
+        {
+          "adrId": "2332-pruning-for-custom-resources",
+          "missingId": "/keps/sig-api-machinery/20180415-crds-to-ga.md"
+        },
+        {
+          "adrId": "2333-legacyflags-kflag",
+          "missingId": "KEP-32"
+        },
+        {
+          "adrId": "2335-vanilla-crd-openapi-subset-structural-schemas",
+          "missingId": "/keps/sig-api-machinery/20180415-crds-to-ga.md"
         },
         {
           "adrId": "3716-admission-webhook-match-conditions",
@@ -356,12 +705,28 @@
           "missingId": "keps/sig-api-machinery/4192-svm-in-tree/(https:/github.com/kubernetes/enhancements/blob/master/keps/sig-api-machinery/3157-watch-list/README.md"
         },
         {
+          "adrId": "492-admission-webhooks",
+          "missingId": "[Admission Control Webhook Beta Design Doc](https://github.com/kubernetes/design-proposals-archive/blob/master/api-machinery/admission-control-webhooks.md)"
+        },
+        {
           "adrId": "4988-snapshottable-api-server-cache",
           "missingId": "keps/sig-api-machinery/4988-snapshottable-api-server-cache/[https:/pkg.go.dev/hash/fnv](https:/pkg.go.dev/hash/fnv"
         },
         {
           "adrId": "5073-declarative-validation-with-validation-gen",
           "missingId": "keps/sig-api-machinery/5073-declarative-validation-with-validation-gen/v1.Recreate, v1.RollingUpdate"
+        },
+        {
+          "adrId": "555-server-side-apply",
+          "missingId": "n/a"
+        },
+        {
+          "adrId": "575-crd-defaulting",
+          "missingId": "/keps/sig-api-machinery/20180731-crd-pruning.md"
+        },
+        {
+          "adrId": "575-crd-defaulting",
+          "missingId": "/keps/sig-api-machinery/20190425-structural-openapi.md"
         },
         {
           "adrId": "575-crd-defaulting",
@@ -376,36 +741,144 @@
           "missingId": "contributors/devel/sig-architecture/api_changes.md"
         },
         {
+          "adrId": "692-crd-openapi-schema",
+          "missingId": "[Validation for CustomResources design doc](https://github.com/kubernetes/design-proposals-archive/blob/master/api-machinery/customresources-validation.md)"
+        },
+        {
+          "adrId": "95-custom-resource-definitions",
+          "missingId": "[Umbrella Issue](https://github.com/kubernetes/kubernetes/issues/58682)"
+        },
+        {
+          "adrId": "95-custom-resource-definitions",
+          "missingId": "[Vanilla OpenAPI Subset Design](https://docs.google.com/document/d/1pcGlbmw-2Y0JJs9hsYnSBXamgG9TfWtHY6eh80zSTd8)"
+        },
+        {
+          "adrId": "95-custom-resource-definitions",
+          "missingId": "[Pruning for CustomResources KEP](https://github.com/kubernetes/enhancements/pull/709)"
+        },
+        {
+          "adrId": "95-custom-resource-definitions",
+          "missingId": "[Defaulting for Custom Resources KEP](https://github.com/kubernetes/enhancements/blob/master/keps/sig-api-machinery/20190426-crd-defaulting.md)"
+        },
+        {
+          "adrId": "2185-random-pod-select-on-replicaset-downscale",
+          "missingId": "/keps/sig-apps/1828-delete-priority-annotations"
+        },
+        {
           "adrId": "2185-random-pod-select-on-replicaset-downscale",
           "missingId": "keps/sig-apps/2185-random-pod-select-on-replicaset-downscale/git.k8s.io/enhancements/keps/sig-apps/2255-pod-cost"
+        },
+        {
+          "adrId": "2232-suspend-jobs",
+          "missingId": "/keps/sig-scheduling/2926-job-muable-scheduling-directives"
         },
         {
           "adrId": "3335-statefulset-slice",
           "missingId": "keps/sig-apps/3335-statefulset-slice/StatefulSet"
         },
         {
+          "adrId": "3998-job-success-completion-policy",
+          "missingId": "/keps/sig-apps/4368-support-managed-by-batch-job"
+        },
+        {
+          "adrId": "592-ttl-after-finish",
+          "missingId": "n/a"
+        },
+        {
+          "adrId": "1333-conformance-without-beta",
+          "missingId": "/keps/sig-architecture/20190412-conformance-behaviors.md"
+        },
+        {
+          "adrId": "1618-conformance-profiles",
+          "missingId": "/keps/sig-architecture/20190412-conformance-behaviors.md"
+        },
+        {
+          "adrId": "617-improve-kep-implementation",
+          "missingId": "/keps/0001-kubernetes-enhancement-proposal-process.md"
+        },
+        {
           "adrId": "1314-node-restriction-pods",
           "missingId": "keps/sig-auth/1314-node-restriction-pods/0000-20170814-bounding-self-labeling-kubelets.md"
+        },
+        {
+          "adrId": "266-kubelet-client-certificate-bootstrap-rotation",
+          "missingId": "/keps/sig-auth/20190607-certificates-api.md"
         },
         {
           "adrId": "5681-conditional-authorization",
           "missingId": "keps/sig-auth/5681-conditional-authorization/github.com/kubernetes/kubernetes/issues/128154"
         },
         {
+          "adrId": "1441-kubectl-debug",
+          "missingId": "/keps/sig-node/20190212-ephemeral-containers.md"
+        },
+        {
           "adrId": "2299-kustomize-plugin-composition",
           "missingId": "keps/sig-cli/2299-kustomize-plugin-composition/[-a-z0-9]*[a-z0-9]"
+        },
+        {
+          "adrId": "2377-Kustomize",
+          "missingId": "n/a"
+        },
+        {
+          "adrId": "2386-kustomize-subcommand-integration",
+          "missingId": "[kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/workflows.md)"
         },
         {
           "adrId": "2906-kustomize-function-catalog",
           "missingId": "keps/sig-cli/2290-kustomize-plugin-composition/README.md"
         },
         {
+          "adrId": "491-kubectl-diff",
+          "missingId": "/keps/sig-api-machinery/0015-dry-run.md"
+        },
+        {
+          "adrId": "491-kubectl-diff",
+          "missingId": "/keps/sig-api-machinery/0006-apply.md"
+        },
+        {
+          "adrId": "1179-building-without-in-tree-providers",
+          "missingId": "/keps/sig-cloud-provider/20190125-removing-in-tree-providers.md"
+        },
+        {
+          "adrId": "1179-building-without-in-tree-providers",
+          "missingId": "/keps/sig-cloud-provider/20180530-cloud-controller-manager.md"
+        },
+        {
           "adrId": "1179-building-without-in-tree-providers",
           "missingId": "keps/sig-cloud-provider/1179-building-without-in-tree-providers/keps/sig-cloud-provider/20190125-removing-in-tree-providers.md"
         },
         {
+          "adrId": "1771-versioning-policy-for-external-cloud-providers",
+          "missingId": "/kep/sig-cloud-provider/20190125-removing-in-tree-providers.md"
+        },
+        {
+          "adrId": "1771-versioning-policy-for-external-cloud-providers",
+          "missingId": "/kep/sig-cloud-provider/20180530-cloud-controller-manager.md"
+        },
+        {
+          "adrId": "2025-extend-konnectivity-for-both-directions",
+          "missingId": "keps/sig-api-machinery/20190226-network-proxy.md"
+        },
+        {
           "adrId": "2394-support-out-of-tree-AWS-cloud-provider",
           "missingId": "keps/sig-cloud-provider/20180530-cloud-controller-manager.md"
+        },
+        {
+          "adrId": "2436-controller-manager-leader-migration",
+          "missingId": "/keps/sig-cloud-provider/20180530-cloud-controller-manager.md"
+        },
+        {
+          "adrId": "2699-add-webhook-hosting-to-ccm",
+          "missingId": "[Umbrella Issue](https://github.com/kubernetes/enhancements/issues/2699)"
+        },
+        {
+          "adrId": "2699-add-webhook-hosting-to-ccm",
+          "missingId": "[Original Work](https://github.com/kubernetes/kubernetes/pull/108838)"
+        },
+        {
+          "adrId": "2699-add-webhook-hosting-to-ccm",
+          "missingId": "[SIG Meeting for Withdraw](https://www.youtube.com/watch?v=DlxkBTVx384)"
         },
         {
           "adrId": "668-out-of-tree-gce",
@@ -424,12 +897,48 @@
           "missingId": "keps/sig-cloud-provider/20180530-cloud-controller-manager.md"
         },
         {
+          "adrId": "837-cloud-provider-labels",
+          "missingId": "/keps/sig-node/20190130-node-os-arch-labels.md"
+        },
+        {
           "adrId": "667-out-of-tree-azure",
           "missingId": "keps/sig-cloud-provider/20180530-cloud-controller-manager.md"
         },
         {
+          "adrId": "0000-cloud-provider-template",
+          "missingId": "KEP-1"
+        },
+        {
+          "adrId": "0000-cloud-provider-template",
+          "missingId": "KEP-2"
+        },
+        {
+          "adrId": "1381-component-config",
+          "missingId": "/keps/sig-cluster-lifecycle/kubeadm/0023-kubeadm-config.md"
+        },
+        {
+          "adrId": "1381-component-config",
+          "missingId": "/keps/sig-cluster-lifecycle/kubeadm/20190722-Advanced-configurations-with-kubeadm-(Kustomize).md"
+        },
+        {
+          "adrId": "1739-customization-with-patches",
+          "missingId": "/keps/sig-cluster-lifecycle/kubeadm/20190722-Advanced-configurations-with-kubeadm-(Kustomize).md"
+        },
+        {
+          "adrId": "2500-kubeadm-join-control-plane-workflow",
+          "missingId": "KEP 0004"
+        },
+        {
           "adrId": "2500-kubeadm-join-control-plane-workflow",
           "missingId": "keps/sig-cluster-lifecycle/kubeadm/2500-kubeadm-join-control-plane-workflow/20190122-Certificates-copy-for-kubeadm-join--control-plane.md"
+        },
+        {
+          "adrId": "2501-kubeadm-phases-to-beta",
+          "missingId": "KEP 0008"
+        },
+        {
+          "adrId": "2502-Certificates-copy-for-join-control-plane",
+          "missingId": "KEP-0015"
         },
         {
           "adrId": "970-kubeadm-config",
@@ -452,8 +961,24 @@
           "missingId": "keps/sig-instrumentation/647-apiserver-tracing/apiserver_request_slo_duration_seconds"
         },
         {
+          "adrId": "4322-cluster-inventory",
+          "missingId": "/keps/sig-multicluster/2149-cluster-id"
+        },
+        {
+          "adrId": "1024-nodelocal-cache-dns",
+          "missingId": "/keps/sig-network/0030-nodelocal-dns-cache.md"
+        },
+        {
           "adrId": "1672-tracking-terminating-endpoints",
           "missingId": "keps/sig-network/20190603-endpointslices/README.md"
+        },
+        {
+          "adrId": "2433-topology-aware-hints",
+          "missingId": "/keps/sig-network/2004-topology-aware-subsetting"
+        },
+        {
+          "adrId": "2433-topology-aware-hints",
+          "missingId": "/keps/sig-network/2030-topology-aware-proxying"
         },
         {
           "adrId": "3070-reserved-service-ip-range",
@@ -473,6 +998,10 @@
         },
         {
           "adrId": "1547-building-kubelet-without-docker",
+          "missingId": "/keps/sig-cloud-provider/20190729-building-without-in-tree-providers.md"
+        },
+        {
+          "adrId": "1547-building-kubelet-without-docker",
           "missingId": "keps/sig-cloud-provider/20190729-building-without-in-tree-providers.md"
         },
         {
@@ -480,8 +1009,28 @@
           "missingId": "keps/sig-node/1558-streaming-proxy-redirects/277-ephemeral-containers"
         },
         {
+          "adrId": "1797-configure-fqdn-as-hostname-for-pods",
+          "missingId": "N/A"
+        },
+        {
+          "adrId": "1898-hardened-exec",
+          "missingId": "/keps/sig-node/20191205-container-streaming-requests.md"
+        },
+        {
+          "adrId": "2053-downward-api-hugepages",
+          "missingId": "/keps/sig-node/20190129-hugepages.md"
+        },
+        {
+          "adrId": "2371-cri-pod-container-stats",
+          "missingId": "N/A"
+        },
+        {
           "adrId": "2837-pod-level-resource-spec",
           "missingId": "keps/sig-node/2837-pod-level-resource-spec/(KEP"
+        },
+        {
+          "adrId": "3085-pod-conditions-for-starting-completition-of-sandbox-creation",
+          "missingId": "none"
         },
         {
           "adrId": "3573-device-plugin",
@@ -492,12 +1041,44 @@
           "missingId": "keps/sig-node/4009-add-cdi-devices-to-device-plugin-api/(https:/github.com/kubernetes/enhancements/pull/3731"
         },
         {
+          "adrId": "4800-cpumanager-split-uncorecache",
+          "missingId": "keps/sig-node/2625-cpumanager-policies-thread-placement\""
+        },
+        {
           "adrId": "5526-pod-level-resource-managers",
           "missingId": "keps/sig-node/5526-pod-level-resource-managers/not the initial KEP PR"
         },
         {
+          "adrId": "5554-in-place-update-pod-resources-alongside-static-cpu-manager-policy",
+          "missingId": "keps/sig-node/3570-cpu-manager"
+        },
+        {
           "adrId": "585-runtime-class",
           "missingId": "keps/sig-node/sig-auth/0000-20170814-bounding-self-labeling-kubelets.md"
+        },
+        {
+          "adrId": "6035-exec-session-identity",
+          "missingId": "/keps/sig-node/6090-exec-env-injection"
+        },
+        {
+          "adrId": "6122-configurable-scaling-delay-with-pod-resource-exposure",
+          "missingId": "/keps/sig-node/3570-cpu-manager"
+        },
+        {
+          "adrId": "693-topology-manager",
+          "missingId": "/keps/sig-node/3573-device-plugin/kep.yaml"
+        },
+        {
+          "adrId": "753-sidecar-containers",
+          "missingId": "/keps/sig-node/4438-sidecar-restart-termination"
+        },
+        {
+          "adrId": "1451-multi-scheduling-profiles",
+          "missingId": "/keps/sig-scheduling/20180409-scheduling-framework.md"
+        },
+        {
+          "adrId": "1451-multi-scheduling-profiles",
+          "missingId": "/keps/sig-scheduling/20190226-default-even-pod-spreading.md"
         },
         {
           "adrId": "5027-dra-admin-controlled-device-attributes",
@@ -512,6 +1093,18 @@
           "missingId": "keps/sig-scheduling/5491-dra-list-types-for-attributes/list"
         },
         {
+          "adrId": "6089-was-controller-apis",
+          "missingId": "/keps/sig-apps/6277-integrate-workload-with-statefulset"
+        },
+        {
+          "adrId": "895-pod-topology-spread",
+          "missingId": "/keps/sig-scheduling/1258-default-even-pods-spreading"
+        },
+        {
+          "adrId": "2763-ambient-capabilities",
+          "missingId": "TBD"
+        },
+        {
           "adrId": "121-local-persistent-volumes",
           "missingId": "keps/sig-storage/121-local-persistent-volumes/local-storage-overview.md"
         },
@@ -520,8 +1113,28 @@
           "missingId": "keps/sig-storage/1710-selinux-relabeling/github.com/util-linux/util-linux"
         },
         {
+          "adrId": "3107-csi-nodeexpandsecret",
+          "missingId": "TBD"
+        },
+        {
           "adrId": "3751-volume-attributes-class",
           "missingId": "keps/sig-storage/3751-volume-attributes-class/kubernetes.io/vpc-protection"
+        },
+        {
+          "adrId": "556-csi-volume-resizing",
+          "missingId": "[Kubernetes Volume expansion](https://github.com/kubernetes/enhancements/issues/284)"
+        },
+        {
+          "adrId": "556-csi-volume-resizing",
+          "missingId": "[Online resizing design](https://github.com/kubernetes/enhancements/pull/737)"
+        },
+        {
+          "adrId": "557-csi-topology",
+          "missingId": "n/a"
+        },
+        {
+          "adrId": "559-volume-subpath-expansion",
+          "missingId": "n/a"
         },
         {
           "adrId": "5936-atomic-write-volume-user-fields",
@@ -534,6 +1147,22 @@
         {
           "adrId": "5936-atomic-write-volume-user-fields",
           "missingId": "keps/sig-storage/5936-atomic-write-volume-user-fields/kep-4317"
+        },
+        {
+          "adrId": "962-execution-hook",
+          "missingId": "n/a"
+        },
+        {
+          "adrId": "1043-windows-security-context",
+          "missingId": "keps/sig-windows/20181221-windows-group-managed-service-accounts-for-container-identity.md"
+        },
+        {
+          "adrId": "1301-windows-runtime-class",
+          "missingId": "/keps/sig-windows/20190424-windows-cri-containerd.md"
+        },
+        {
+          "adrId": "4885-windows-cpu-and-memory-affinity",
+          "missingId": "keps/sig-node/3570-cpu-manager"
         },
         {
           "adrId": "4885-windows-cpu-and-memory-affinity",
@@ -550,12 +1179,15 @@
       ],
       "before": {
         "edges": 0,
-        "brokenLinks": 93
+        "brokenLinks": 93,
+        "realTitlePercent": 97.9,
+        "statusFoundPercent": 0,
+        "hardEdges": 0
       },
       "timing": {
-        "cloneMs": 82,
-        "analysisMs": 919,
-        "totalMs": 1001
+        "cloneMs": 54,
+        "analysisMs": 898,
+        "totalMs": 952
       }
     },
     {
@@ -573,8 +1205,17 @@
       "extractionQuality": {
         "realTitleCount": 65,
         "realTitlePercent": 100,
-        "statusFoundCount": 0,
-        "statusFoundPercent": 0,
+        "statusFoundCount": 59,
+        "statusFoundPercent": 90.8,
+        "statusFromFrontmatterPercent": 0,
+        "statusFromSectionPercent": 90.8,
+        "statusFromLinePercent": 0,
+        "statusFromKepYamlPercent": 0,
+        "titleFromFrontmatterPercent": 0,
+        "titleFromHeadingPercent": 100,
+        "titleFromMetadataLinePercent": 0,
+        "titleFromKepYamlPercent": 0,
+        "titleFromSlugPercent": 0,
         "idFromFrontmatterCount": 0,
         "idFromFrontmatterPercent": 0,
         "idFromFilenameCount": 65,
@@ -639,12 +1280,15 @@
       ],
       "before": {
         "edges": 0,
-        "brokenLinks": 92
+        "brokenLinks": 92,
+        "realTitlePercent": 100,
+        "statusFoundPercent": 0,
+        "hardEdges": 0
       },
       "timing": {
-        "cloneMs": 83,
-        "analysisMs": 137,
-        "totalMs": 220
+        "cloneMs": 49,
+        "analysisMs": 103,
+        "totalMs": 152
       }
     },
     {
@@ -664,6 +1308,15 @@
         "realTitlePercent": 100,
         "statusFoundCount": 8,
         "statusFoundPercent": 9.1,
+        "statusFromFrontmatterPercent": 9.1,
+        "statusFromSectionPercent": 0,
+        "statusFromLinePercent": 0,
+        "statusFromKepYamlPercent": 0,
+        "titleFromFrontmatterPercent": 4.5,
+        "titleFromHeadingPercent": 95.5,
+        "titleFromMetadataLinePercent": 0,
+        "titleFromKepYamlPercent": 0,
+        "titleFromSlugPercent": 0,
         "idFromFrontmatterCount": 0,
         "idFromFrontmatterPercent": 0,
         "idFromFilenameCount": 88,
@@ -717,12 +1370,15 @@
       "missingDependencies": [],
       "before": {
         "edges": 12,
-        "brokenLinks": 4
+        "brokenLinks": 4,
+        "realTitlePercent": 100,
+        "statusFoundPercent": 9.1,
+        "hardEdges": 0
       },
       "timing": {
-        "cloneMs": 76,
-        "analysisMs": 160,
-        "totalMs": 236
+        "cloneMs": 50,
+        "analysisMs": 126,
+        "totalMs": 176
       }
     },
     {
@@ -740,8 +1396,17 @@
       "extractionQuality": {
         "realTitleCount": 12,
         "realTitlePercent": 100,
-        "statusFoundCount": 0,
-        "statusFoundPercent": 0,
+        "statusFoundCount": 10,
+        "statusFoundPercent": 83.3,
+        "statusFromFrontmatterPercent": 0,
+        "statusFromSectionPercent": 0,
+        "statusFromLinePercent": 83.3,
+        "statusFromKepYamlPercent": 0,
+        "titleFromFrontmatterPercent": 0,
+        "titleFromHeadingPercent": 100,
+        "titleFromMetadataLinePercent": 0,
+        "titleFromKepYamlPercent": 0,
+        "titleFromSlugPercent": 0,
         "idFromFrontmatterCount": 0,
         "idFromFrontmatterPercent": 0,
         "idFromFilenameCount": 12,
@@ -770,12 +1435,15 @@
       "missingDependencies": [],
       "before": {
         "edges": 0,
-        "brokenLinks": 4
+        "brokenLinks": 4,
+        "realTitlePercent": 100,
+        "statusFoundPercent": 0,
+        "hardEdges": 0
       },
       "timing": {
-        "cloneMs": 83,
-        "analysisMs": 100,
-        "totalMs": 183
+        "cloneMs": 50,
+        "analysisMs": 77,
+        "totalMs": 127
       }
     }
   ],
