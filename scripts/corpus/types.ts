@@ -108,7 +108,16 @@ export interface RepoBenchmarkResult {
   cyclePath?: string[];
   mutualReferencesCount: number;
   mutualReferences: Array<{ pair: [string, string] }>;
+  resolvedLinks?: number;
+  nonDecisionLinks?: number;
+  outsideScopeLinks?: number;
+  ambiguousLinks?: number;
+  externalLinks?: number;
   brokenLinks: number;
+  before?: {
+    edges: number;
+    brokenLinks: number;
+  };
   missingDependencies: Array<{ adrId: string; missingId: string }>;
   timing: {
     cloneMs: number;
@@ -132,6 +141,11 @@ export interface CorpusBenchmarkReport {
     totalUniqueIds: number;
     totalHardEdges: number;
     totalSoftEdges: number;
+    totalResolvedLinks?: number;
+    totalNonDecisionLinks?: number;
+    totalOutsideScopeLinks?: number;
+    totalAmbiguousLinks?: number;
+    totalExternalLinks?: number;
     totalBrokenLinks: number;
     totalCyclesDetected: number;
     totalMutualReferences: number;

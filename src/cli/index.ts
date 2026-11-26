@@ -43,7 +43,7 @@ async function loadAndValidate(dir: string) {
       content: await fs.readFile(file, 'utf-8'),
     }))
   );
-  const parsedADRs = parseBatchADRs(fileData);
+  const parsedADRs = parseBatchADRs(fileData, { baseDir: fullPath });
   const dag = validateAndComputeDAG(parsedADRs);
   return { parsedADRs, ...dag };
 }

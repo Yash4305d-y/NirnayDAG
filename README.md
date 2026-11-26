@@ -201,7 +201,18 @@ requirements defined in [ADR-0001](./ADR-0001-microservices-core.md).
 NirnayDAG distinguishes structural architectural dependencies from informational cross-references:
 
 * **Hard edges** (`frontmatter:depends_on`, `frontmatter:supersedes`, or an explicit `Supersedes ADR-XXXX` status line): used for DAG validation, cycle detection, topological ordering, blast radius, and risk scoring.
-* **Soft edges** (Markdown links `(./...)` and `[ADR-XXXX]` ID tokens found in the document body): tracked separately as informational references (`alsoReferencedBy` / `mutualReferences`) and do **not** cause cycle errors or inflate blast radius unless `--include-soft` (`includeSoft: true`) is requested.
+* **Soft edges** (relative Markdown links and `[ADR-XXXX]` ID tokens found in the document body): tracked separately as informational references (`alsoReferencedBy` / `mutualReferences`) and do **not** cause cycle errors or inflate blast radius unless `--include-soft` (`includeSoft: true`) is requested.
+
+### Relative Link Resolution & Classification
+
+When loading a directory of decisions, NirnayDAG derives fallback IDs in core (`README.md` and `index.md` use their parent directory name, e.g., `keps/sig-api/1027-api-unions/README.md` → `1027-api-unions`) and resolves relative Markdown links against a case-insensitive `path → nodeId` index rather than synthesizing IDs from filenames:
+
+* **Path normalization**: Relative links are resolved from the source file's directory, `#anchors` and `?queries` are stripped, matching is case-insensitive, and `.md`/`.mdx` extensions are optional.
+* **Link classification**: Each body link is classified as:
+  * **Resolved**: Target matches a loaded decision node (added as a `soft` edge).
+  * **Non-decision**: Target exists on disk (e.g., `PROCESS.md`, diagrams, images) but is not a decision file.
+  * **External**: `http://`, `https://`, `mailto:`, or same-page `#anchor` links.
+  * **Broken**: Target looks like a local decision path but does not exist (only `broken` links count as unresolved references).
 
 ---
 

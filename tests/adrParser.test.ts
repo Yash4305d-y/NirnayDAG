@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { parseADRMarkdown, parseADRContent } from '../src/core/adrParser.js';
+import {
+  parseADRMarkdown,
+  parseADRContent,
+  parseBatchADRs,
+  deriveFallbackId,
+  disambiguateDuplicateIds,
+} from '../src/core/adrParser.js';
 
 describe('ADR Parser', () => {
   it('should parse a standard Markdown ADR correctly', () => {
@@ -162,5 +168,43 @@ Builds on ADR-0001 and relates to [ADR-0008] and [Other](./0009-other.md).
       { targetId: 'ADR-0008', kind: 'soft', source: 'body:id', rawText: '[ADR-0008]' },
       { targetId: 'ADR-0009-other', kind: 'soft', source: 'body:link', rawText: '(./0009-other.md)' },
     ]);
+  });
+});
+
+describe('deriveFallbackId and disambiguateDuplicateIds (Phase 2C-1)', () => {
+  it('derives parent directory ID for generic filenames README.md and index.md', () => {
+    expect(deriveFallbackId('keps/sig-api/1027-api-unions/README.md')).toBe('1027-api-unions');
+    expect(deriveFallbackId('docs/architecture/index.md')).toBe('architecture');
+    expect(deriveFallbackId('docs/architecture/INDEX.MDX')).toBe('architecture');
+    expect(deriveFallbackId('README.md')).toBe('README');
+    expect(deriveFallbackId('0001-base.md')).toBe('ADR-0001');
+    expect(deriveFallbackId('docs/adr-004-keys.md')).toBe('adr-004-keys');
+  });
+
+  it('uses deriveFallbackId in parseBatchADRs for KEP-style README.md files', () => {
+    const parsed = parseBatchADRs([
+      {
+        name: 'README.md',
+        filePath: 'keps/sig-api/1027-api-unions/README.md',
+        content: '# API Unions\n',
+      },
+      {
+        name: 'README.md',
+        filePath: 'keps/sig-node/2001-node-feature/README.md',
+        content: '# Node Feature\n',
+      },
+    ]);
+    expect(parsed.map((p) => p.frontmatter.id)).toEqual(['1027-api-unions', '2001-node-feature']);
+  });
+
+  it('disambiguates colliding IDs by relative filePath and reports collision count', () => {
+    const parsed = parseBatchADRs([
+      { name: 'README.md', filePath: 'sig-a/1027-shared/README.md', content: '# A\n' },
+      { name: 'README.md', filePath: 'sig-b/1027-shared/README.md', content: '# B\n' },
+    ]);
+    const { duplicateIdsCount } = disambiguateDuplicateIds(parsed);
+    expect(duplicateIdsCount).toBe(2);
+    expect(parsed[0].frontmatter.id).toBe('1027-shared');
+    expect(parsed[1].frontmatter.id).toBe('1027-shared::sig-b/1027-shared/README.md');
   });
 });

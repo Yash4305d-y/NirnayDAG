@@ -77,6 +77,21 @@ export interface ADRConsequences {
   negative: string[];
 }
 
+export type LinkClassification =
+  | 'resolved'
+  | 'non-decision'
+  | 'outside-scope'
+  | 'ambiguous'
+  | 'external'
+  | 'broken';
+
+export interface ClassifiedLink {
+  rawLinkText: string;
+  targetPath: string;
+  classification: LinkClassification;
+  resolvedId?: string;
+}
+
 export interface ParsedADR {
   frontmatter: ADRFrontmatter;
   context: string;
@@ -85,6 +100,7 @@ export interface ParsedADR {
   rawContent: string;
   filePath?: string;
   edges?: ADREdgeRef[];
+  links?: ClassifiedLink[];
 }
 
 export type BlastRadiusMap = Record<string, {

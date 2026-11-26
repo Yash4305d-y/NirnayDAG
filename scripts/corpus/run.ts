@@ -40,6 +40,16 @@ function executeGit(cmd: string, cwd?: string): string {
   }).trim();
 }
 
+const PHASE_2B_BASELINE: Record<string, { edges: number; brokenLinks: number }> = {
+  'backstage/backstage': { edges: 0, brokenLinks: 4 },
+  'adr/madr': { edges: 3, brokenLinks: 0 },
+  'rust-lang/rfcs': { edges: 0, brokenLinks: 4 },
+  'kubernetes/enhancements': { edges: 0, brokenLinks: 93 },
+  'cosmos/cosmos-sdk': { edges: 0, brokenLinks: 92 },
+  'JabRef/jabref': { edges: 12, brokenLinks: 4 },
+  'alphagov/govuk-design-system-architecture': { edges: 0, brokenLinks: 4 },
+};
+
 const EMPTY_EXTRACTION_QUALITY: ExtractionQualityMetrics = {
   realTitleCount: 0,
   realTitlePercent: 0,
@@ -186,13 +196,34 @@ export async function benchmarkSingleRepo(
   const files = await readDirectoryDecisionFiles(repoDir, repo.subfolders);
   console.log(chalk.gray(`  Found ${files.length} decision markdown files in subfolders: ${repo.subfolders.join(', ')}`));
 
-  const { evidence, ...metrics } = analyzeDecisionFiles(files);
+  let repoFiles: string[] = [];
+  try {
+    const treeOutput = execSync(`git ls-tree -r --name-only ${commitSha}`, {
+      cwd: repoDir,
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+      maxBuffer: 32 * 1024 * 1024,
+    });
+    repoFiles = treeOutput
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+  } catch {
+    repoFiles = [];
+  }
+
+  const { evidence, ...metrics } = analyzeDecisionFiles(files, {
+    repoDir,
+    repoFiles,
+    analyzedFolders: repo.subfolders,
+  });
   const analysisMs = Date.now() - startAnalysis;
   const totalMs = cloneMs + analysisMs;
 
   console.log(
     chalk.green(
-      `  Parsed OK: ${metrics.filesParsedOK}/${metrics.filesFound} (${metrics.parseRatePercent}%) | Real Title: ${metrics.extractionQuality.realTitlePercent}% | Status Found: ${metrics.extractionQuality.statusFoundPercent}% | Nodes: ${metrics.nodes} | Edges: ${metrics.edges} | Broken: ${metrics.brokenLinks} (${analysisMs}ms)`
+      `  Parsed OK: ${metrics.filesParsedOK}/${metrics.filesFound} (${metrics.parseRatePercent}%) | Nodes: ${metrics.nodes} | Edges: ${metrics.edges} | Resolved: ${metrics.resolvedLinks} | Non-Decision: ${metrics.nonDecisionLinks} | Broken: ${metrics.brokenLinks} (${analysisMs}ms)`
     )
   );
 
@@ -204,6 +235,7 @@ export async function benchmarkSingleRepo(
       license: repo.license,
       commitSha,
       ...metrics,
+      before: PHASE_2B_BASELINE[repo.name],
       timing: {
         cloneMs,
         analysisMs,
@@ -293,6 +325,11 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
   const totalUniqueIds = results.reduce((acc, r) => acc + r.uniqueIdsCount, 0);
   const totalHardEdges = results.reduce((acc, r) => acc + r.hardEdges, 0);
   const totalSoftEdges = results.reduce((acc, r) => acc + r.softEdges, 0);
+  const totalResolvedLinks = results.reduce((acc, r) => acc + (r.resolvedLinks ?? 0), 0);
+  const totalNonDecisionLinks = results.reduce((acc, r) => acc + (r.nonDecisionLinks ?? 0), 0);
+  const totalOutsideScopeLinks = results.reduce((acc, r) => acc + (r.outsideScopeLinks ?? 0), 0);
+  const totalAmbiguousLinks = results.reduce((acc, r) => acc + (r.ambiguousLinks ?? 0), 0);
+  const totalExternalLinks = results.reduce((acc, r) => acc + (r.externalLinks ?? 0), 0);
   const totalBrokenLinks = results.reduce((acc, r) => acc + r.brokenLinks, 0);
   const totalCyclesDetected = results.filter((r) => r.cyclesFound).length;
   const totalMutualReferences = results.reduce((acc, r) => acc + r.mutualReferencesCount, 0);
@@ -301,7 +338,7 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
     : 0;
 
   const timestamp = new Date().toISOString();
-  const runnerVersion = '1.0.0-phase2a.2+2b';
+  const runnerVersion = '1.0.0-phase2c.1.1';
 
   const report: CorpusBenchmarkReport = {
     timestamp,
@@ -318,6 +355,11 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
       totalUniqueIds,
       totalHardEdges,
       totalSoftEdges,
+      totalResolvedLinks,
+      totalNonDecisionLinks,
+      totalOutsideScopeLinks,
+      totalAmbiguousLinks,
+      totalExternalLinks,
       totalBrokenLinks,
       totalCyclesDetected,
       totalMutualReferences,
