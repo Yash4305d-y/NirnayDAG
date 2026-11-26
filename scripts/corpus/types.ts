@@ -113,6 +113,7 @@ export interface RepoBenchmarkResult {
   outsideScopeLinks?: number;
   ambiguousLinks?: number;
   externalLinks?: number;
+  notAFileLinks?: number;
   brokenLinks: number;
   before?: {
     edges: number;
@@ -146,6 +147,7 @@ export interface CorpusBenchmarkReport {
     totalOutsideScopeLinks?: number;
     totalAmbiguousLinks?: number;
     totalExternalLinks?: number;
+    totalNotAFileLinks?: number;
     totalBrokenLinks: number;
     totalCyclesDetected: number;
     totalMutualReferences: number;

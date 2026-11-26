@@ -190,4 +190,42 @@ describe('Path-based link resolution and classification (Phase 2C-1)', () => {
       { adrId: 'ADR-0090', missingId: 'ADR-999' },
     ]);
   });
+
+  it('classifies scheme-less hostnames, mailto/tel, bare anchors, and Rust intra-doc :: links as not-a-file-link (excluded from broken)', () => {
+    const parsed = parseBatchADRs([
+      {
+        name: '0001-links.md',
+        filePath: 'text/0001-links.md',
+        content: [
+          '# Links Test',
+          'Scheme-less www: [Boost](www.boost.org/doc/libs/1_57_0/libs/filesystem/doc/reference.html)',
+          'Scheme-less domain: [K8s](git.k8s.io/enhancements/keps/sig-apps/2255-pod-cost)',
+          'Mailto: [Email](mailto:dev@example.com)',
+          'Tel: [Phone](tel:+1-555-0100)',
+          'Bare anchor: [Motivation](#motivation)',
+          'Rust intra-doc: [Iterator](std::iter::Iterator) and [Super](super::ipsum)',
+          'External: [Docs](https://example.com/docs)',
+          'Actually broken: [Missing](./does-not-exist.md)',
+        ].join('\n'),
+      },
+    ]);
+
+    const doc = parsed[0];
+    const byRaw = new Map((doc.links || []).map((l) => [l.rawLinkText, l]));
+
+    expect(byRaw.get('(www.boost.org/doc/libs/1_57_0/libs/filesystem/doc/reference.html)')?.classification).toBe('not-a-file-link');
+    expect(byRaw.get('(git.k8s.io/enhancements/keps/sig-apps/2255-pod-cost)')?.classification).toBe('not-a-file-link');
+    expect(byRaw.get('(mailto:dev@example.com)')?.classification).toBe('not-a-file-link');
+    expect(byRaw.get('(tel:+1-555-0100)')?.classification).toBe('not-a-file-link');
+    expect(byRaw.get('(#motivation)')?.classification).toBe('not-a-file-link');
+    expect(byRaw.get('(std::iter::Iterator)')?.classification).toBe('not-a-file-link');
+    expect(byRaw.get('(super::ipsum)')?.classification).toBe('not-a-file-link');
+    expect(byRaw.get('(https://example.com/docs)')?.classification).toBe('external');
+    expect(byRaw.get('(./does-not-exist.md)')?.classification).toBe('broken');
+
+    const { validationResult } = validateAndComputeDAG(parsed);
+    expect(validationResult.missingSoftReferences).toEqual([
+      { adrId: 'ADR-0001', missingId: 'text/does-not-exist.md' },
+    ]);
+  });
 });
