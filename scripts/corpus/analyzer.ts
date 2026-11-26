@@ -16,6 +16,7 @@ import type {
   FileParseFailure,
   FailureReasonCount,
   ExtractionQualityMetrics,
+  ExtractionSampleEvidence,
   CycleEdgeEvidence,
   BrokenLinkEvidence,
   MutualReferenceEvidence,
@@ -28,6 +29,7 @@ export interface DecisionFileInput {
 }
 
 export interface AnalysisEvidence {
+  extractionSamples: ExtractionSampleEvidence[];
   cycles: Array<{
     cyclePath: string[];
     edges: CycleEdgeEvidence[];
@@ -155,6 +157,15 @@ export function analyzeDecisionFiles(
 
   let realTitleCount = 0;
   let statusFoundCount = 0;
+  let statusFromFrontmatterCount = 0;
+  let statusFromSectionCount = 0;
+  let statusFromLineCount = 0;
+  let statusFromKepYamlCount = 0;
+  let titleFromFrontmatterCount = 0;
+  let titleFromHeadingCount = 0;
+  let titleFromMetadataLineCount = 0;
+  let titleFromKepYamlCount = 0;
+  let titleFromSlugCount = 0;
   let idFromFrontmatterCount = 0;
   let idFromFilenameCount = 0;
   let idGeneratedCount = 0;
@@ -188,9 +199,20 @@ export function analyzeDecisionFiles(
         realTitleCount++;
       }
 
+      if (parsed.titleSource === 'frontmatter') titleFromFrontmatterCount++;
+      else if (parsed.titleSource === 'heading') titleFromHeadingCount++;
+      else if (parsed.titleSource === 'metadata-line') titleFromMetadataLineCount++;
+      else if (parsed.titleSource === 'kep-yaml') titleFromKepYamlCount++;
+      else if (parsed.titleSource === 'slug') titleFromSlugCount++;
+
       if (parsed.statusSource && parsed.statusSource !== 'default') {
         statusFoundCount++;
       }
+
+      if (parsed.statusSource === 'frontmatter') statusFromFrontmatterCount++;
+      else if (parsed.statusSource === 'section') statusFromSectionCount++;
+      else if (parsed.statusSource === 'line') statusFromLineCount++;
+      else if (parsed.statusSource === 'kep-yaml') statusFromKepYamlCount++;
 
       if (rawFm && rawFm.id !== undefined && String(rawFm.id) === parsed.frontmatter.id) {
         idFromFrontmatterCount++;
@@ -220,6 +242,15 @@ export function analyzeDecisionFiles(
     realTitlePercent: toPercent(realTitleCount, filesParsedOK),
     statusFoundCount,
     statusFoundPercent: toPercent(statusFoundCount, filesParsedOK),
+    statusFromFrontmatterPercent: toPercent(statusFromFrontmatterCount, filesParsedOK),
+    statusFromSectionPercent: toPercent(statusFromSectionCount, filesParsedOK),
+    statusFromLinePercent: toPercent(statusFromLineCount, filesParsedOK),
+    statusFromKepYamlPercent: toPercent(statusFromKepYamlCount, filesParsedOK),
+    titleFromFrontmatterPercent: toPercent(titleFromFrontmatterCount, filesParsedOK),
+    titleFromHeadingPercent: toPercent(titleFromHeadingCount, filesParsedOK),
+    titleFromMetadataLinePercent: toPercent(titleFromMetadataLineCount, filesParsedOK),
+    titleFromKepYamlPercent: toPercent(titleFromKepYamlCount, filesParsedOK),
+    titleFromSlugPercent: toPercent(titleFromSlugCount, filesParsedOK),
     idFromFrontmatterCount,
     idFromFrontmatterPercent: toPercent(idFromFrontmatterCount, filesParsedOK),
     idFromFilenameCount,
@@ -256,7 +287,7 @@ export function analyzeDecisionFiles(
       externalLinks: 0,
       brokenLinks: 0,
       missingDependencies: [],
-      evidence: { cycles: [], mutualReferences: [], brokenLinks: [] },
+      evidence: { extractionSamples: [], cycles: [], mutualReferences: [], brokenLinks: [] },
     };
   }
 
@@ -397,6 +428,22 @@ export function analyzeDecisionFiles(
       };
     });
 
+  const sampleIndices = parsedADRs.length <= 3
+    ? parsedADRs.map((_, idx) => idx)
+    : [0, Math.floor(parsedADRs.length / 2), parsedADRs.length - 1];
+  const extractionSamples: ExtractionSampleEvidence[] = sampleIndices.map((idx) => {
+    const adr = parsedADRs[idx];
+    return {
+      file: adr.filePath || 'unknown',
+      id: adr.frontmatter.id,
+      title: adr.frontmatter.title,
+      titleSource: adr.titleSource ?? 'default',
+      status: adr.frontmatter.status,
+      statusSource: adr.statusSource ?? 'default',
+      ...(adr.frontmatter.tags && adr.frontmatter.tags.length > 0 ? { tags: adr.frontmatter.tags } : {}),
+    };
+  });
+
   return {
     filesFound,
     filesParsedOK,
@@ -425,6 +472,7 @@ export function analyzeDecisionFiles(
     brokenLinks,
     missingDependencies: allMissing,
     evidence: {
+      extractionSamples,
       cycles: cycleEvidence,
       mutualReferences: mutualRefEvidence,
       brokenLinks: brokenLinkEvidence,

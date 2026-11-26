@@ -218,7 +218,10 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
     };
 
     const markdown = generateFindingsMarkdown(mockReport);
-    expect(markdown).toContain('| [test-org/test-repo](https://github.com/test-org/test-repo.git) | `abc1234` | `madr` | MIT | 6 | 4 | 66.7% | 75% | 50% | 25% / 75% / 0% | 0 | 4 | 4 | 1 / 0 | 0.25 | 2 | None | 0 | 1 | 15ms | 50ms |');
+    expect(markdown).toContain('| [test-org/test-repo](https://github.com/test-org/test-repo.git) | `abc1234` | `madr` | MIT | 6 | 4 | 66.7% | 75% | 0% / 0% / 0% / 0% / 0% | 50% | 0% / 0% / 0% / 0% | 25% / 75% / 0% | 0 | 4 | 4 | 1 / 0 | 0.25 | 2 | None | 0 | 1 | 15ms | 50ms |');
+    expect(markdown).toContain('Title Source (FM / H1 / Meta / KEP / Slug)');
+    expect(markdown).toContain('Status Source (FM / Sec / Line / KEP)');
+    expect(markdown).toContain('Extraction Quality Before/After Comparison (Phase 2C-2b)');
     expect(markdown).toContain('Duplicate IDs');
     expect(markdown).toContain('Unique IDs');
     expect(markdown).toContain('Checkout Time (cached)');
@@ -237,7 +240,7 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
       .filter(
         (l) =>
           l.startsWith('| Repository | Commit |') ||
-          l.startsWith('| :--- | :---: |') ||
+          l.startsWith('| :--- | :---: | :--- | :--- |') ||
           l.startsWith('| [test-org/test-repo]')
       );
     expect(tableLines.length).toBe(3);
@@ -475,6 +478,13 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
       expect(outcome.hardEdges).toBe(2);
       expect(outcome.softEdges).toBe(1);
       expect(outcome.brokenLinks).toBe(0);
+      expect(outcome.extractionQuality.statusFromKepYamlPercent).toBe(100);
+      expect(outcome.extractionQuality.titleFromKepYamlPercent).toBe(100);
+      expect(outcome.evidence.extractionSamples?.length).toBe(3);
+      expect(outcome.evidence.extractionSamples?.[0]).toMatchObject({
+        titleSource: 'kep-yaml',
+        statusSource: 'kep-yaml',
+      });
     });
   });
 });

@@ -1,3 +1,5 @@
+import type { ADRStatus, StatusSource, TitleSource } from '../../src/core/types.js';
+
 export interface CorpusRepoConfig {
   name: string;
   url: string;
@@ -37,6 +39,15 @@ export interface ExtractionQualityMetrics {
   realTitlePercent: number;
   statusFoundCount: number;
   statusFoundPercent: number;
+  statusFromFrontmatterPercent?: number;
+  statusFromSectionPercent?: number;
+  statusFromLinePercent?: number;
+  statusFromKepYamlPercent?: number;
+  titleFromFrontmatterPercent?: number;
+  titleFromHeadingPercent?: number;
+  titleFromMetadataLinePercent?: number;
+  titleFromKepYamlPercent?: number;
+  titleFromSlugPercent?: number;
   idFromFrontmatterCount: number;
   idFromFrontmatterPercent: number;
   idFromFilenameCount: number;
@@ -44,6 +55,16 @@ export interface ExtractionQualityMetrics {
   idGeneratedCount: number;
   idGeneratedPercent: number;
   edgeSourceBreakdownSupported: boolean;
+}
+
+export interface ExtractionSampleEvidence {
+  file: string;
+  id: string;
+  title: string;
+  titleSource: TitleSource;
+  status: ADRStatus;
+  statusSource: StatusSource;
+  tags?: string[];
 }
 
 export interface CycleEdgeEvidence {
@@ -69,6 +90,7 @@ export interface MutualReferenceEvidence {
 export interface RepoEvidence {
   repo: string;
   commitSha: string;
+  extractionSamples?: ExtractionSampleEvidence[];
   cycles: Array<{
     cyclePath: string[];
     edges: CycleEdgeEvidence[];
@@ -117,6 +139,9 @@ export interface RepoBenchmarkResult {
   before?: {
     edges: number;
     brokenLinks: number;
+    realTitlePercent?: number;
+    statusFoundPercent?: number;
+    hardEdges?: number;
   };
   missingDependencies: Array<{ adrId: string; missingId: string }>;
   timing: {

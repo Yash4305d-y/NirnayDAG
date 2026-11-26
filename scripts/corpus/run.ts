@@ -40,14 +40,23 @@ function executeGit(cmd: string, cwd?: string): string {
   }).trim();
 }
 
-const PHASE_2B_BASELINE: Record<string, { edges: number; brokenLinks: number }> = {
-  'backstage/backstage': { edges: 0, brokenLinks: 4 },
-  'adr/madr': { edges: 3, brokenLinks: 0 },
-  'rust-lang/rfcs': { edges: 0, brokenLinks: 4 },
-  'kubernetes/enhancements': { edges: 0, brokenLinks: 93 },
-  'cosmos/cosmos-sdk': { edges: 0, brokenLinks: 92 },
-  'JabRef/jabref': { edges: 12, brokenLinks: 4 },
-  'alphagov/govuk-design-system-architecture': { edges: 0, brokenLinks: 4 },
+const PHASE_2B_BASELINE: Record<
+  string,
+  {
+    edges: number;
+    brokenLinks: number;
+    realTitlePercent: number;
+    statusFoundPercent: number;
+    hardEdges: number;
+  }
+> = {
+  'backstage/backstage': { edges: 0, brokenLinks: 4, realTitlePercent: 100, statusFoundPercent: 0, hardEdges: 0 },
+  'adr/madr': { edges: 3, brokenLinks: 0, realTitlePercent: 100, statusFoundPercent: 4.8, hardEdges: 0 },
+  'rust-lang/rfcs': { edges: 0, brokenLinks: 4, realTitlePercent: 7.5, statusFoundPercent: 0, hardEdges: 0 },
+  'kubernetes/enhancements': { edges: 0, brokenLinks: 93, realTitlePercent: 97.9, statusFoundPercent: 0, hardEdges: 0 },
+  'cosmos/cosmos-sdk': { edges: 0, brokenLinks: 92, realTitlePercent: 100, statusFoundPercent: 0, hardEdges: 0 },
+  'JabRef/jabref': { edges: 12, brokenLinks: 4, realTitlePercent: 100, statusFoundPercent: 9.1, hardEdges: 0 },
+  'alphagov/govuk-design-system-architecture': { edges: 0, brokenLinks: 4, realTitlePercent: 100, statusFoundPercent: 0, hardEdges: 0 },
 };
 
 const EMPTY_EXTRACTION_QUALITY: ExtractionQualityMetrics = {
@@ -245,6 +254,7 @@ export async function benchmarkSingleRepo(
     evidence: {
       repo: repo.name,
       commitSha,
+      extractionSamples: evidence.extractionSamples,
       cycles: evidence.cycles,
       mutualReferences: evidence.mutualReferences,
       brokenLinks: evidence.brokenLinks,
@@ -338,7 +348,7 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
     : 0;
 
   const timestamp = new Date().toISOString();
-  const runnerVersion = '1.0.0-phase2c.1.1';
+  const runnerVersion = '1.0.0-phase2c.2b';
 
   const report: CorpusBenchmarkReport = {
     timestamp,

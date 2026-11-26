@@ -33,12 +33,23 @@ export function generateFindingsMarkdown(report: CorpusBenchmarkReport): string 
     .map((r) => {
       const shortSha = r.commitSha ? `\`${r.commitSha.substring(0, 7)}\`` : '`unknown`';
       const eq = r.extractionQuality;
+      const titleSourceDisplay = `${eq.titleFromFrontmatterPercent ?? 0}% / ${eq.titleFromHeadingPercent ?? 0}% / ${eq.titleFromMetadataLinePercent ?? 0}% / ${eq.titleFromKepYamlPercent ?? 0}% / ${eq.titleFromSlugPercent ?? 0}%`;
+      const statusSourceDisplay = `${eq.statusFromFrontmatterPercent ?? 0}% / ${eq.statusFromSectionPercent ?? 0}% / ${eq.statusFromLinePercent ?? 0}% / ${eq.statusFromKepYamlPercent ?? 0}%`;
       const idSourceDisplay = `${eq.idFromFrontmatterPercent}% / ${eq.idFromFilenamePercent}% / ${eq.idGeneratedPercent}%`;
       const edgesDisplay = `${r.hardEdges} / ${r.softEdges}`;
       const cycleDisplay = r.cyclesFound ? `Detected (${r.cyclePath?.length || 0} nodes)` : 'None';
       const mutualDisplay = `${r.mutualReferencesCount}`;
       const brokenDisplay = `${r.brokenLinks}`;
-      return `| [${r.repo}](${r.url}) | ${shortSha} | \`${r.format}\` | ${r.license} | ${r.filesFound} | ${r.filesParsedOK} | ${r.parseRatePercent}% | ${eq.realTitlePercent}% | ${eq.statusFoundPercent}% | ${idSourceDisplay} | ${r.duplicateIdsCount} | ${r.uniqueIdsCount} | ${r.nodes} | ${edgesDisplay} | ${r.edgeDensity} | ${r.isolatedNodes} | ${cycleDisplay} | ${mutualDisplay} | ${brokenDisplay} | ${r.timing.analysisMs}ms | ${r.timing.cloneMs}ms |`;
+      return `| [${r.repo}](${r.url}) | ${shortSha} | \`${r.format}\` | ${r.license} | ${r.filesFound} | ${r.filesParsedOK} | ${r.parseRatePercent}% | ${eq.realTitlePercent}% | ${titleSourceDisplay} | ${eq.statusFoundPercent}% | ${statusSourceDisplay} | ${idSourceDisplay} | ${r.duplicateIdsCount} | ${r.uniqueIdsCount} | ${r.nodes} | ${edgesDisplay} | ${r.edgeDensity} | ${r.isolatedNodes} | ${cycleDisplay} | ${mutualDisplay} | ${brokenDisplay} | ${r.timing.analysisMs}ms | ${r.timing.cloneMs}ms |`;
+    })
+    .join('\n');
+
+  const extractionComparisonRows = results
+    .map((r) => {
+      const beforeTitle = r.before?.realTitlePercent !== undefined ? `${r.before.realTitlePercent}%` : '—';
+      const beforeStatus = r.before?.statusFoundPercent !== undefined ? `${r.before.statusFoundPercent}%` : '—';
+      const beforeHard = r.before?.hardEdges !== undefined ? `${r.before.hardEdges}` : '—';
+      return `| **${r.repo}** | ${beforeTitle} → ${r.extractionQuality.realTitlePercent}% | ${beforeStatus} → ${r.extractionQuality.statusFoundPercent}% | ${beforeHard} → ${r.hardEdges} |`;
     })
     .join('\n');
 
@@ -112,19 +123,27 @@ In Phase 2A.1, \`kubernetes/enhancements\` had 708 markdown files, 689 of which 
 
 ## 2. Benchmark Results & Extraction Quality
 
-| Repository | Commit | Format | License | Files Found | Parsed OK | Parse Rate | Real Title % | Status Found % | ID Source (FM / File / Gen) | Duplicate IDs | Unique IDs | Nodes | Edges (Hard / Soft) | Edge Density | Isolated Nodes | Hard Cycles | Mutual Refs | Broken Links | Analysis Time | Checkout Time (cached) |
-| :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| Repository | Commit | Format | License | Files Found | Parsed OK | Parse Rate | Real Title % | Title Source (FM / H1 / Meta / KEP / Slug) | Status Found % | Status Source (FM / Sec / Line / KEP) | ID Source (FM / File / Gen) | Duplicate IDs | Unique IDs | Nodes | Edges (Hard / Soft) | Edge Density | Isolated Nodes | Hard Cycles | Mutual Refs | Broken Links | Analysis Time | Checkout Time (cached) |
+| :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 ${tableRows}
 
 *Column notes:*
-- **Real Title %**: % of parsed files whose extracted title is not the parser fallback \`'Untitled ADR'\`.
-- **Status Found %**: % of parsed files with an explicit \`status\`, \`stage\`, or \`state\` key in YAML frontmatter (the parser defaults missing frontmatter status to \`'accepted'\`).
+- **Real Title %**: % of parsed files whose extracted title came from frontmatter, H1 heading, RFC metadata line, or \`kep.yaml\` (excludes filename slug and \`'Untitled ADR'\` fallbacks).
+- **Title Source (FM / H1 / Meta / KEP / Slug)**: % breakdown by title source: YAML frontmatter (\`FM\`), first H1 heading (\`H1\`), RFC metadata line (\`Meta\`), \`kep.yaml\` (\`KEP\`), or filename slug (\`Slug\`).
+- **Status Found %**: % of parsed files where \`statusSource\` is not \`'default'\` (i.e. extracted from frontmatter, \`## Status\` section, metadata line, or \`kep.yaml\`).
+- **Status Source (FM / Sec / Line / KEP)**: % breakdown by status source: YAML frontmatter (\`FM\`), \`## Status\` section (\`Sec\`), metadata line (\`Line\`), or \`kep.yaml\` (\`KEP\`).
 - **ID Source (FM / File / Gen)**: % of parsed files whose ID came from YAML frontmatter (\`FM\`), filename fallback (\`File\`), or random generation (\`Gen\`).
 - **Duplicate IDs**: Count of parsed files whose initial ID collided with another file before relative-path disambiguation.
 - **Unique IDs**: Count of distinct node IDs in \`DAGEngine\`'s graph after disambiguation.
-- **Edges (Hard / Soft)**: Active intra-repo edges split into hard dependencies (frontmatter \`depends_on\` / \`supersedes\` or status \`Supersedes ADR-XXXX\`) and soft references (body markdown links and ID tokens).
+- **Edges (Hard / Soft)**: Active intra-repo edges split into hard dependencies (frontmatter \`depends_on\` / \`supersedes\`, status \`Supersedes ADR-XXXX\`, or KEP \`replaces\` / \`superseded-by\`) and soft references (body markdown links, ID tokens, and KEP \`see-also\`).
 - **Hard Cycles / Mutual Refs**: Hard cycles fail \`ndag validate\`; soft mutual references are informational only.
 - **Checkout Time (cached)**: Time to verify/checkout the pinned commit SHA from the local \`.corpus/\` cache (50–60 ms reflects cached local checkouts, not fresh network clones).
+
+### Extraction Quality Before/After Comparison (Phase 2C-2b)
+
+| Repository | Real Title % (Before → After) | Status Found % (Before → After) | Hard Edges (Before → After) |
+| :--- | :---: | :---: | :---: |
+${extractionComparisonRows}
 
 ### Link Resolution & Before/After Comparison (Phase 2C-1.1)
 
