@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-11-24T20:46:38.662Z",
-  "runnerVersion": "1.0.0-phase2c.1",
+  "timestamp": "2026-11-26T12:32:19.588Z",
+  "runnerVersion": "1.0.0-phase2c.1.1",
   "repositories": [
     {
       "repo": "backstage/backstage",
@@ -48,14 +48,14 @@
               "dependentFile": "docs/decisions/0008-add-status-field.md",
               "dependencyId": "ADR-0013",
               "dependencyFile": "docs/decisions/0013-use-yaml-front-matter-for-meta-data.md",
-              "rawLinkText": "[ADR-0013]"
+              "rawLinkText": "(0013-use-yaml-front-matter-for-meta-data.md)"
             },
             {
               "dependentId": "ADR-0013",
               "dependentFile": "docs/decisions/0013-use-yaml-front-matter-for-meta-data.md",
               "dependencyId": "ADR-0008",
               "dependencyFile": "docs/decisions/0008-add-status-field.md",
-              "rawLinkText": "[ADR-0008]"
+              "rawLinkText": "(0008-add-status-field.md)"
             }
           ]
         }
@@ -383,64 +383,10 @@
       ],
       "brokenLinks": [
         {
-          "sourceId": "adr-027-deterministic-protobuf-serialization",
-          "sourceFile": "docs/architecture/adr-027-deterministic-protobuf-serialization.md",
-          "missingId": "ADR-020",
-          "rawLinkText": "[ADR-020]"
-        },
-        {
-          "sourceId": "adr-031-msg-service",
-          "sourceFile": "docs/architecture/adr-031-msg-service.md",
-          "missingId": "ADR-020",
-          "rawLinkText": "[ADR-020]"
-        },
-        {
-          "sourceId": "adr-033-protobuf-inter-module-comm",
-          "sourceFile": "docs/architecture/adr-033-protobuf-inter-module-comm.md",
-          "missingId": "ADR-021",
-          "rawLinkText": "[ADR-021]"
-        },
-        {
-          "sourceId": "adr-033-protobuf-inter-module-comm",
-          "sourceFile": "docs/architecture/adr-033-protobuf-inter-module-comm.md",
-          "missingId": "ADR-031",
-          "rawLinkText": "[ADR-031]"
-        },
-        {
-          "sourceId": "adr-033-protobuf-inter-module-comm",
-          "sourceFile": "docs/architecture/adr-033-protobuf-inter-module-comm.md",
-          "missingId": "docs/docs/learn/advanced/10-ocap.md",
-          "rawLinkText": "(../docs/learn/advanced/10-ocap.md)"
-        },
-        {
-          "sourceId": "adr-042-group-module",
-          "sourceFile": "docs/architecture/adr-042-group-module.md",
-          "missingId": "ADR-033",
-          "rawLinkText": "[ADR-033]"
-        },
-        {
-          "sourceId": "adr-045-check-delivertx-middlewares",
-          "sourceFile": "docs/architecture/adr-045-check-delivertx-middlewares.md",
-          "missingId": "ADR-022",
-          "rawLinkText": "[ADR-022]"
-        },
-        {
-          "sourceId": "adr-045-check-delivertx-middlewares",
-          "sourceFile": "docs/architecture/adr-045-check-delivertx-middlewares.md",
-          "missingId": "ADR-010",
-          "rawLinkText": "[ADR-010]"
-        },
-        {
-          "sourceId": "adr-050-sign-mode-textual-annex1",
-          "sourceFile": "docs/architecture/adr-050-sign-mode-textual-annex1.md",
-          "missingId": "ADR-050",
-          "rawLinkText": "[ADR-050]"
-        },
-        {
-          "sourceId": "adr-050-sign-mode-textual",
-          "sourceFile": "docs/architecture/adr-050-sign-mode-textual.md",
-          "missingId": "ADR-020",
-          "rawLinkText": "[ADR-020]"
+          "sourceId": "adr-054-semver-compatible-modules",
+          "sourceFile": "docs/architecture/adr-054-semver-compatible-modules.md",
+          "missingId": "docs/proto/cosmos/app/v1alpha1/module.proto",
+          "rawLinkText": "(../proto/cosmos/app/v1alpha1/module.proto)"
         }
       ]
     },
@@ -460,14 +406,14 @@
               "dependentFile": "docs/decisions/0036-use-markdown-for-chat-content.md",
               "dependencyId": "ADR-0042",
               "dependencyFile": "docs/decisions/0042-use-markdowntextflow-for-summarization-content.md",
-              "rawLinkText": "[ADR-0042]"
+              "rawLinkText": "(./0042-use-markdowntextflow-for-summarization-content.md)"
             },
             {
               "dependentId": "ADR-0042",
               "dependentFile": "docs/decisions/0042-use-markdowntextflow-for-summarization-content.md",
               "dependencyId": "ADR-0036",
               "dependencyFile": "docs/decisions/0036-use-markdown-for-chat-content.md",
-              "rawLinkText": "[ADR-0036]"
+              "rawLinkText": "(0036-use-markdown-for-chat-content.md)"
             }
           ]
         },
@@ -482,14 +428,14 @@
               "dependentFile": "docs/decisions/0045-use-input-flag-always-for-input-files.md",
               "dependencyId": "ADR-0057",
               "dependencyFile": "docs/decisions/0057-allow-positional-input-file-argument.md",
-              "rawLinkText": "[ADR-0057]"
+              "rawLinkText": "(0057-allow-positional-input-file-argument.md)"
             },
             {
               "dependentId": "ADR-0057",
               "dependentFile": "docs/decisions/0057-allow-positional-input-file-argument.md",
               "dependencyId": "ADR-0045",
               "dependencyFile": "docs/decisions/0045-use-input-flag-always-for-input-files.md",
-              "rawLinkText": "[ADR-0045]"
+              "rawLinkText": "(0045-use-input-flag-always-for-input-files.md)"
             }
           ]
         },
@@ -504,14 +450,14 @@
               "dependentFile": "docs/decisions/0067-use-pandoc-for-bst-conversion.md",
               "dependencyId": "ADR-0084",
               "dependencyFile": "docs/decisions/0084-canonical-writer-citations.md",
-              "rawLinkText": "[ADR-0084]"
+              "rawLinkText": "(0084-canonical-writer-citations.md)"
             },
             {
               "dependentId": "ADR-0084",
               "dependentFile": "docs/decisions/0084-canonical-writer-citations.md",
               "dependencyId": "ADR-0067",
               "dependencyFile": "docs/decisions/0067-use-pandoc-for-bst-conversion.md",
-              "rawLinkText": "[ADR-0067]"
+              "rawLinkText": "(0067-use-pandoc-for-bst-conversion.md)"
             }
           ]
         },
@@ -526,80 +472,19 @@
               "dependentFile": "docs/decisions/0068-use-a-preference-for-Zotero-compatibility-mode.md",
               "dependencyId": "ADR-0084",
               "dependencyFile": "docs/decisions/0084-canonical-writer-citations.md",
-              "rawLinkText": "[ADR-0084]"
+              "rawLinkText": "(0084-canonical-writer-citations.md)"
             },
             {
               "dependentId": "ADR-0084",
               "dependentFile": "docs/decisions/0084-canonical-writer-citations.md",
               "dependencyId": "ADR-0068",
               "dependencyFile": "docs/decisions/0068-use-a-preference-for-Zotero-compatibility-mode.md",
-              "rawLinkText": "[ADR-0068]"
+              "rawLinkText": "(0068-use-a-preference-for-Zotero-compatibility-mode.md)"
             }
           ]
         }
       ],
-      "brokenLinks": [
-        {
-          "sourceId": "ADR-0027",
-          "sourceFile": "docs/decisions/0027-synchronization.md",
-          "missingId": "docs/code-howtos/remote-storage-jabdrive.md",
-          "rawLinkText": "(../code-howtos/remote-storage-jabdrive.md)"
-        },
-        {
-          "sourceId": "ADR-0027",
-          "sourceFile": "docs/decisions/0027-synchronization.md",
-          "missingId": "docs/code-howtos/remote-storage-sql.md",
-          "rawLinkText": "(../code-howtos/remote-storage-sql.md)"
-        },
-        {
-          "sourceId": "ADR-0033",
-          "sourceFile": "docs/decisions/0033-store-chats-in-mvstore.md",
-          "missingId": "ADR-032",
-          "rawLinkText": "[ADR-032]"
-        },
-        {
-          "sourceId": "ADR-0034",
-          "sourceFile": "docs/decisions/0034-use-citation-key-for-grouping-chat-messages.md",
-          "missingId": "ADR-038",
-          "rawLinkText": "[ADR-038]"
-        },
-        {
-          "sourceId": "ADR-0067",
-          "sourceFile": "docs/decisions/0067-use-pandoc-for-bst-conversion.md",
-          "missingId": "docs/code-howtos/openoffice/code-reorganization.md",
-          "rawLinkText": "(../code-howtos/openoffice/code-reorganization.md)"
-        },
-        {
-          "sourceId": "ADR-0068",
-          "sourceFile": "docs/decisions/0068-use-a-preference-for-Zotero-compatibility-mode.md",
-          "missingId": "ADR-64",
-          "rawLinkText": "[ADR-64]"
-        },
-        {
-          "sourceId": "ADR-0077",
-          "sourceFile": "docs/decisions/0077-use-conservative-text-evidence-for-pdf-authors.md",
-          "missingId": "docs/requirements/pdf-import.md",
-          "rawLinkText": "(../requirements/pdf-import.md)"
-        },
-        {
-          "sourceId": "ADR-0079",
-          "sourceFile": "docs/decisions/0079-generate-git-commit-messages-in-english-only.md",
-          "missingId": "docs/code-howtos/localization.md",
-          "rawLinkText": "(../code-howtos/localization.md)"
-        },
-        {
-          "sourceId": "ADR-0084",
-          "sourceFile": "docs/decisions/0084-canonical-writer-citations.md",
-          "missingId": "docs/code-howtos/openoffice/order-of-appearance.md",
-          "rawLinkText": "(../code-howtos/openoffice/order-of-appearance.md)"
-        },
-        {
-          "sourceId": "ADR-0084",
-          "sourceFile": "docs/decisions/0084-canonical-writer-citations.md",
-          "missingId": "docs/code-howtos/openoffice/overview.md",
-          "rawLinkText": "(../code-howtos/openoffice/overview.md)"
-        }
-      ]
+      "brokenLinks": []
     },
     {
       "repo": "alphagov/govuk-design-system-architecture",

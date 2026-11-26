@@ -293,4 +293,118 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
       expect(outcome.uniqueIdsCount).toBe(3);
     });
   });
+
+  describe('Link classification metrics in corpus analyzer & reporter (Phase 2C-1.1)', () => {
+    it('tracks outsideScopeLinks and ambiguousLinks in analyzeDecisionFiles and renders them in generateFindingsMarkdown', () => {
+      const outcome = analyzeDecisionFiles(
+        [
+          {
+            relativePath: 'docs/decisions/0010-first.md',
+            content: '# First 10\n',
+          },
+          {
+            relativePath: 'docs/decisions/sig-b/0010-second.md',
+            content: '# Second 10\n',
+          },
+          {
+            relativePath: 'docs/decisions/0020-consumer.md',
+            content: '# Consumer\nSee [guide](../guides/setup.md) and [ADR-10] and [ADR-999].\n',
+          },
+        ],
+        {
+          repoFiles: [
+            'docs/decisions/0010-first.md',
+            'docs/decisions/sig-b/0010-second.md',
+            'docs/decisions/0020-consumer.md',
+            'docs/guides/setup.md',
+          ],
+          analyzedFolders: ['docs/decisions'],
+        }
+      );
+
+      expect(outcome.outsideScopeLinks).toBe(1);
+      expect(outcome.ambiguousLinks).toBe(1);
+      expect(outcome.brokenLinks).toBe(1);
+
+      const mockReport: CorpusBenchmarkReport = {
+        timestamp: '2026-11-26T00:00:00.000Z',
+        runnerVersion: '1.0.0-phase2c.1.1',
+        licenseNotice: 'Test license notice',
+        summary: {
+          totalReposAnalyzed: 1,
+          totalFilesFound: 3,
+          totalFilesParsedOK: 3,
+          averageParseRatePercent: 100,
+          totalNodes: 3,
+          totalEdges: 0,
+          totalDuplicateIds: 1,
+          totalUniqueIds: 3,
+          totalHardEdges: 0,
+          totalSoftEdges: 0,
+          totalResolvedLinks: 0,
+          totalNonDecisionLinks: 0,
+          totalOutsideScopeLinks: 1,
+          totalAmbiguousLinks: 1,
+          totalExternalLinks: 0,
+          totalBrokenLinks: 1,
+          totalCyclesDetected: 0,
+          totalMutualReferences: 0,
+        },
+        results: [
+          {
+            repo: 'org/repo',
+            url: 'https://github.com/org/repo.git',
+            format: 'madr',
+            license: 'MIT',
+            commitSha: '1234567890abcdef1234567890abcdef12345678',
+            filesFound: 3,
+            filesParsedOK: 3,
+            parseRatePercent: 100,
+            parseFailuresCount: 0,
+            parseFailures: [],
+            topFailureReasons: [],
+            extractionQuality: {
+              realTitleCount: 3,
+              realTitlePercent: 100,
+              statusFoundCount: 0,
+              statusFoundPercent: 0,
+              idFromFrontmatterCount: 0,
+              idFromFrontmatterPercent: 0,
+              idFromFilenameCount: 3,
+              idFromFilenamePercent: 100,
+              idGeneratedCount: 0,
+              idGeneratedPercent: 0,
+              edgeSourceBreakdownSupported: true,
+            },
+            duplicateIdsCount: 1,
+            uniqueIdsCount: 3,
+            nodes: 3,
+            edges: 0,
+            hardEdges: 0,
+            softEdges: 0,
+            edgeDensity: 0,
+            isolatedNodes: 3,
+            cyclesFound: false,
+            mutualReferencesCount: 0,
+            mutualReferences: [],
+            resolvedLinks: 0,
+            nonDecisionLinks: 0,
+            outsideScopeLinks: 1,
+            ambiguousLinks: 1,
+            externalLinks: 0,
+            brokenLinks: 1,
+            before: { edges: 0, brokenLinks: 3 },
+            missingDependencies: [{ adrId: 'ADR-0020', missingId: 'ADR-999' }],
+            timing: { cloneMs: 10, analysisMs: 5, totalMs: 15 },
+          },
+        ],
+        droppedRepositories: [],
+      };
+
+      const md = generateFindingsMarkdown(mockReport);
+      expect(md).toContain('Outside-Scope');
+      expect(md).toContain('Ambiguous');
+      expect(md).toContain('| **org/repo** | 0 | 0 | 1 | 1 | 1 | 0 → 0 | 3 → 1 |');
+    });
+  });
 });

@@ -56,6 +56,8 @@ export interface AnalysisOutcome {
   mutualReferences: Array<{ pair: [string, string] }>;
   resolvedLinks: number;
   nonDecisionLinks: number;
+  outsideScopeLinks: number;
+  ambiguousLinks: number;
   externalLinks: number;
   brokenLinks: number;
   missingDependencies: Array<{ adrId: string; missingId: string }>;
@@ -239,6 +241,8 @@ export function analyzeDecisionFiles(
       mutualReferences: [],
       resolvedLinks: 0,
       nonDecisionLinks: 0,
+      outsideScopeLinks: 0,
+      ambiguousLinks: 0,
       externalLinks: 0,
       brokenLinks: 0,
       missingDependencies: [],
@@ -256,6 +260,8 @@ export function analyzeDecisionFiles(
 
   let resolvedLinks = 0;
   let nonDecisionLinks = 0;
+  let outsideScopeLinks = 0;
+  let ambiguousLinks = 0;
   let externalLinks = 0;
   const adrById = new Map<string, ParsedADR>();
 
@@ -268,6 +274,8 @@ export function analyzeDecisionFiles(
     for (const link of adr.links || []) {
       if (link.classification === 'resolved') resolvedLinks++;
       else if (link.classification === 'non-decision') nonDecisionLinks++;
+      else if (link.classification === 'outside-scope') outsideScopeLinks++;
+      else if (link.classification === 'ambiguous') ambiguousLinks++;
       else if (link.classification === 'external') externalLinks++;
     }
   }
@@ -401,6 +409,8 @@ export function analyzeDecisionFiles(
     mutualReferences: mutualRefs,
     resolvedLinks,
     nonDecisionLinks,
+    outsideScopeLinks,
+    ambiguousLinks,
     externalLinks,
     brokenLinks,
     missingDependencies: allMissing,

@@ -110,6 +110,8 @@ export interface RepoBenchmarkResult {
   mutualReferences: Array<{ pair: [string, string] }>;
   resolvedLinks?: number;
   nonDecisionLinks?: number;
+  outsideScopeLinks?: number;
+  ambiguousLinks?: number;
   externalLinks?: number;
   brokenLinks: number;
   before?: {
@@ -141,6 +143,8 @@ export interface CorpusBenchmarkReport {
     totalSoftEdges: number;
     totalResolvedLinks?: number;
     totalNonDecisionLinks?: number;
+    totalOutsideScopeLinks?: number;
+    totalAmbiguousLinks?: number;
     totalExternalLinks?: number;
     totalBrokenLinks: number;
     totalCyclesDetected: number;

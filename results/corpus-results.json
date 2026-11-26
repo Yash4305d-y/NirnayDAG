@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-11-24T20:46:38.662Z",
-  "runnerVersion": "1.0.0-phase2c.1",
+  "timestamp": "2026-11-26T12:32:19.588Z",
+  "runnerVersion": "1.0.0-phase2c.1.1",
   "licenseNotice": "All repositories listed are publicly hosted open-source projects analyzed under their respective open-source licenses for evaluation and research purposes. NirnayDAG benchmarks local clones and does not redistribute repository contents.",
   "summary": {
     "totalReposAnalyzed": 7,
@@ -14,9 +14,11 @@
     "totalHardEdges": 0,
     "totalSoftEdges": 353,
     "totalResolvedLinks": 456,
-    "totalNonDecisionLinks": 177,
+    "totalNonDecisionLinks": 176,
+    "totalOutsideScopeLinks": 16,
+    "totalAmbiguousLinks": 0,
     "totalExternalLinks": 38682,
-    "totalBrokenLinks": 98,
+    "totalBrokenLinks": 73,
     "totalCyclesDetected": 0,
     "totalMutualReferences": 14
   },
@@ -65,7 +67,9 @@
         }
       ],
       "resolvedLinks": 4,
-      "nonDecisionLinks": 1,
+      "nonDecisionLinks": 0,
+      "outsideScopeLinks": 1,
+      "ambiguousLinks": 0,
       "externalLinks": 29,
       "brokenLinks": 0,
       "missingDependencies": [],
@@ -74,9 +78,9 @@
         "brokenLinks": 4
       },
       "timing": {
-        "cloneMs": 57,
-        "analysisMs": 26,
-        "totalMs": 83
+        "cloneMs": 96,
+        "analysisMs": 126,
+        "totalMs": 222
       }
     },
     {
@@ -124,6 +128,8 @@
       ],
       "resolvedLinks": 4,
       "nonDecisionLinks": 4,
+      "outsideScopeLinks": 0,
+      "ambiguousLinks": 0,
       "externalLinks": 34,
       "brokenLinks": 0,
       "missingDependencies": [],
@@ -132,9 +138,9 @@
         "brokenLinks": 0
       },
       "timing": {
-        "cloneMs": 51,
-        "analysisMs": 15,
-        "totalMs": 66
+        "cloneMs": 89,
+        "analysisMs": 85,
+        "totalMs": 174
       }
     },
     {
@@ -175,6 +181,8 @@
       "mutualReferences": [],
       "resolvedLinks": 13,
       "nonDecisionLinks": 1,
+      "outsideScopeLinks": 0,
+      "ambiguousLinks": 0,
       "externalLinks": 5734,
       "brokenLinks": 21,
       "missingDependencies": [
@@ -268,9 +276,9 @@
         "brokenLinks": 4
       },
       "timing": {
-        "cloneMs": 51,
-        "analysisMs": 409,
-        "totalMs": 460
+        "cloneMs": 88,
+        "analysisMs": 662,
+        "totalMs": 750
       }
     },
     {
@@ -330,6 +338,8 @@
       ],
       "resolvedLinks": 254,
       "nonDecisionLinks": 165,
+      "outsideScopeLinks": 0,
+      "ambiguousLinks": 0,
       "externalLinks": 32259,
       "brokenLinks": 51,
       "missingDependencies": [
@@ -543,9 +553,9 @@
         "brokenLinks": 93
       },
       "timing": {
-        "cloneMs": 54,
-        "analysisMs": 544,
-        "totalMs": 598
+        "cloneMs": 82,
+        "analysisMs": 919,
+        "totalMs": 1001
       }
     },
     {
@@ -617,64 +627,14 @@
       ],
       "resolvedLinks": 137,
       "nonDecisionLinks": 0,
+      "outsideScopeLinks": 5,
+      "ambiguousLinks": 0,
       "externalLinks": 312,
-      "brokenLinks": 14,
+      "brokenLinks": 1,
       "missingDependencies": [
-        {
-          "adrId": "adr-027-deterministic-protobuf-serialization",
-          "missingId": "ADR-020"
-        },
-        {
-          "adrId": "adr-031-msg-service",
-          "missingId": "ADR-020"
-        },
-        {
-          "adrId": "adr-033-protobuf-inter-module-comm",
-          "missingId": "ADR-021"
-        },
-        {
-          "adrId": "adr-033-protobuf-inter-module-comm",
-          "missingId": "ADR-031"
-        },
-        {
-          "adrId": "adr-033-protobuf-inter-module-comm",
-          "missingId": "docs/docs/learn/advanced/10-ocap.md"
-        },
-        {
-          "adrId": "adr-042-group-module",
-          "missingId": "ADR-033"
-        },
-        {
-          "adrId": "adr-045-check-delivertx-middlewares",
-          "missingId": "ADR-022"
-        },
-        {
-          "adrId": "adr-045-check-delivertx-middlewares",
-          "missingId": "ADR-010"
-        },
-        {
-          "adrId": "adr-050-sign-mode-textual-annex1",
-          "missingId": "ADR-050"
-        },
-        {
-          "adrId": "adr-050-sign-mode-textual",
-          "missingId": "ADR-020"
-        },
         {
           "adrId": "adr-054-semver-compatible-modules",
           "missingId": "docs/proto/cosmos/app/v1alpha1/module.proto"
-        },
-        {
-          "adrId": "adr-065-store-v2",
-          "missingId": "ADR-040"
-        },
-        {
-          "adrId": "adr-076-tx-malleability",
-          "missingId": "x/tx/signing/aminojson/internal/aminojsonpb/aminojson.proto"
-        },
-        {
-          "adrId": "adr-076-tx-malleability",
-          "missingId": "proto/cosmos/tx/v1beta1/tx.proto"
         }
       ],
       "before": {
@@ -682,9 +642,9 @@
         "brokenLinks": 92
       },
       "timing": {
-        "cloneMs": 54,
-        "analysisMs": 40,
-        "totalMs": 94
+        "cloneMs": 83,
+        "analysisMs": 137,
+        "totalMs": 220
       }
     },
     {
@@ -719,7 +679,7 @@
       "hardEdges": 0,
       "softEdges": 25,
       "edgeDensity": 0.284,
-      "isolatedNodes": 60,
+      "isolatedNodes": 62,
       "cyclesFound": false,
       "mutualReferencesCount": 4,
       "mutualReferences": [
@@ -750,66 +710,19 @@
       ],
       "resolvedLinks": 39,
       "nonDecisionLinks": 6,
+      "outsideScopeLinks": 10,
+      "ambiguousLinks": 0,
       "externalLinks": 260,
-      "brokenLinks": 12,
-      "missingDependencies": [
-        {
-          "adrId": "ADR-0027",
-          "missingId": "docs/code-howtos/remote-storage-jabdrive.md"
-        },
-        {
-          "adrId": "ADR-0027",
-          "missingId": "docs/code-howtos/remote-storage-sql.md"
-        },
-        {
-          "adrId": "ADR-0033",
-          "missingId": "ADR-032"
-        },
-        {
-          "adrId": "ADR-0034",
-          "missingId": "ADR-038"
-        },
-        {
-          "adrId": "ADR-0067",
-          "missingId": "docs/code-howtos/openoffice/code-reorganization.md"
-        },
-        {
-          "adrId": "ADR-0068",
-          "missingId": "ADR-64"
-        },
-        {
-          "adrId": "ADR-0077",
-          "missingId": "docs/requirements/pdf-import.md"
-        },
-        {
-          "adrId": "ADR-0079",
-          "missingId": "docs/code-howtos/localization.md"
-        },
-        {
-          "adrId": "ADR-0084",
-          "missingId": "docs/code-howtos/openoffice/order-of-appearance.md"
-        },
-        {
-          "adrId": "ADR-0084",
-          "missingId": "docs/code-howtos/openoffice/overview.md"
-        },
-        {
-          "adrId": "ADR-0084",
-          "missingId": "docs/requirements/openoffice.md"
-        },
-        {
-          "adrId": "ADR-0084",
-          "missingId": "docs/code-howtos/testing.md"
-        }
-      ],
+      "brokenLinks": 0,
+      "missingDependencies": [],
       "before": {
         "edges": 12,
         "brokenLinks": 4
       },
       "timing": {
-        "cloneMs": 50,
-        "analysisMs": 55,
-        "totalMs": 105
+        "cloneMs": 76,
+        "analysisMs": 160,
+        "totalMs": 236
       }
     },
     {
@@ -850,6 +763,8 @@
       "mutualReferences": [],
       "resolvedLinks": 5,
       "nonDecisionLinks": 0,
+      "outsideScopeLinks": 0,
+      "ambiguousLinks": 0,
       "externalLinks": 54,
       "brokenLinks": 0,
       "missingDependencies": [],
@@ -858,9 +773,9 @@
         "brokenLinks": 4
       },
       "timing": {
-        "cloneMs": 59,
-        "analysisMs": 11,
-        "totalMs": 70
+        "cloneMs": 83,
+        "analysisMs": 100,
+        "totalMs": 183
       }
     }
   ],

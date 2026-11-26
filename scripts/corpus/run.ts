@@ -327,6 +327,8 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
   const totalSoftEdges = results.reduce((acc, r) => acc + r.softEdges, 0);
   const totalResolvedLinks = results.reduce((acc, r) => acc + (r.resolvedLinks ?? 0), 0);
   const totalNonDecisionLinks = results.reduce((acc, r) => acc + (r.nonDecisionLinks ?? 0), 0);
+  const totalOutsideScopeLinks = results.reduce((acc, r) => acc + (r.outsideScopeLinks ?? 0), 0);
+  const totalAmbiguousLinks = results.reduce((acc, r) => acc + (r.ambiguousLinks ?? 0), 0);
   const totalExternalLinks = results.reduce((acc, r) => acc + (r.externalLinks ?? 0), 0);
   const totalBrokenLinks = results.reduce((acc, r) => acc + r.brokenLinks, 0);
   const totalCyclesDetected = results.filter((r) => r.cyclesFound).length;
@@ -336,7 +338,7 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
     : 0;
 
   const timestamp = new Date().toISOString();
-  const runnerVersion = '1.0.0-phase2c.1';
+  const runnerVersion = '1.0.0-phase2c.1.1';
 
   const report: CorpusBenchmarkReport = {
     timestamp,
@@ -355,6 +357,8 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
       totalSoftEdges,
       totalResolvedLinks,
       totalNonDecisionLinks,
+      totalOutsideScopeLinks,
+      totalAmbiguousLinks,
       totalExternalLinks,
       totalBrokenLinks,
       totalCyclesDetected,
