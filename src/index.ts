@@ -19,7 +19,37 @@ export type {
   ClassifiedLink,
   LinkClassification,
 } from './core/types.js';
-export { calculateArchitectureRisk } from './core/risk.js';
-export type { ArchitectureRiskResult, RiskFactorBreakdown, RiskLevel, RiskInputParams } from './core/risk.js';
+export {
+  calculateArchitectureRisk,
+  calculateGraphRisk,
+  computeBetweennessCentrality,
+  DEFAULT_RISK_V2_CONFIG,
+  MAX_EXACT_BETWEENNESS_NODES,
+} from './core/risk.js';
+export type {
+  ArchitectureRiskResult,
+  RiskFactorBreakdown,
+  RiskLevel,
+  RiskInputParams,
+  RiskModelVersion,
+  RiskV2Config,
+  RiskV2ConfigOverride,
+  RiskV2Weights,
+  BetweennessMode,
+  BetweennessResult,
+} from './core/risk.js';
+export {
+  lintArchitecture,
+  loadNirnayConfig,
+  DEFAULT_LINT_RULES,
+} from './core/linter.js';
+export type {
+  LintConfig,
+  LintFinding,
+  LintResult,
+  LintRuleId,
+  LintSeverity,
+  LintSummary,
+} from './core/linter.js';
 export { generatePRReport } from './core/report.js';
 export type { ReportOptions, ReportResult } from './core/report.js';

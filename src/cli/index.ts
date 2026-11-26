@@ -9,7 +9,7 @@ import glob from 'fast-glob';
 import Table from 'cli-table3';
 import { parseBatchADRs } from '../core/adrParser.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
-import { calculateArchitectureRisk } from '../core/risk.js';
+import { calculateGraphRisk } from '../core/risk.js';
 import { lintArchitecture, loadNirnayConfig } from '../core/linter.js';
 import { generatePRReport } from '../core/report.js';
 import { startServer } from '../server/serve.js';
@@ -137,7 +137,7 @@ program
     const direct = engine.getDirectDependents(adrId, queryOpts);
     const alsoReferencedBy = includeSoft ? [] : engine.getSoftDependents(adrId);
     const depth = engine.getDepth(adrId, queryOpts);
-    const risk = calculateArchitectureRisk({ directDependentsCount: direct.length, cascadeCount: downstreamIds.length, depth });
+    const risk = calculateGraphRisk(engine, adrId);
     const affectedSystems = engine.getAffectedSystems(adrId, queryOpts);
     const affectedSystemsSummary = Object.keys(affectedSystems).map(tag => `${tag} (${affectedSystems[tag].length})`).join(', ') || 'None';
     
@@ -150,6 +150,7 @@ program
         depth,
         affectedSystems,
         affectedSystemsCount: Object.keys(affectedSystems).length,
+        riskModelVersion: risk.modelVersion,
         riskScore: risk.score,
         riskLevel: risk.level,
         riskBreakdown: risk.breakdown

@@ -109,7 +109,7 @@ Includes:
 * **Transitive cascade**: Complete list of downstream nodes impacted across the dependency graph
 * **Hierarchy depth**: Real longest-path traversal through dependents (cycle-safe)
 * **Affected systems**: Downstream decisions grouped by frontmatter `tags` (with `untagged` fallback)
-* **Architectural risk score (0–100)**: Explainable heuristic calculation (`v1, heuristic`) weighting direct dependents (5 pts each) and cascading descendants (10 pts each), categorized into Low, Medium, and High risk with full factor breakdown
+* **Architectural risk score (0–100, v2)**: Graph-based risk model computed from hard edges only using normalized direct dependents, cascade fraction of the graph, longest dependency depth, and Brandes betweenness centrality (with a 5,000-node sampled fallback). See [docs/RISK_MODEL.md](docs/RISK_MODEL.md). Legacy v1 heuristic remains available behind `version: 'v1'`.
 
 ### 🖥️ Zero-Install Web Canvas
 
@@ -273,6 +273,36 @@ Exit codes:
 1 — Hard cycle, missing hard dependency, or invalid schema detected
 ```
 
+### ADR Linter (`ndag lint`)
+
+Run architectural lint rules across your ADR directory:
+
+```bash
+npx nirnay-dag lint ./docs/adr
+npx nirnay-dag lint ./docs/adr --json
+```
+
+Built-in rules:
+- `accepted-depends-on-deprecated` (`error`): an `accepted` decision has a hard dependency on a `deprecated` or `superseded` one.
+- `superseded-without-successor` (`warn`): a decision is marked `superseded` without any `superseded-by` or incoming `supersedes` target.
+- `broken-supersedes` (`error`): a `supersedes` or `superseded-by` target does not exist.
+- `orphan` (`info`): a decision with no incoming or outgoing edges (never fails CI).
+
+Status-dependent rules skip nodes whose status was defaulted (no explicit `status`, `stage`, or `state` in frontmatter). Configure rule enable/disable and severity overrides in `.nirnayrc.json`:
+
+```json
+{
+  "rules": {
+    "accepted-depends-on-deprecated": "error",
+    "superseded-without-successor": "warn",
+    "broken-supersedes": "error",
+    "orphan": "off"
+  }
+}
+```
+
+`ndag lint` exits `1` only when at least one `error`-severity finding is reported.
+
 ---
 
 ## 4. Blast Radius Simulation
@@ -290,7 +320,7 @@ Output includes:
 * **Cascade count & list**: Total number and IDs of cascading downstream decisions (pass `--include-soft` to include soft references in blast radius and risk calculation)
 * **Impact hierarchy depth**: Longest path through dependents from this node
 * **Affected systems**: Tag-based system grouping of affected decisions
-* **Architectural risk score**: Score from 0–100, risk level (Low / Medium / High), and explainable factor breakdown
+* **Architectural risk score**: Risk Model v2 score (0–100), risk level (Low / Medium / High), and explainable factor breakdown (direct dependents, cascade fraction, depth, betweenness centrality)
 
 ---
 

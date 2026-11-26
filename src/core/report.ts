@@ -4,7 +4,8 @@ import { execSync } from 'child_process';
 import fg from 'fast-glob';
 import { parseBatchADRs } from './adrParser.js';
 import { validateAndComputeDAG, type DAGValidationResult } from './dagEngine.js';
-import { calculateArchitectureRisk } from './risk.js';
+import { calculateGraphRisk, computeBetweennessCentrality } from './risk.js';
+import { lintArchitecture, loadNirnayConfig, type LintResult } from './linter.js';
 import type { ParsedADR } from './types.js';
 
 export interface ReportOptions {
@@ -22,6 +23,7 @@ export interface ReportResult {
   totalCount: number;
   validationResult: DAGValidationResult;
   changedAdrs: ParsedADR[];
+  lintResult?: LintResult;
 }
 
 export async function generatePRReport(options: ReportOptions = {}): Promise<ReportResult> {
@@ -90,7 +92,10 @@ export async function generatePRReport(options: ReportOptions = {}): Promise<Rep
   );
 
   const parsedADRs = parseBatchADRs(fileData);
-  const { validationResult, engine } = validateAndComputeDAG(parsedADRs);
+  const { validationResult, engine, mappedAdrs } = validateAndComputeDAG(parsedADRs);
+  const betweenness = computeBetweennessCentrality(engine);
+  const lintConfig = await loadNirnayConfig(fullPath);
+  const lintResult = lintArchitecture(mappedAdrs, engine, lintConfig);
 
   // Identify changed ADRs
   let changedAdrs = parsedADRs;
@@ -141,16 +146,11 @@ export async function generatePRReport(options: ReportOptions = {}): Promise<Rep
       const status = adr.frontmatter.status;
 
       const downstreamIds = engine.getBlastRadius(id);
-      const direct = engine.getDirectDependents(id);
       const softRefs = engine.getSoftDependents(id);
       const maxDepth = engine.getDepth(id);
       const affectedSystems = engine.getAffectedSystems(id);
       const affectedSummary = Object.keys(affectedSystems).join(', ') || 'None';
-      const risk = calculateArchitectureRisk({
-        directDependentsCount: direct.length,
-        cascadeCount: downstreamIds.length,
-        depth: maxDepth,
-      });
+      const risk = calculateGraphRisk(engine, id, undefined, betweenness);
 
       const riskLevel =
         risk.level === 'High' ? '🔴 High' : risk.level === 'Medium' ? '🟡 Medium' : '🟢 Low';
@@ -185,6 +185,18 @@ export async function generatePRReport(options: ReportOptions = {}): Promise<Rep
     }
   }
 
+  md += `\n### Architecture Lint Results\n\n`;
+  if (lintResult.findings.length === 0) {
+    md += `✅ No lint issues found (${mappedAdrs.length} ADRs checked).\n`;
+  } else {
+    md += `Summary: **${lintResult.summary.errors}** error(s), **${lintResult.summary.warnings}** warning(s), **${lintResult.summary.infos}** info(s).\n\n`;
+    md += `| Severity | Rule | Files | Message |\n`;
+    md += `|----------|------|-------|---------|\n`;
+    for (const f of lintResult.findings.slice(0, 25)) {
+      md += `| ${f.severity} | \`${f.ruleId}\` | ${f.files.join(', ')} | ${f.message} |\n`;
+    }
+  }
+
   await fs.writeFile(summaryFile, md, 'utf-8');
   console.log(`Successfully wrote PR blast radius summary to ${summaryFile}`);
 
@@ -195,5 +207,6 @@ export async function generatePRReport(options: ReportOptions = {}): Promise<Rep
     totalCount: parsedADRs.length,
     validationResult,
     changedAdrs,
+    lintResult,
   };
 }

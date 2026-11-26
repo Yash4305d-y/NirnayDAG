@@ -51,8 +51,10 @@ export class SimulationEngine {
     });
 
     const risk = calculateArchitectureRisk({
+      version: 'v2',
       directDependentsCount: directDependentsSet.size,
       cascadeCount: impactedNodesSet.size,
+      totalNodes: activeGraph.length,
     });
 
     return {

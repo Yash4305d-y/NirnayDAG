@@ -6,7 +6,8 @@ import path from 'path';
 import glob from 'fast-glob';
 import { parseADRContent, deriveFallbackId } from '../core/adrParser.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
-import { calculateArchitectureRisk } from '../core/risk.js';
+import { calculateGraphRisk } from '../core/risk.js';
+import { lintArchitecture, loadNirnayConfig } from '../core/linter.js';
 import type { ParsedADR } from '../core/types.js';
 
 const server = new Server(
@@ -91,6 +92,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           type: 'object',
           properties: {}
         }
+      },
+      {
+        name: 'lint_architecture',
+        description: 'Run ADR lint rules (accepted-depends-on-deprecated, superseded-without-successor, broken-supersedes, orphan).',
+        inputSchema: {
+          type: 'object',
+          properties: {}
+        }
       }
     ]
   };
@@ -150,7 +159,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const alsoReferencedBy = includeSoft ? [] : engine.getSoftDependents(id);
       const depth = engine.getDepth(id, queryOpts);
       const affectedSystems = engine.getAffectedSystems(id, queryOpts);
-      const risk = calculateArchitectureRisk({ directDependentsCount: direct.length, cascadeCount: deps.length, depth });
+      const risk = calculateGraphRisk(engine, id);
       return {
         content: [{
           type: 'text', text: JSON.stringify({
@@ -159,6 +168,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             totalCascadingDownstream: deps,
             maxDepth: depth,
             affectedSystems,
+            riskModelVersion: risk.modelVersion,
             architectureRiskScore: risk.score,
             riskLevel: risk.level,
             riskBreakdown: risk.breakdown
@@ -181,6 +191,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             rootDecisions: rootNodes,
             topologicalOrder: validationResult.topologicalOrder
           }, null, 2)
+        }]
+      };
+    }
+
+    if (name === 'lint_architecture') {
+      const { engine, mappedAdrs } = validateAndComputeDAG(adrs);
+      const config = await loadNirnayConfig(process.env.ADR_DIR || process.argv[2] || './docs/adr');
+      const lintResult = lintArchitecture(mappedAdrs, engine, config);
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify(lintResult, null, 2),
         }]
       };
     }

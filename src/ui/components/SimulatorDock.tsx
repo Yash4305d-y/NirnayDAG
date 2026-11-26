@@ -45,13 +45,15 @@ export const SimulatorDock: React.FC<SimulatorDockProps> = ({
     return directSet.size;
   }, [simulatedDeprecatedIds, blastRadiusMap]);
   
-  // Unified architecture risk calculation (v1, heuristic)
+  // Unified architecture risk calculation (v2)
   const risk = useMemo(() => {
     return calculateArchitectureRisk({
+      version: 'v2',
       directDependentsCount,
       cascadeCount: affectedCount,
+      totalNodes: adrs.length,
     });
-  }, [directDependentsCount, affectedCount]);
+  }, [directDependentsCount, affectedCount, adrs.length]);
 
   const riskScore = risk.score;
   const riskLevel = risk.level;
