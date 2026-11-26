@@ -174,7 +174,12 @@ export function analyzeDecisionFiles(
 
       const { data: rawFm } = extractRawFrontmatter(file.content);
 
-      if (parsed.frontmatter.title && parsed.frontmatter.title !== 'Untitled ADR') {
+      if (
+        parsed.titleSource &&
+        parsed.titleSource !== 'slug' &&
+        parsed.titleSource !== 'default' &&
+        parsed.frontmatter.title !== 'Untitled ADR'
+      ) {
         realTitleCount++;
       }
 

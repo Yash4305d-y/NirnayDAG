@@ -434,4 +434,31 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
       expect(outcome.extractionQuality.statusFoundPercent).toBe(75);
     });
   });
+
+  describe('Real Title counts non-slug/non-default titleSource only (Phase 2C-2b Step 2)', () => {
+    it('counts frontmatter, heading, and metadata-line titles as real, excluding slug fallback', () => {
+      const outcome = analyzeDecisionFiles([
+        {
+          relativePath: '0001-fm.md',
+          content: '---\nid: ADR-0001\ntitle: FM Title\n---\nBody\n',
+        },
+        {
+          relativePath: '0002-h1.md',
+          content: '# H1 Title\n\nBody\n',
+        },
+        {
+          relativePath: '0003-rfc.md',
+          content: '- Feature Name: my_feature\n- Start Date: 2020-01-01\n\n## Summary\n',
+        },
+        {
+          relativePath: '0004-slug-only.md',
+          content: '- Start Date: 2014-03-11\n\n## Summary\nNo H1 or Feature Name.\n',
+        },
+      ]);
+
+      expect(outcome.filesParsedOK).toBe(4);
+      expect(outcome.extractionQuality.realTitleCount).toBe(3);
+      expect(outcome.extractionQuality.realTitlePercent).toBe(75);
+    });
+  });
 });

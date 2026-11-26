@@ -62,6 +62,8 @@ export type ADRStatus = 'proposed' | 'accepted' | 'deprecated' | 'superseded' | 
 
 export type StatusSource = 'frontmatter' | 'section' | 'line' | 'kep-yaml' | 'default';
 
+export type TitleSource = 'frontmatter' | 'heading' | 'metadata-line' | 'kep-yaml' | 'slug' | 'default';
+
 export interface ADRFrontmatter {
   id: string;
   title: string;
@@ -101,6 +103,7 @@ export interface ParsedADR {
   consequences: ADRConsequences;
   rawContent: string;
   filePath?: string;
+  titleSource?: TitleSource;
   statusSource?: StatusSource;
   edges?: ADREdgeRef[];
   links?: ClassifiedLink[];

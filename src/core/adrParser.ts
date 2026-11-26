@@ -4,6 +4,7 @@ import type {
   ADRFrontmatter,
   ADRStatus,
   StatusSource,
+  TitleSource,
   ADRConsequences,
   NirnayADR,
   DecisionStatus,
@@ -99,11 +100,31 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
     bodyContent = content.slice(fmMatch[0].length).trim();
   }
 
-  // Extract title from first heading if not in frontmatter
-  let title = frontmatterData.title;
-  if (!title) {
-    const titleMatch = content.match(/^#\s+(.+)$/m);
-    title = titleMatch ? titleMatch[1].trim() : 'Untitled ADR';
+  // Extract title with precedence: frontmatter -> H1 heading -> metadata line -> filename slug -> default
+  let title = '';
+  let titleSource: TitleSource = 'default';
+
+  if (frontmatterData.title !== undefined && frontmatterData.title !== null && String(frontmatterData.title).trim() !== '') {
+    title = String(frontmatterData.title).trim();
+    titleSource = 'frontmatter';
+  } else {
+    const titleMatch = bodyContent.match(/^#\s+(.+)$/m);
+    if (titleMatch && titleMatch[1].trim() !== '') {
+      title = titleMatch[1].trim();
+      titleSource = 'heading';
+    } else {
+      const featureMatch = bodyContent.match(/^[ \t]*(?:[-*]\s*)?Feature Name\s*:\s*(.+)$/im);
+      if (featureMatch && featureMatch[1].trim() !== '') {
+        title = featureMatch[1].trim();
+        titleSource = 'metadata-line';
+      } else if (fallbackId && fallbackId.trim() !== '') {
+        title = fallbackId.trim();
+        titleSource = 'slug';
+      } else {
+        title = 'Untitled ADR';
+        titleSource = 'default';
+      }
+    }
   }
 
   // Determine ID
@@ -256,6 +277,7 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
     decision,
     consequences,
     rawContent: content,
+    titleSource,
     statusSource,
     edges,
   };

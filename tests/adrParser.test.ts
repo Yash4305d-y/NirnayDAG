@@ -269,3 +269,57 @@ Just context, no status anywhere.
     expect(parsed.statusSource).toBe('default');
   });
 });
+
+describe('Title extraction and titleSource (Phase 2C-2b Step 2)', () => {
+  it('extracts title from YAML frontmatter with titleSource=frontmatter', () => {
+    const parsed = parseADRContent(`---
+id: ADR-201
+title: Frontmatter Title
+---
+# Heading Title
+`, 'ADR-201');
+    expect(parsed.frontmatter.title).toBe('Frontmatter Title');
+    expect(parsed.titleSource).toBe('frontmatter');
+  });
+
+  it('extracts title from first H1 heading with titleSource=heading', () => {
+    const parsed = parseADRContent(`# Heading Title
+
+## Context
+No frontmatter title.
+`, 'ADR-202');
+    expect(parsed.frontmatter.title).toBe('Heading Title');
+    expect(parsed.titleSource).toBe('heading');
+  });
+
+  it('extracts title from RFC metadata line ("- Feature Name: foo") with titleSource=metadata-line', () => {
+    const parsed = parseADRContent(`- Feature Name: nonzeroing_dynamic_drop
+- Start Date: 2014-09-24
+- RFC PR: [rust-lang/rfcs#320](https://github.com/rust-lang/rfcs/pull/320)
+
+## Summary
+Summary text.
+`, 'ADR-0320');
+    expect(parsed.frontmatter.title).toBe('nonzeroing_dynamic_drop');
+    expect(parsed.titleSource).toBe('metadata-line');
+  });
+
+  it('falls back to filename slug with titleSource=slug when fallbackId is provided', () => {
+    const parsed = parseADRContent(`- Start Date: 2014-03-11
+- RFC PR: [rust-lang/rfcs#1](https://github.com/rust-lang/rfcs/pull/1)
+
+## Summary
+No H1 and no Feature Name.
+`, '0001-private-fields');
+    expect(parsed.frontmatter.title).toBe('0001-private-fields');
+    expect(parsed.titleSource).toBe('slug');
+  });
+
+  it('falls back to Untitled ADR with titleSource=default when no title or fallbackId exists', () => {
+    const parsed = parseADRContent(`## Summary
+No title and no fallbackId.
+`);
+    expect(parsed.frontmatter.title).toBe('Untitled ADR');
+    expect(parsed.titleSource).toBe('default');
+  });
+});
