@@ -461,4 +461,20 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
       expect(outcome.extractionQuality.realTitlePercent).toBe(75);
     });
   });
+
+  describe('KEP fixture folder extraction (Phase 2C-2b Step 3)', () => {
+    it('detects sibling kep.yaml by file layout and extracts hard/soft edges, titles, and statuses', async () => {
+      const kepFixtureDir = path.resolve(__dirname, 'fixtures', 'kep-fixture');
+      const files = await readDirectoryDecisionFiles(kepFixtureDir, ['.']);
+      const outcome = analyzeDecisionFiles(files);
+
+      expect(outcome.filesFound).toBe(4);
+      expect(outcome.filesParsedOK).toBe(4);
+      expect(outcome.extractionQuality.realTitleCount).toBe(4);
+      expect(outcome.extractionQuality.statusFoundCount).toBe(4);
+      expect(outcome.hardEdges).toBe(2);
+      expect(outcome.softEdges).toBe(1);
+      expect(outcome.brokenLinks).toBe(0);
+    });
+  });
 });

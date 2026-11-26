@@ -4,6 +4,7 @@ import glob from 'fast-glob';
 import * as yaml from 'js-yaml';
 import {
   parseADRContent,
+  applyKepMetadata,
   deriveFallbackId,
   disambiguateDuplicateIds,
   resolveBatchLinks,
@@ -23,6 +24,7 @@ import type {
 export interface DecisionFileInput {
   relativePath: string;
   content: string;
+  kepYamlContent?: string;
 }
 
 export interface AnalysisEvidence {
@@ -171,6 +173,9 @@ export function analyzeDecisionFiles(
       }
 
       parsed.filePath = file.relativePath;
+      if (file.kepYamlContent) {
+        applyKepMetadata(parsed, file.kepYamlContent);
+      }
 
       const { data: rawFm } = extractRawFrontmatter(file.content);
 
@@ -450,9 +455,21 @@ export async function readDirectoryDecisionFiles(
       try {
         const content = await fs.readFile(absolutePath, 'utf-8');
         const relativeToRepo = path.relative(repoRoot, absolutePath).replace(/\\/g, '/');
+        let kepYamlContent: string | undefined;
+        if (path.basename(absolutePath).toLowerCase() === 'readme.md') {
+          const dir = path.dirname(absolutePath);
+          const kepYamlPath = path.join(dir, 'kep.yaml');
+          const kepYmlPath = path.join(dir, 'kep.yml');
+          if (await fs.pathExists(kepYamlPath)) {
+            kepYamlContent = await fs.readFile(kepYamlPath, 'utf-8');
+          } else if (await fs.pathExists(kepYmlPath)) {
+            kepYamlContent = await fs.readFile(kepYmlPath, 'utf-8');
+          }
+        }
         allFiles.push({
           relativePath: relativeToRepo,
           content,
+          ...(kepYamlContent !== undefined ? { kepYamlContent } : {}),
         });
       } catch {
         const relativeToRepo = path.relative(repoRoot, absolutePath).replace(/\\/g, '/');

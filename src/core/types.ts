@@ -6,6 +6,9 @@ export type EdgeSource =
   | 'frontmatter:depends_on'
   | 'frontmatter:supersedes'
   | 'status:supersedes'
+  | 'kep:replaces'
+  | 'kep:superseded-by'
+  | 'kep:see-also'
   | 'body:link'
   | 'body:id';
 
@@ -103,6 +106,7 @@ export interface ParsedADR {
   consequences: ADRConsequences;
   rawContent: string;
   filePath?: string;
+  kepNumber?: number | string;
   titleSource?: TitleSource;
   statusSource?: StatusSource;
   edges?: ADREdgeRef[];

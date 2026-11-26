@@ -394,6 +394,12 @@ export class DAGEngine {
 // (ParsedADR imported at top if needed or directly)
 
 export function mapParsedToNirnay(parsed: ParsedADR): NirnayADR {
+  const hardFromEdges = (parsed.edges || [])
+    .filter((e) => e.kind === 'hard' && e.source !== 'frontmatter:depends_on')
+    .map((e) => e.targetId);
+  const dependencies = Array.from(
+    new Set([...(parsed.frontmatter.depends_on || []), ...hardFromEdges])
+  );
   const softDependencies = (parsed.edges || [])
     .filter((e) => e.kind === 'soft')
     .map((e) => e.targetId);
@@ -410,7 +416,7 @@ export function mapParsedToNirnay(parsed: ParsedADR): NirnayADR {
       pros: parsed.consequences.positive,
       cons: parsed.consequences.negative,
     },
-    dependencies: parsed.frontmatter.depends_on || [],
+    dependencies,
     softDependencies,
     edgeRefs: parsed.edges,
     supersedes: parsed.frontmatter.supersedes?.[0],

@@ -323,3 +323,118 @@ No title and no fallbackId.
     expect(parsed.titleSource).toBe('default');
   });
 });
+
+describe('KEP adapter (Phase 2C-2b Step 3)', () => {
+  it('extracts title, status, owning-sig tag, kep-number, hard replaces/superseded-by edges, and soft see-also edges from sibling kep.yaml', () => {
+    const parsed = parseBatchADRs([
+      {
+        name: 'README.md',
+        filePath: 'sig-api/100-base/README.md',
+        content: '# Base API KEP\n\n## Summary\nBase\n',
+      },
+      {
+        name: 'kep.yaml',
+        filePath: 'sig-api/100-base/kep.yaml',
+        content: `title: Base API
+kep-number: 100
+owning-sig: sig-api
+status: implemented
+see-also:
+  - "/sig-api/150-related/README.md"
+`,
+      },
+      {
+        name: 'README.md',
+        filePath: 'sig-api/150-related/README.md',
+        content: '# Related API KEP\n',
+      },
+      {
+        name: 'kep.yaml',
+        filePath: 'sig-api/150-related/kep.yaml',
+        content: `title: Related API
+kep-number: 150
+owning-sig: sig-api
+status: provisional
+`,
+      },
+      {
+        name: 'README.md',
+        filePath: 'sig-api/200-replacement/README.md',
+        content: '# Replacement API KEP\n',
+      },
+      {
+        name: 'kep.yaml',
+        filePath: 'sig-api/200-replacement/kep.yaml',
+        content: `title: Replacement API
+kep-number: 200
+owning-sig: sig-api
+status: implementable
+replaces:
+  - "/sig-api/100-base/README.md"
+  - "https://example.com/external-doc"
+superseded-by:
+  - "150"
+`,
+      },
+    ]);
+
+    expect(parsed.length).toBe(3);
+
+    const base = parsed.find((p) => p.frontmatter.id === '100-base')!;
+    expect(base.frontmatter.title).toBe('Base API');
+    expect(base.titleSource).toBe('kep-yaml');
+    expect(base.frontmatter.status).toBe('accepted');
+    expect(base.statusSource).toBe('kep-yaml');
+    expect(base.frontmatter.tags).toContain('sig-api');
+    expect(base.kepNumber).toBe(100);
+    expect(base.edges).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ targetId: '150-related', kind: 'soft', source: 'kep:see-also' }),
+      ])
+    );
+
+    const related = parsed.find((p) => p.frontmatter.id === '150-related')!;
+    expect(related.frontmatter.status).toBe('proposed');
+    expect(related.statusSource).toBe('kep-yaml');
+
+    const replacement = parsed.find((p) => p.frontmatter.id === '200-replacement')!;
+    expect(replacement.frontmatter.status).toBe('proposed');
+    expect(replacement.frontmatter.supersedes).toEqual(expect.arrayContaining(['100-base', '150-related']));
+    expect(replacement.edges).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ targetId: '100-base', kind: 'hard', source: 'kep:replaces' }),
+        expect.objectContaining({ targetId: '150-related', kind: 'hard', source: 'kep:superseded-by' }),
+      ])
+    );
+    // External URL should not become a broken internal edge
+    expect(replacement.edges?.some((e) => e.targetId.includes('example.com'))).toBe(false);
+  });
+
+  it('maps all KEP statuses (provisional, implementable, implemented, deferred, rejected, withdrawn, replaced) to canonical states', () => {
+    const statuses = [
+      ['provisional', 'proposed'],
+      ['implementable', 'proposed'],
+      ['implemented', 'accepted'],
+      ['deferred', 'proposed'],
+      ['rejected', 'rejected'],
+      ['withdrawn', 'deprecated'],
+      ['replaced', 'superseded'],
+    ] as const;
+
+    const files = statuses.flatMap(([kepStatus], idx) => [
+      {
+        name: 'README.md',
+        filePath: `sig-test/${idx}-kep/README.md`,
+        content: '# Placeholder\n',
+      },
+      {
+        name: 'kep.yaml',
+        filePath: `sig-test/${idx}-kep/kep.yaml`,
+        content: `title: KEP ${idx}\nkep-number: ${idx}\nstatus: ${kepStatus}\n`,
+      },
+    ]);
+
+    const parsed = parseBatchADRs(files);
+    expect(parsed.map((p) => p.frontmatter.status)).toEqual(statuses.map(([, expected]) => expected));
+  });
+});
