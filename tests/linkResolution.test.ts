@@ -131,4 +131,63 @@ describe('Path-based link resolution and classification (Phase 2C-1)', () => {
       { adrId: 'adr-007-outside-scope', missingId: 'docs-outside-scope/code-howtos/does-not-exist.md' },
     ]);
   });
+
+  it('resolves bare ID mentions via case-insensitive and padded/unpadded aliases, flags ambiguous aliases without edges, and marks unknown IDs broken', () => {
+    const parsed = parseBatchADRs([
+      {
+        name: '0020-primary-storage.md',
+        filePath: 'docs/decisions/0020-primary-storage.md',
+        content: '# Primary Storage\n',
+      },
+      {
+        name: '0032-cache-layer.md',
+        filePath: 'docs/decisions/0032-cache-layer.md',
+        content: '# Cache Layer\n',
+      },
+      {
+        name: '0050-first.md',
+        filePath: 'docs/decisions/sig-a/0050-first.md',
+        content: '# First 50\n',
+      },
+      {
+        name: '0050-second.md',
+        filePath: 'docs/decisions/sig-b/0050-second.md',
+        content: '# Second 50\n',
+      },
+      {
+        name: '0090-consumer.md',
+        filePath: 'docs/decisions/0090-consumer.md',
+        content: [
+          '# Consumer',
+          'Uses [ADR-20] and [adr-020] and [ADR-032] and [Adr-32].',
+          'Ambiguous reference to [ADR-050] and [ADR-50].',
+          'Unknown reference to [ADR-999].',
+        ].join('\n'),
+      },
+    ]);
+
+    const consumer = parsed.find((p) => p.frontmatter.id === 'ADR-0090');
+    expect(consumer).toBeDefined();
+
+    const byRaw = new Map((consumer!.links || []).map((l) => [l.rawLinkText, l]));
+    expect(byRaw.get('[ADR-20]')).toMatchObject({ classification: 'resolved', resolvedId: 'ADR-0020' });
+    expect(byRaw.get('[adr-020]')).toMatchObject({ classification: 'resolved', resolvedId: 'ADR-0020' });
+    expect(byRaw.get('[ADR-032]')).toMatchObject({ classification: 'resolved', resolvedId: 'ADR-0032' });
+    expect(byRaw.get('[Adr-32]')).toMatchObject({ classification: 'resolved', resolvedId: 'ADR-0032' });
+    expect(byRaw.get('[ADR-050]')?.classification).toBe('ambiguous');
+    expect(byRaw.get('[ADR-50]')?.classification).toBe('ambiguous');
+    expect(byRaw.get('[ADR-999]')?.classification).toBe('broken');
+
+    // Ambiguous aliases must not create edges; resolved ones create soft edges
+    const softTargets = (consumer!.edges || []).filter((e) => e.kind === 'soft').map((e) => e.targetId);
+    expect(softTargets).toContain('ADR-0020');
+    expect(softTargets).toContain('ADR-0032');
+    expect(softTargets).not.toContain('ADR-050');
+    expect(softTargets).not.toContain('ADR-50');
+
+    const { validationResult } = validateAndComputeDAG(parsed);
+    expect(validationResult.missingSoftReferences).toEqual([
+      { adrId: 'ADR-0090', missingId: 'ADR-999' },
+    ]);
+  });
 });

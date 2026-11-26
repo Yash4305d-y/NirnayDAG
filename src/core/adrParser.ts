@@ -164,7 +164,7 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
 
   // Extract soft reference edges from markdown body links and ID tokens
   if (bodyContent) {
-    const linkRegex = /(?:\[ADR-[\w-]+\]|\(\.\/[\w-]+[^)]*\))/g;
+    const linkRegex = /(?:\[ADR-[\w-]+\]|\(\.\/[\w-]+[^)]*\))/gi;
     const matches = bodyContent.match(linkRegex);
     const seenSoft = new Set<string>();
     if (matches) {
@@ -172,7 +172,7 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
         let targetId: string | null = null;
         let source: 'body:id' | 'body:link' = 'body:id';
 
-        if (m.startsWith('[ADR-')) {
+        if (/^\[ADR-/i.test(m)) {
           targetId = m.substring(1, m.length - 1);
           source = 'body:id';
         } else if (m.startsWith('(./')) {
@@ -406,15 +406,70 @@ function parseLinkTarget(rawInner: string): string {
   return inner;
 }
 
+function registerAliasesForAdr(adr: ParsedADR, aliasToAdrs: Map<string, Set<ParsedADR>>): void {
+  const addAlias = (alias: string) => {
+    const key = alias.trim().toLowerCase();
+    if (!key) return;
+    let set = aliasToAdrs.get(key);
+    if (!set) {
+      set = new Set<ParsedADR>();
+      aliasToAdrs.set(key, set);
+    }
+    set.add(adr);
+  };
+
+  const id = adr.frontmatter.id;
+  addAlias(id);
+
+  // Register numeric-prefix aliases (adr-020, ADR-020, ADR-20, 020, 20) case-insensitively
+  const baseId = id.split('::')[0];
+  const idNumMatch = baseId.match(/^(?:adr[-_]?)?(\d+)(?:[-_].*)?$/i);
+  if (idNumMatch) {
+    const rawNum = idNumMatch[1];
+    const unpadded = String(parseInt(rawNum, 10));
+    addAlias(rawNum);
+    addAlias(unpadded);
+    addAlias(`adr-${rawNum}`);
+    addAlias(`adr-${unpadded}`);
+  }
+}
+
+function resolveAliasToken(
+  token: string,
+  aliasToAdrs: Map<string, Set<ParsedADR>>
+): { status: 'resolved'; resolvedId: string } | { status: 'ambiguous' } | { status: 'broken' } {
+  const lower = token.trim().toLowerCase();
+  let matches = aliasToAdrs.get(lower);
+
+  if (!matches) {
+    const numMatch = lower.match(/^adr[-_]?(\d+)$/i);
+    if (numMatch) {
+      const unpadded = `adr-${parseInt(numMatch[1], 10)}`;
+      matches = aliasToAdrs.get(unpadded);
+    }
+  }
+
+  if (!matches || matches.size === 0) {
+    return { status: 'broken' };
+  }
+  if (matches.size > 1) {
+    return { status: 'ambiguous' };
+  }
+  const [targetAdr] = matches;
+  return { status: 'resolved', resolvedId: targetAdr.frontmatter.id };
+}
+
 /**
- * Resolves relative Markdown body links across a batch of parsed ADRs using a
- * case-insensitive `path -> nodeId` index and classifies each link as
- * `resolved`, `non-decision`, `external`, or `broken`.
+ * Resolves relative Markdown body links and bare ID mentions across a batch of
+ * parsed ADRs, classifying each as `resolved`, `non-decision`, `outside-scope`,
+ * `ambiguous`, `external`, or `broken`.
  */
 export function resolveBatchLinks(parsedADRs: ParsedADR[], options?: LinkResolutionOptions): void {
   const pathToId = new Map<string, string>();
+  const aliasToAdrs = new Map<string, Set<ParsedADR>>();
 
   for (const adr of parsedADRs) {
+    registerAliasesForAdr(adr, aliasToAdrs);
     if (!adr.filePath) continue;
     const norm = normalizePosixPath(adr.filePath).toLowerCase();
     pathToId.set(norm, adr.frontmatter.id);
@@ -426,9 +481,12 @@ export function resolveBatchLinks(parsedADRs: ParsedADR[], options?: LinkResolut
 
   const fileExists = createFileExistsChecker(options);
   const mdLinkRegex = /\[[^\]]*\]\(([^)\r\n]+)\)/g;
+  const bareIdRegex = /\[(ADR-[\w-]+)\](?!\()/gi;
 
   for (const adr of parsedADRs) {
-    const nonLinkEdges = (adr.edges || []).filter((e) => e.source !== 'body:link');
+    const nonLinkEdges = (adr.edges || []).filter(
+      (e) => e.source !== 'body:link' && e.source !== 'body:id'
+    );
     const seenTargets = new Set<string>(nonLinkEdges.map((e) => e.targetId));
     const resolvedEdges: ADREdgeRef[] = [...nonLinkEdges];
     const classifiedLinks: ClassifiedLink[] = [];
@@ -523,6 +581,54 @@ export function resolveBatchLinks(parsedADRs: ParsedADR[], options?: LinkResolut
           source: 'body:link',
           rawText: rawLinkText,
         });
+      }
+    }
+
+    // Resolve bare [ADR-XXX] ID mentions via alias table
+    let idMatch: RegExpExecArray | null;
+    bareIdRegex.lastIndex = 0;
+    while ((idMatch = bareIdRegex.exec(body)) !== null) {
+      const token = idMatch[1];
+      const rawLinkText = idMatch[0];
+      const resolution = resolveAliasToken(token, aliasToAdrs);
+
+      if (resolution.status === 'resolved') {
+        classifiedLinks.push({
+          rawLinkText,
+          targetPath: token,
+          classification: 'resolved',
+          resolvedId: resolution.resolvedId,
+        });
+        if (resolution.resolvedId !== adr.frontmatter.id && !seenTargets.has(resolution.resolvedId)) {
+          seenTargets.add(resolution.resolvedId);
+          resolvedEdges.push({
+            targetId: resolution.resolvedId,
+            kind: 'soft',
+            source: 'body:id',
+            rawText: rawLinkText,
+          });
+        }
+      } else if (resolution.status === 'ambiguous') {
+        classifiedLinks.push({
+          rawLinkText,
+          targetPath: token,
+          classification: 'ambiguous',
+        });
+      } else {
+        classifiedLinks.push({
+          rawLinkText,
+          targetPath: token,
+          classification: 'broken',
+        });
+        if (!seenTargets.has(token)) {
+          seenTargets.add(token);
+          resolvedEdges.push({
+            targetId: token,
+            kind: 'soft',
+            source: 'body:id',
+            rawText: rawLinkText,
+          });
+        }
       }
     }
 
