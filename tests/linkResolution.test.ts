@@ -102,4 +102,33 @@ describe('Path-based link resolution and classification (Phase 2C-1)', () => {
     expect(validationResult.missingSoftReferences).toEqual([]);
     expect(engine.getSoftDependents('1027-api-unions')).toEqual(['2001-node-feature']);
   });
+
+  it('classifies targets in repoFiles outside analyzedFolders as outside-scope and only truly absent targets as broken', () => {
+    // Simulate sparse-checkout: only docs-outside-scope/decisions is analyzed, while repoFiles has the full git tree
+    const files = loadFixtureFiles('docs-outside-scope/decisions', ['PROCESS.md']);
+    const repoFiles = [
+      'docs-outside-scope/decisions/adr-007-outside-scope.md',
+      'docs-outside-scope/decisions/PROCESS.md',
+      'docs-outside-scope/code-howtos/storage.md',
+    ];
+
+    const parsed = parseBatchADRs(files, {
+      repoFiles,
+      analyzedFolders: ['docs-outside-scope/decisions'],
+    });
+
+    const adr007 = parsed.find((p) => p.frontmatter.id === 'adr-007-outside-scope');
+    expect(adr007).toBeDefined();
+
+    const byRaw = new Map((adr007!.links || []).map((l) => [l.rawLinkText, l]));
+    expect(byRaw.get('(../code-howtos/storage.md)')?.classification).toBe('outside-scope');
+    expect(byRaw.get('(./PROCESS.md)')?.classification).toBe('non-decision');
+    expect(byRaw.get('(../code-howtos/does-not-exist.md)')?.classification).toBe('broken');
+
+    // Outside-scope and non-decision links must not create edges or broken references
+    const { validationResult } = validateAndComputeDAG(parsed);
+    expect(validationResult.missingSoftReferences).toEqual([
+      { adrId: 'adr-007-outside-scope', missingId: 'docs-outside-scope/code-howtos/does-not-exist.md' },
+    ]);
+  });
 });

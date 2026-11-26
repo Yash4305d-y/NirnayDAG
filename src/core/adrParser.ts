@@ -288,6 +288,8 @@ export function disambiguateDuplicateIds(parsedADRs: ParsedADR[]): { duplicateId
 export interface LinkResolutionOptions {
   baseDir?: string;
   existingFiles?: Iterable<string>;
+  repoFiles?: Iterable<string>;
+  analyzedFolders?: string[];
   fileExists?: (relativePath: string) => boolean;
 }
 
@@ -325,9 +327,27 @@ function resolveRelativePosixPath(sourceFilePath: string, target: string): strin
 }
 
 function createFileExistsChecker(options?: LinkResolutionOptions): (relPath: string) => boolean {
-  const existingSet = options?.existingFiles
-    ? new Set(Array.from(options.existingFiles, (f) => normalizePosixPath(f).toLowerCase()))
-    : null;
+  const combinedExisting: string[] = [];
+  const existingDirs = new Set<string>();
+
+  const addEntry = (rawPath: string) => {
+    const norm = normalizePosixPath(rawPath).toLowerCase();
+    if (!norm) return;
+    combinedExisting.push(norm);
+    const parts = norm.split('/');
+    for (let i = 1; i < parts.length; i++) {
+      existingDirs.add(parts.slice(0, i).join('/'));
+    }
+  };
+
+  if (options?.existingFiles) {
+    for (const f of options.existingFiles) addEntry(f);
+  }
+  if (options?.repoFiles) {
+    for (const f of options.repoFiles) addEntry(f);
+  }
+
+  const existingSet = combinedExisting.length > 0 ? new Set(combinedExisting) : null;
 
   let nodeFs: { existsSync: (p: string) => boolean } | undefined;
   let nodePath: { resolve: (...args: string[]) => string } | undefined;
@@ -341,8 +361,9 @@ function createFileExistsChecker(options?: LinkResolutionOptions): (relPath: str
 
   return (relPath: string): boolean => {
     if (relPath.startsWith('..')) return false;
+    const norm = normalizePosixPath(relPath).toLowerCase().replace(/\/+$/, '');
     if (options?.fileExists && options.fileExists(relPath)) return true;
-    if (existingSet && existingSet.has(relPath.toLowerCase())) return true;
+    if (existingSet && (existingSet.has(norm) || existingDirs.has(norm))) return true;
     if (options?.baseDir && nodeFs && nodePath) {
       try {
         return nodeFs.existsSync(nodePath.resolve(options.baseDir, relPath));
@@ -352,6 +373,19 @@ function createFileExistsChecker(options?: LinkResolutionOptions): (relPath: str
     }
     return false;
   };
+}
+
+function isOutsideAnalyzedFolders(resolvedPath: string, analyzedFolders?: string[]): boolean {
+  if (!analyzedFolders || analyzedFolders.length === 0) return false;
+  const normTarget = normalizePosixPath(resolvedPath).toLowerCase().replace(/\/+$/, '');
+  for (const folder of analyzedFolders) {
+    const normFolder = normalizePosixPath(folder).toLowerCase().replace(/\/+$/, '');
+    if (!normFolder || normFolder === '.') return false;
+    if (normTarget === normFolder || normTarget.startsWith(`${normFolder}/`)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 function stripBodyFrontmatter(rawContent: string): string {
@@ -461,14 +495,18 @@ export function resolveBatchLinks(parsedADRs: ParsedADR[], options?: LinkResolut
 
       const extMatch = lower.match(/(\.[a-z0-9]+)$/);
       const ext = extMatch ? extMatch[1] : '';
+      const hasRepoTree = options?.repoFiles !== undefined;
       let classification: LinkClassification = 'broken';
 
-      if (
+      const targetExists =
         fileExists(resolvedPath) ||
         (!ext && (fileExists(`${resolvedPath}.md`) || fileExists(`${resolvedPath}.mdx`))) ||
-        (ext && NON_DECISION_ASSET_EXTS.has(ext))
-      ) {
-        classification = 'non-decision';
+        (!hasRepoTree && Boolean(ext && NON_DECISION_ASSET_EXTS.has(ext)));
+
+      if (targetExists) {
+        classification = isOutsideAnalyzedFolders(resolvedPath, options?.analyzedFolders)
+          ? 'outside-scope'
+          : 'non-decision';
       }
 
       classifiedLinks.push({

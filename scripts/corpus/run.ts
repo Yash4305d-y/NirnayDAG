@@ -196,7 +196,28 @@ export async function benchmarkSingleRepo(
   const files = await readDirectoryDecisionFiles(repoDir, repo.subfolders);
   console.log(chalk.gray(`  Found ${files.length} decision markdown files in subfolders: ${repo.subfolders.join(', ')}`));
 
-  const { evidence, ...metrics } = analyzeDecisionFiles(files, { repoDir });
+  let repoFiles: string[] = [];
+  try {
+    const treeOutput = execSync(`git ls-tree -r --name-only ${commitSha}`, {
+      cwd: repoDir,
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+      maxBuffer: 32 * 1024 * 1024,
+    });
+    repoFiles = treeOutput
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+  } catch {
+    repoFiles = [];
+  }
+
+  const { evidence, ...metrics } = analyzeDecisionFiles(files, {
+    repoDir,
+    repoFiles,
+    analyzedFolders: repo.subfolders,
+  });
   const analysisMs = Date.now() - startAnalysis;
   const totalMs = cloneMs + analysisMs;
 

@@ -142,7 +142,7 @@ function toPercent(count: number, total: number): number {
 
 export function analyzeDecisionFiles(
   files: DecisionFileInput[],
-  options?: { repoDir?: string }
+  options?: { repoDir?: string; repoFiles?: string[]; analyzedFolders?: string[] }
 ): AnalysisOutcome {
   const filesFound = files.length;
   const parsedADRs: ParsedADR[] = [];
@@ -248,7 +248,11 @@ export function analyzeDecisionFiles(
 
   // Disambiguate colliding IDs in core, resolve relative links by path, then index final IDs -> record
   const { duplicateIdsCount } = disambiguateDuplicateIds(parsedADRs);
-  resolveBatchLinks(parsedADRs, { baseDir: options?.repoDir });
+  resolveBatchLinks(parsedADRs, {
+    baseDir: options?.repoDir,
+    repoFiles: options?.repoFiles,
+    analyzedFolders: options?.analyzedFolders,
+  });
 
   let resolvedLinks = 0;
   let nonDecisionLinks = 0;

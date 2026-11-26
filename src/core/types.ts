@@ -77,7 +77,13 @@ export interface ADRConsequences {
   negative: string[];
 }
 
-export type LinkClassification = 'resolved' | 'non-decision' | 'external' | 'broken';
+export type LinkClassification =
+  | 'resolved'
+  | 'non-decision'
+  | 'outside-scope'
+  | 'ambiguous'
+  | 'external'
+  | 'broken';
 
 export interface ClassifiedLink {
   rawLinkText: string;
