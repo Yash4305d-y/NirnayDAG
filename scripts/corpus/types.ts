@@ -66,6 +66,28 @@ export interface MutualReferenceEvidence {
   edges: CycleEdgeEvidence[];
 }
 
+export interface LintFindingEvidence {
+  ruleId: string;
+  severity: string;
+  nodeId: string;
+  files: string[];
+  reason: string;
+  repo?: string;
+}
+
+export interface RepoLintSummary {
+  total: number;
+  errors: number;
+  warnings: number;
+  infos: number;
+  byRule: {
+    'accepted-depends-on-deprecated': number;
+    'superseded-without-successor': number;
+    'broken-supersedes': number;
+    orphan: number;
+  };
+}
+
 export interface RepoEvidence {
   repo: string;
   commitSha: string;
@@ -75,11 +97,13 @@ export interface RepoEvidence {
   }>;
   mutualReferences: MutualReferenceEvidence[];
   brokenLinks: BrokenLinkEvidence[];
+  lintFindings?: Record<string, LintFindingEvidence[]>;
 }
 
 export interface CorpusEvidenceReport {
   timestamp: string;
   runnerVersion: string;
+  lintFindingsByRule?: Record<string, LintFindingEvidence[]>;
   repositories: RepoEvidence[];
 }
 
@@ -119,6 +143,7 @@ export interface RepoBenchmarkResult {
     brokenLinks: number;
   };
   missingDependencies: Array<{ adrId: string; missingId: string }>;
+  lintSummary?: RepoLintSummary;
   timing: {
     cloneMs: number;
     analysisMs: number;
@@ -149,6 +174,12 @@ export interface CorpusBenchmarkReport {
     totalBrokenLinks: number;
     totalCyclesDetected: number;
     totalMutualReferences: number;
+    totalLintByRule?: {
+      'accepted-depends-on-deprecated': number;
+      'superseded-without-successor': number;
+      'broken-supersedes': number;
+      orphan: number;
+    };
   };
   results: RepoBenchmarkResult[];
   droppedRepositories: DroppedRepoConfig[];

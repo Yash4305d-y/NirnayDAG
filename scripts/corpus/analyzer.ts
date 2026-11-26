@@ -10,6 +10,7 @@ import {
 } from '../../src/core/adrParser.js';
 export { deriveFallbackId };
 import { validateAndComputeDAG } from '../../src/core/dagEngine.js';
+import { lintArchitecture, type LintRuleId } from '../../src/core/linter.js';
 import type { ParsedADR } from '../../src/core/types.js';
 import type {
   FileParseFailure,
@@ -18,6 +19,8 @@ import type {
   CycleEdgeEvidence,
   BrokenLinkEvidence,
   MutualReferenceEvidence,
+  LintFindingEvidence,
+  RepoLintSummary,
 } from './types.js';
 
 export interface DecisionFileInput {
@@ -32,6 +35,7 @@ export interface AnalysisEvidence {
   }>;
   mutualReferences: MutualReferenceEvidence[];
   brokenLinks: BrokenLinkEvidence[];
+  lintFindings: Record<string, LintFindingEvidence[]>;
 }
 
 export interface AnalysisOutcome {
@@ -61,6 +65,7 @@ export interface AnalysisOutcome {
   externalLinks: number;
   brokenLinks: number;
   missingDependencies: Array<{ adrId: string; missingId: string }>;
+  lintSummary: RepoLintSummary;
   evidence: AnalysisEvidence;
 }
 
@@ -246,7 +251,19 @@ export function analyzeDecisionFiles(
       externalLinks: 0,
       brokenLinks: 0,
       missingDependencies: [],
-      evidence: { cycles: [], mutualReferences: [], brokenLinks: [] },
+      lintSummary: {
+        total: 0,
+        errors: 0,
+        warnings: 0,
+        infos: 0,
+        byRule: {
+          'accepted-depends-on-deprecated': 0,
+          'superseded-without-successor': 0,
+          'broken-supersedes': 0,
+          orphan: 0,
+        },
+      },
+      evidence: { cycles: [], mutualReferences: [], brokenLinks: [], lintFindings: {} },
     };
   }
 
@@ -280,7 +297,30 @@ export function analyzeDecisionFiles(
     }
   }
 
-  const { validationResult, engine } = validateAndComputeDAG(parsedADRs);
+  const { validationResult, engine, mappedAdrs } = validateAndComputeDAG(parsedADRs);
+  const lintResult = lintArchitecture(mappedAdrs, engine);
+  const lintFindingsEvidence: Record<string, LintFindingEvidence[]> = {};
+  const ruleIds: LintRuleId[] = [
+    'accepted-depends-on-deprecated',
+    'superseded-without-successor',
+    'broken-supersedes',
+    'orphan',
+  ];
+  for (const ruleId of ruleIds) {
+    const matches = lintResult.findings
+      .filter((f) => f.ruleId === ruleId)
+      .slice(0, 5)
+      .map((f) => ({
+        ruleId: f.ruleId,
+        severity: f.severity,
+        nodeId: f.nodeId,
+        files: f.files,
+        reason: f.message,
+      }));
+    if (matches.length > 0) {
+      lintFindingsEvidence[ruleId] = matches;
+    }
+  }
   const nodes = engine.getNodeCount();
   const uniqueIdsCount = nodes;
 
@@ -414,10 +454,12 @@ export function analyzeDecisionFiles(
     externalLinks,
     brokenLinks,
     missingDependencies: allMissing,
+    lintSummary: lintResult.summary,
     evidence: {
       cycles: cycleEvidence,
       mutualReferences: mutualRefEvidence,
       brokenLinks: brokenLinkEvidence,
+      lintFindings: lintFindingsEvidence,
     },
   };
 }

@@ -248,6 +248,7 @@ export async function benchmarkSingleRepo(
       cycles: evidence.cycles,
       mutualReferences: evidence.mutualReferences,
       brokenLinks: evidence.brokenLinks,
+      lintFindings: evidence.lintFindings,
     },
   };
 }
@@ -333,12 +334,46 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
   const totalBrokenLinks = results.reduce((acc, r) => acc + r.brokenLinks, 0);
   const totalCyclesDetected = results.filter((r) => r.cyclesFound).length;
   const totalMutualReferences = results.reduce((acc, r) => acc + r.mutualReferencesCount, 0);
+  const totalLintByRule = {
+    'accepted-depends-on-deprecated': results.reduce(
+      (acc, r) => acc + (r.lintSummary?.byRule['accepted-depends-on-deprecated'] ?? 0),
+      0
+    ),
+    'superseded-without-successor': results.reduce(
+      (acc, r) => acc + (r.lintSummary?.byRule['superseded-without-successor'] ?? 0),
+      0
+    ),
+    'broken-supersedes': results.reduce(
+      (acc, r) => acc + (r.lintSummary?.byRule['broken-supersedes'] ?? 0),
+      0
+    ),
+    orphan: results.reduce((acc, r) => acc + (r.lintSummary?.byRule.orphan ?? 0), 0),
+  };
+
+  const lintFindingsByRule: Record<string, any[]> = {
+    'accepted-depends-on-deprecated': [],
+    'superseded-without-successor': [],
+    'broken-supersedes': [],
+    orphan: [],
+  };
+  for (const ev of evidenceRepos) {
+    if (!ev.lintFindings) continue;
+    for (const ruleId of Object.keys(lintFindingsByRule)) {
+      const items = ev.lintFindings[ruleId] || [];
+      for (const item of items) {
+        if (lintFindingsByRule[ruleId].length < 5) {
+          lintFindingsByRule[ruleId].push({ ...item, repo: ev.repo });
+        }
+      }
+    }
+  }
+
   const averageParseRatePercent = totalFilesFound > 0
     ? Number(((totalFilesParsedOK / totalFilesFound) * 100).toFixed(1))
     : 0;
 
   const timestamp = new Date().toISOString();
-  const runnerVersion = '1.0.0-phase2c.1.1';
+  const runnerVersion = '1.0.0-phase3';
 
   const report: CorpusBenchmarkReport = {
     timestamp,
@@ -363,6 +398,7 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
       totalBrokenLinks,
       totalCyclesDetected,
       totalMutualReferences,
+      totalLintByRule,
     },
     results,
     droppedRepositories: registry.evaluatedAndDropped,
@@ -371,6 +407,7 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
   const evidenceReport: CorpusEvidenceReport = {
     timestamp,
     runnerVersion,
+    lintFindingsByRule,
     repositories: evidenceRepos,
   };
 

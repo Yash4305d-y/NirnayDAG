@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-11-26T12:32:19.588Z",
-  "runnerVersion": "1.0.0-phase2c.1.1",
+  "timestamp": "2026-11-26T14:12:22.817Z",
+  "runnerVersion": "1.0.0-phase3",
   "licenseNotice": "All repositories listed are publicly hosted open-source projects analyzed under their respective open-source licenses for evaluation and research purposes. NirnayDAG benchmarks local clones and does not redistribute repository contents.",
   "summary": {
     "totalReposAnalyzed": 7,
@@ -20,7 +20,13 @@
     "totalExternalLinks": 38682,
     "totalBrokenLinks": 73,
     "totalCyclesDetected": 0,
-    "totalMutualReferences": 14
+    "totalMutualReferences": 14,
+    "totalLintByRule": {
+      "accepted-depends-on-deprecated": 0,
+      "superseded-without-successor": 0,
+      "broken-supersedes": 0,
+      "orphan": 1188
+    }
   },
   "results": [
     {
@@ -73,14 +79,26 @@
       "externalLinks": 29,
       "brokenLinks": 0,
       "missingDependencies": [],
+      "lintSummary": {
+        "total": 12,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 12,
+        "byRule": {
+          "accepted-depends-on-deprecated": 0,
+          "superseded-without-successor": 0,
+          "broken-supersedes": 0,
+          "orphan": 12
+        }
+      },
       "before": {
         "edges": 0,
         "brokenLinks": 4
       },
       "timing": {
-        "cloneMs": 96,
-        "analysisMs": 126,
-        "totalMs": 222
+        "cloneMs": 57,
+        "analysisMs": 106,
+        "totalMs": 163
       }
     },
     {
@@ -133,14 +151,26 @@
       "externalLinks": 34,
       "brokenLinks": 0,
       "missingDependencies": [],
+      "lintSummary": {
+        "total": 16,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 16,
+        "byRule": {
+          "accepted-depends-on-deprecated": 0,
+          "superseded-without-successor": 0,
+          "broken-supersedes": 0,
+          "orphan": 16
+        }
+      },
       "before": {
         "edges": 3,
         "brokenLinks": 0
       },
       "timing": {
-        "cloneMs": 89,
-        "analysisMs": 85,
-        "totalMs": 174
+        "cloneMs": 48,
+        "analysisMs": 70,
+        "totalMs": 118
       }
     },
     {
@@ -271,14 +301,26 @@
           "missingId": "text/build-std.html"
         }
       ],
+      "lintSummary": {
+        "total": 624,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 624,
+        "byRule": {
+          "accepted-depends-on-deprecated": 0,
+          "superseded-without-successor": 0,
+          "broken-supersedes": 0,
+          "orphan": 624
+        }
+      },
       "before": {
         "edges": 0,
         "brokenLinks": 4
       },
       "timing": {
-        "cloneMs": 88,
-        "analysisMs": 662,
-        "totalMs": 750
+        "cloneMs": 48,
+        "analysisMs": 341,
+        "totalMs": 389
       }
     },
     {
@@ -548,14 +590,26 @@
           "missingId": "keps/sig-windows/4885-windows-cpu-and-memory-affinity/keps/sig-node/693-topology-manager\""
         }
       ],
+      "lintSummary": {
+        "total": 461,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 461,
+        "byRule": {
+          "accepted-depends-on-deprecated": 0,
+          "superseded-without-successor": 0,
+          "broken-supersedes": 0,
+          "orphan": 461
+        }
+      },
       "before": {
         "edges": 0,
         "brokenLinks": 93
       },
       "timing": {
-        "cloneMs": 82,
-        "analysisMs": 919,
-        "totalMs": 1001
+        "cloneMs": 53,
+        "analysisMs": 576,
+        "totalMs": 629
       }
     },
     {
@@ -637,14 +691,26 @@
           "missingId": "docs/proto/cosmos/app/v1alpha1/module.proto"
         }
       ],
+      "lintSummary": {
+        "total": 7,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 7,
+        "byRule": {
+          "accepted-depends-on-deprecated": 0,
+          "superseded-without-successor": 0,
+          "broken-supersedes": 0,
+          "orphan": 7
+        }
+      },
       "before": {
         "edges": 0,
         "brokenLinks": 92
       },
       "timing": {
-        "cloneMs": 83,
-        "analysisMs": 137,
-        "totalMs": 220
+        "cloneMs": 50,
+        "analysisMs": 104,
+        "totalMs": 154
       }
     },
     {
@@ -715,14 +781,26 @@
       "externalLinks": 260,
       "brokenLinks": 0,
       "missingDependencies": [],
+      "lintSummary": {
+        "total": 62,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 62,
+        "byRule": {
+          "accepted-depends-on-deprecated": 0,
+          "superseded-without-successor": 0,
+          "broken-supersedes": 0,
+          "orphan": 62
+        }
+      },
       "before": {
         "edges": 12,
         "brokenLinks": 4
       },
       "timing": {
-        "cloneMs": 76,
-        "analysisMs": 160,
-        "totalMs": 236
+        "cloneMs": 49,
+        "analysisMs": 120,
+        "totalMs": 169
       }
     },
     {
@@ -768,14 +846,26 @@
       "externalLinks": 54,
       "brokenLinks": 0,
       "missingDependencies": [],
+      "lintSummary": {
+        "total": 6,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 6,
+        "byRule": {
+          "accepted-depends-on-deprecated": 0,
+          "superseded-without-successor": 0,
+          "broken-supersedes": 0,
+          "orphan": 6
+        }
+      },
       "before": {
         "edges": 0,
         "brokenLinks": 4
       },
       "timing": {
-        "cloneMs": 83,
-        "analysisMs": 100,
-        "totalMs": 183
+        "cloneMs": 48,
+        "analysisMs": 62,
+        "totalMs": 110
       }
     }
   ],
