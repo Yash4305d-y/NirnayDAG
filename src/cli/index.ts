@@ -10,6 +10,7 @@ import Table from 'cli-table3';
 import { parseBatchADRs } from '../core/adrParser.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
 import { calculateArchitectureRisk } from '../core/risk.js';
+import { lintArchitecture, loadNirnayConfig } from '../core/linter.js';
 import { generatePRReport } from '../core/report.js';
 import { startServer } from '../server/serve.js';
 import { runInteractiveSession } from './interactive.js';
@@ -261,6 +262,49 @@ program
     }
     
     await runInteractiveSession(targetDir);
+  });
+
+// 7. lint
+program
+  .command('lint [dir]')
+  .description('Run architecture decision lint rules')
+  .option('--json', 'Outputs raw JSON')
+  .option('-d, --dir <path>', 'Directory containing ADR markdown files')
+  .action(async (positionalDir, options) => {
+    const targetDir = options.dir || positionalDir || process.env.ADR_DIR || './docs/adr';
+    const { engine, mappedAdrs } = await loadAndValidate(targetDir);
+    const config = await loadNirnayConfig(targetDir);
+    const result = lintArchitecture(mappedAdrs, engine, config);
+
+    if (options.json || process.env.NDAG_OUTPUT === 'json') {
+      console.log(JSON.stringify(result, null, 2));
+      process.exit(result.hasErrors ? 1 : 0);
+    }
+
+    if (result.findings.length === 0) {
+      console.log(chalk.green(`✅ No lint issues found across ${mappedAdrs.length} ADRs.`));
+      process.exit(0);
+    }
+
+    const table = new Table({
+      head: [chalk.cyan('Severity'), chalk.cyan('Rule'), chalk.cyan('Files'), chalk.cyan('Message')],
+    });
+
+    for (const finding of result.findings) {
+      const sevLabel =
+        finding.severity === 'error'
+          ? chalk.red('error')
+          : finding.severity === 'warn'
+          ? chalk.yellow('warn')
+          : chalk.blue('info');
+      table.push([sevLabel, finding.ruleId, finding.files.join(', '), finding.message]);
+    }
+
+    console.log(table.toString());
+    console.log(
+      `\nSummary: ${result.summary.errors} error(s), ${result.summary.warnings} warning(s), ${result.summary.infos} info(s)`
+    );
+    process.exit(result.hasErrors ? 1 : 0);
   });
 
 program.parse(process.argv);

@@ -21,6 +21,7 @@ export interface NirnayADR extends Record<string, unknown> {
   title: string;
   category: 'Infrastructure' | 'Database' | 'AI / Engine' | 'Security';
   status: DecisionStatus;
+  statusSource?: 'explicit' | 'default';
   timestamp: string;
   context: string;
   decision: string;
@@ -32,6 +33,8 @@ export interface NirnayADR extends Record<string, unknown> {
   softDependencies?: string[];
   edgeRefs?: ADREdgeRef[];
   supersedes?: string;
+  supersedesList?: string[];
+  supersededBy?: string[];
   tags?: string[];
   filePath?: string;
 }
@@ -64,11 +67,13 @@ export interface ADRFrontmatter {
   id: string;
   title: string;
   status: ADRStatus;
+  statusSource?: 'explicit' | 'default';
   date: string;
   deciders?: string[];
   tags?: string[];
   depends_on?: string[];
   supersedes?: string[];
+  superseded_by?: string[];
   conflicts_with?: string[];
 }
 
