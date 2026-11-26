@@ -60,6 +60,8 @@ export interface NirnayValidationError {
 
 export type ADRStatus = 'proposed' | 'accepted' | 'deprecated' | 'superseded' | 'rejected';
 
+export type StatusSource = 'frontmatter' | 'section' | 'line' | 'kep-yaml' | 'default';
+
 export interface ADRFrontmatter {
   id: string;
   title: string;
@@ -99,6 +101,7 @@ export interface ParsedADR {
   consequences: ADRConsequences;
   rawContent: string;
   filePath?: string;
+  statusSource?: StatusSource;
   edges?: ADREdgeRef[];
   links?: ClassifiedLink[];
 }

@@ -208,3 +208,64 @@ describe('deriveFallbackId and disambiguateDuplicateIds (Phase 2C-1)', () => {
     expect(parsed[1].frontmatter.id).toBe('1027-shared::sig-b/1027-shared/README.md');
   });
 });
+
+describe('Status extraction and statusSource (Phase 2C-2b Step 1)', () => {
+  it('extracts status from YAML frontmatter (status/stage/state) with statusSource=frontmatter', () => {
+    const parsed = parseADRContent(`---
+id: ADR-101
+title: Frontmatter Status
+stage: draft
+---
+## Context
+Test
+`);
+    expect(parsed.frontmatter.status).toBe('proposed');
+    expect(parsed.statusSource).toBe('frontmatter');
+  });
+
+  it('extracts status from Nygard "## Status" section with statusSource=section', () => {
+    const parsed = parseADRContent(`# Use PostgreSQL
+
+## Status
+
+Superseded by [ADR-0010](./0010-mysql.md)
+
+## Context
+Some context.
+`, 'ADR-102');
+    expect(parsed.frontmatter.status).toBe('superseded');
+    expect(parsed.statusSource).toBe('section');
+  });
+
+  it('extracts status from MADR/metadata line ("Status: Accepted" or "* Status: accepted") with statusSource=line', () => {
+    const parsedBullet = parseADRContent(`# Use Vitest
+
+* Status: deprecated
+
+## Context and Problem Statement
+Test
+`, 'ADR-103');
+    expect(parsedBullet.frontmatter.status).toBe('deprecated');
+    expect(parsedBullet.statusSource).toBe('line');
+
+    const parsedBold = parseADRContent(`# Browser Support
+
+**Status:** Rejected
+
+## Context
+Test
+`, 'ADR-104');
+    expect(parsedBold.frontmatter.status).toBe('rejected');
+    expect(parsedBold.statusSource).toBe('line');
+  });
+
+  it('defaults missing status to accepted with statusSource=default', () => {
+    const parsed = parseADRContent(`# No Status ADR
+
+## Context
+Just context, no status anywhere.
+`, 'ADR-105');
+    expect(parsed.frontmatter.status).toBe('accepted');
+    expect(parsed.statusSource).toBe('default');
+  });
+});

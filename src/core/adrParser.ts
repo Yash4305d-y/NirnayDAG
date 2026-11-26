@@ -3,6 +3,7 @@ import type {
   ParsedADR,
   ADRFrontmatter,
   ADRStatus,
+  StatusSource,
   ADRConsequences,
   NirnayADR,
   DecisionStatus,
@@ -10,6 +11,29 @@ import type {
   ClassifiedLink,
   LinkClassification,
 } from './types.js';
+
+const PROPOSED_STATUSES = new Set(['proposed', 'draft', 'provisional', 'implementable', 'deferred']);
+const ACCEPTED_STATUSES = new Set(['accepted', 'implemented', 'done', 'approved', 'active']);
+const DEPRECATED_STATUSES = new Set(['deprecated', 'obsolete', 'retired', 'withdrawn']);
+const SUPERSEDED_STATUSES = new Set(['superseded', 'superceded', 'replaced']);
+const REJECTED_STATUSES = new Set(['rejected', 'declined']);
+
+export function mapStatus(raw: string): ADRStatus | null {
+  const cleaned = raw.trim().toLowerCase();
+  if (!cleaned) return null;
+
+  const unstyled = cleaned.replace(/^[*_`]+|[*_`]+$/g, '').trim();
+  const firstWord = unstyled.split(/[\s:;,.()[\]-]+/)[0];
+
+  for (const token of [unstyled, firstWord]) {
+    if (PROPOSED_STATUSES.has(token)) return 'proposed';
+    if (ACCEPTED_STATUSES.has(token)) return 'accepted';
+    if (DEPRECATED_STATUSES.has(token)) return 'deprecated';
+    if (SUPERSEDED_STATUSES.has(token)) return 'superseded';
+    if (REJECTED_STATUSES.has(token)) return 'rejected';
+  }
+  return null;
+}
 
 function extractSection(content: string, headings: string[]): string {
   const headingsRe = headings.map(h => h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
@@ -85,19 +109,32 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
   // Determine ID
   const id = frontmatterData.id || fallbackId || `ADR-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
-  // Process Status with Aliases and Normalization
-  let rawStatus = frontmatterData.status || frontmatterData.stage || frontmatterData.state || 'accepted';
-  rawStatus = String(rawStatus).toLowerCase();
-  
+  // Process Status with Aliases, Normalization, and Source Tracking
   let status: ADRStatus = 'accepted';
-  if (['proposed', 'draft'].includes(rawStatus)) {
-    status = 'proposed';
-  } else if (['accepted', 'implemented', 'done', 'approved', 'active'].includes(rawStatus)) {
-    status = 'accepted';
-  } else if (['deprecated', 'obsolete', 'retired'].includes(rawStatus)) {
-    status = 'deprecated';
-  } else if (['superseded', 'replaced'].includes(rawStatus)) {
-    status = 'superseded';
+  let statusSource: StatusSource = 'default';
+
+  const rawFmStatus = frontmatterData.status ?? frontmatterData.stage ?? frontmatterData.state;
+  if (rawFmStatus !== undefined && rawFmStatus !== null && String(rawFmStatus).trim() !== '') {
+    status = mapStatus(String(rawFmStatus)) ?? 'accepted';
+    statusSource = 'frontmatter';
+  } else {
+    const statusSection = extractSection(bodyContent, ['Status']);
+    const firstNonEmptyLine = statusSection
+      ? statusSection.split(/\r?\n/).map((l) => l.trim()).find(Boolean)
+      : undefined;
+    const sectionMapped = firstNonEmptyLine ? mapStatus(firstNonEmptyLine) : null;
+
+    if (sectionMapped) {
+      status = sectionMapped;
+      statusSource = 'section';
+    } else {
+      const lineMatch = bodyContent.match(/^[ \t]*(?:[-*]\s*)?(?:\*\*)?Status(?:\*\*)?\s*:\s*(.+)$/im);
+      const lineMapped = lineMatch ? mapStatus(lineMatch[1]) : null;
+      if (lineMapped) {
+        status = lineMapped;
+        statusSource = 'line';
+      }
+    }
   }
 
   // Process Dependencies with Aliases (Hard edges)
@@ -219,6 +256,7 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
     decision,
     consequences,
     rawContent: content,
+    statusSource,
     edges,
   };
 }

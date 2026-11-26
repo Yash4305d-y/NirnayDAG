@@ -178,7 +178,7 @@ export function analyzeDecisionFiles(
         realTitleCount++;
       }
 
-      if (rawFm && (rawFm.status !== undefined || rawFm.stage !== undefined || rawFm.state !== undefined)) {
+      if (parsed.statusSource && parsed.statusSource !== 'default') {
         statusFoundCount++;
       }
 

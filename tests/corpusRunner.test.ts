@@ -407,4 +407,31 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
       expect(md).toContain('| **org/repo** | 0 | 0 | 1 | 1 | 1 | 0 → 0 | 3 → 1 |');
     });
   });
+
+  describe('Status Found counts non-default statusSource only (Phase 2C-2b Step 1)', () => {
+    it('counts frontmatter, section, and line statuses as found, excluding default', () => {
+      const outcome = analyzeDecisionFiles([
+        {
+          relativePath: '0001-fm.md',
+          content: '---\nid: ADR-0001\ntitle: FM\nstatus: accepted\n---\n# FM\n',
+        },
+        {
+          relativePath: '0002-nygard.md',
+          content: '# Nygard\n\n## Status\n\nDeprecated\n',
+        },
+        {
+          relativePath: '0003-madr.md',
+          content: '# MADR\n\n* Status: proposed\n',
+        },
+        {
+          relativePath: '0004-none.md',
+          content: '# No Status\n\n## Context\nNothing here.\n',
+        },
+      ]);
+
+      expect(outcome.filesParsedOK).toBe(4);
+      expect(outcome.extractionQuality.statusFoundCount).toBe(3);
+      expect(outcome.extractionQuality.statusFoundPercent).toBe(75);
+    });
+  });
 });
