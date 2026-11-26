@@ -453,6 +453,24 @@ After global installation, use the `ndag` binary:
 
 ---
 
+## ⚙️ Configuration (`.nirnayrc.json`)
+
+NirnayDAG reads `.nirnayrc.json` from the target ADR directory (or the current working directory) when loading Markdown files across `ndag validate`, `ndag report`, `ndag serve`, interactive mode, and the MCP server:
+
+```json
+{
+  "version": "0.1.0",
+  "adrsDir": "./docs/adr",
+  "include": ["**/*.{md,mdx}"],
+  "exclude": ["README.md", "PROCESS.md", "**/template*", "**/_template*", "**/*.template.md"]
+}
+```
+
+- **`include`** *(optional, string[])*: Glob patterns relative to the ADR directory. Defaults to `["**/*.{md,mdx}"]`.
+- **`exclude`** *(optional, string[])*: Glob patterns to ignore when loading decision files. When omitted, NirnayDAG excludes template files by default (`**/template*`, `**/_template*`, `**/*.template.md`) while keeping `README.md` included so KEP-style layouts (`keps/sig-*/NNNN-feature/README.md`) work without configuration.
+
+---
+
 # 🧪 Development & Testing
 
 Clone the repository:
