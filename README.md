@@ -191,10 +191,25 @@ requirements defined in [ADR-0001](./ADR-0001-microservices-core.md).
 
 ### Supported Statuses
 
-* `proposed`
-* `accepted`
-* `deprecated`
-* `superseded`
+* `proposed` (aliases: `draft`, `provisional`, `implementable`, `deferred`)
+* `accepted` (aliases: `implemented`, `done`, `approved`, `active`)
+* `deprecated` (aliases: `obsolete`, `retired`, `withdrawn`)
+* `superseded` (aliases: `replaced`)
+* `rejected` (aliases: `declined`)
+
+### Supported Formats & Extracted Metadata
+
+NirnayDAG detects formats by document structure and file layout (never by repository name):
+
+| Format | Layout / Pattern | Extracted Fields |
+| :--- | :--- | :--- |
+| **YAML Frontmatter ADRs** | `---` YAML header | `id`, `title` (`frontmatter`), `status` / `stage` / `state` (`frontmatter`), `tags`, `depends_on` (hard), `supersedes` (hard) |
+| **MADR (Line-style)** | `# Heading`, `* Status: <value>` or `Status: <value>` | `title` (`heading`), `status` (`line`), body relative links / `[ADR-XXXX]` tokens (soft) |
+| **Nygard ADRs** | `# Heading`, `## Status` section (first non-empty line), or `**Status:** <value>` | `title` (`heading`), `status` (`section` or `line`), `Supersedes ADR-XXXX` (hard), body links (soft) |
+| **Rust RFCs** | `- Feature Name: <name>` metadata line | `title` (`metadata-line`, falling back to filename `slug`), body links (soft) |
+| **Kubernetes KEPs** | `README.md` with sibling `kep.yaml` | `title` (`kep-yaml`), `status` (`kep-yaml`), `owning-sig` (tag), `kep-number` (alias), `replaces` / `superseded-by` (hard), `see-also` (soft) |
+
+When a field is absent, NirnayDAG records `statusSource: 'default'` (defaulting runtime status to `'accepted'` for backward compatibility) and `titleSource: 'slug' | 'default'` without counting fallbacks as extracted metadata.
 
 ### Dependency Edge Kinds (Hard vs. Soft)
 
