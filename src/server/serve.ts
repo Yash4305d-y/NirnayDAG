@@ -2,8 +2,8 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs-extra';
-import fg from 'fast-glob';
 import type { Server } from 'http';
+import { listDecisionFiles } from '../core/decisionLoader.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,7 +40,7 @@ export function createServerApp(options: ServeOptions = {}) {
         });
       }
 
-      const files = await fg('**/*.{md,mdx}', { cwd: targetDir, absolute: true });
+      const { included: files } = await listDecisionFiles(targetDir);
       const fileData = await Promise.all(
         files.map(async (file) => ({
           name: path.basename(file),

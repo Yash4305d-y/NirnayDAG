@@ -23,3 +23,16 @@ export { calculateArchitectureRisk } from './core/risk.js';
 export type { ArchitectureRiskResult, RiskFactorBreakdown, RiskLevel, RiskInputParams } from './core/risk.js';
 export { generatePRReport } from './core/report.js';
 export type { ReportOptions, ReportResult } from './core/report.js';
+export {
+  listDecisionFiles,
+  listDecisionFilesSync,
+  loadNirnayConfig,
+  loadNirnayConfigSync,
+  DEFAULT_INCLUDE_GLOBS,
+  DEFAULT_EXCLUDE_GLOBS,
+} from './core/decisionLoader.js';
+export type {
+  NirnayConfig,
+  ListDecisionFilesOptions,
+  DecisionFileListResult,
+} from './core/decisionLoader.js';

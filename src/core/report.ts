@@ -1,8 +1,8 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { execSync } from 'child_process';
-import fg from 'fast-glob';
 import { parseBatchADRs } from './adrParser.js';
+import { listDecisionFiles } from './decisionLoader.js';
 import { validateAndComputeDAG, type DAGValidationResult } from './dagEngine.js';
 import { calculateArchitectureRisk } from './risk.js';
 import type { ParsedADR } from './types.js';
@@ -80,7 +80,7 @@ export async function generatePRReport(options: ReportOptions = {}): Promise<Rep
     };
   }
 
-  const files = await fg('**/*.{md,mdx}', { cwd: fullPath, absolute: true });
+  const { included: files } = await listDecisionFiles(fullPath);
   const fileData = await Promise.all(
     files.map(async (file) => ({
       name: path.basename(file),
