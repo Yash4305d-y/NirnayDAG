@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
-import glob from 'fast-glob';
 import * as yaml from 'js-yaml';
+import { listDecisionFiles } from '../../src/core/decisionLoader.js';
 import {
   parseADRContent,
   deriveFallbackId,
@@ -427,11 +427,13 @@ export function analyzeDecisionFiles(
   };
 }
 
-export async function readDirectoryDecisionFiles(
+export async function readDirectoryDecisionFilesWithExclusions(
   repoRoot: string,
-  subfolders: string[]
-): Promise<DecisionFileInput[]> {
+  subfolders: string[],
+  options?: { include?: string[]; exclude?: string[] }
+): Promise<{ files: DecisionFileInput[]; excludedFiles: string[] }> {
   const allFiles: DecisionFileInput[] = [];
+  const excludedFiles: string[] = [];
 
   for (const subfolder of subfolders) {
     const targetPath = path.resolve(repoRoot, subfolder);
@@ -439,14 +441,17 @@ export async function readDirectoryDecisionFiles(
       continue;
     }
 
-    const matches = (await glob('**/*.{md,mdx}', {
-      cwd: targetPath,
-      absolute: true,
-      onlyFiles: true,
-      caseSensitiveMatch: false,
-    })).sort();
+    const { included, excluded } = await listDecisionFiles(targetPath, {
+      include: options?.include,
+      exclude: options?.exclude,
+      ignoreConfig: true,
+    });
 
-    for (const absolutePath of matches) {
+    for (const absolutePath of excluded) {
+      excludedFiles.push(path.relative(repoRoot, absolutePath).replace(/\\/g, '/'));
+    }
+
+    for (const absolutePath of included) {
       try {
         const content = await fs.readFile(absolutePath, 'utf-8');
         const relativeToRepo = path.relative(repoRoot, absolutePath).replace(/\\/g, '/');
@@ -464,5 +469,14 @@ export async function readDirectoryDecisionFiles(
     }
   }
 
-  return allFiles;
+  return { files: allFiles, excludedFiles: excludedFiles.sort() };
+}
+
+export async function readDirectoryDecisionFiles(
+  repoRoot: string,
+  subfolders: string[],
+  options?: { include?: string[]; exclude?: string[] }
+): Promise<DecisionFileInput[]> {
+  const { files } = await readDirectoryDecisionFilesWithExclusions(repoRoot, subfolders, options);
+  return files;
 }
