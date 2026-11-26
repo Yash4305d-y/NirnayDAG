@@ -1,10 +1,14 @@
 {
-  "timestamp": "2026-11-26T12:32:19.588Z",
-  "runnerVersion": "1.0.0-phase2c.1.1",
+  "timestamp": "2026-11-26T13:13:04.040Z",
+  "runnerVersion": "1.0.0-phase2c.2a",
   "repositories": [
     {
       "repo": "backstage/backstage",
       "commitSha": "b3ed9690207fe606362f5785b7cbe91ccc8a8542",
+      "excludedFiles": [
+        "docs/architecture-decisions/adr000-template.md",
+        "docs/architecture-decisions/index.md"
+      ],
       "cycles": [],
       "mutualReferences": [
         {
@@ -35,6 +39,10 @@
     {
       "repo": "adr/madr",
       "commitSha": "ba75bb1b20d42af5746b246ad348c202419ae681",
+      "excludedFiles": [
+        "docs/decisions/adr-template.md",
+        "docs/decisions/index.md"
+      ],
       "cycles": [],
       "mutualReferences": [
         {
@@ -65,6 +73,17 @@
     {
       "repo": "rust-lang/rfcs",
       "commitSha": "f43d5789b838fb0d80962e3d4b45fb9ddfcc9a07",
+      "excludedFiles": [
+        "text/3392-leadership-council/Leadership-Council-RFCja.md",
+        "text/3392-leadership-council/Leadership-Council-RFCko.md",
+        "text/3392-leadership-council/Leadership-Council-RFCru-RU.md",
+        "text/3392-leadership-council/Leadership-Council-RFCzh-Hans.md",
+        "text/3392-leadership-council/Leadership-Council-RFCzh-Hant.md",
+        "text/3392-leadership-council/alternatives.md",
+        "text/3392-leadership-council/initial-work-of-the-council.md",
+        "text/3392-leadership-council/motivation.md",
+        "text/3392-leadership-council/non-goals.md"
+      ],
       "cycles": [],
       "mutualReferences": [],
       "brokenLinks": [
@@ -73,12 +92,6 @@
           "sourceFile": "text/0019-opt-in-builtin-traits.md",
           "missingId": "text/0003-opt-in-builtin-traits.md",
           "rawLinkText": "(0003-opt-in-builtin-traits.md)"
-        },
-        {
-          "sourceId": "ADR-0474",
-          "sourceFile": "text/0474-path-reform.md",
-          "missingId": "text/www.boost.org/doc/libs/1_57_0/libs/filesystem/doc/reference.html",
-          "rawLinkText": "(www.boost.org/doc/libs/1_57_0/libs/filesystem/doc/reference.html)"
         },
         {
           "sourceId": "ADR-1558",
@@ -93,46 +106,49 @@
           "rawLinkText": "(URL)"
         },
         {
-          "sourceId": "ADR-1946",
-          "sourceFile": "text/1946-intra-rustdoc-links.md",
-          "missingId": "text/std::iter::Iterator",
-          "rawLinkText": "(std::iter::Iterator)"
+          "sourceId": "ADR-2314",
+          "sourceFile": "text/2314-roadmap-2018.md",
+          "missingId": "text/link needed",
+          "rawLinkText": "(link needed)"
         },
         {
-          "sourceId": "ADR-1946",
-          "sourceFile": "text/1946-intra-rustdoc-links.md",
-          "missingId": "text/bars::Bar",
-          "rawLinkText": "(bars::Bar)"
+          "sourceId": "ADR-2945",
+          "sourceFile": "text/2945-c-unwind-abi.md",
+          "missingId": "text/forced-unwind",
+          "rawLinkText": "(forced-unwind)"
         },
         {
-          "sourceId": "ADR-1946",
-          "sourceFile": "text/1946-intra-rustdoc-links.md",
-          "missingId": "text/ipsum::Dolor",
-          "rawLinkText": "(ipsum::Dolor)"
+          "sourceId": "ADR-3637",
+          "sourceFile": "text/3637-guard-patterns.md",
+          "missingId": "text/<https:/en.wikipedia.org/wiki/E_(programming_language",
+          "rawLinkText": "(<https://en.wikipedia.org/wiki/E_(programming_language)"
         },
         {
-          "sourceId": "ADR-1946",
-          "sourceFile": "text/1946-intra-rustdoc-links.md",
-          "missingId": "text/ipsum::sit",
-          "rawLinkText": "(ipsum::sit)"
+          "sourceId": "ADR-3642",
+          "sourceFile": "text/3642-thread-spawn-hook.md",
+          "missingId": "text/add_spawn_hook",
+          "rawLinkText": "(add_spawn_hook)"
         },
         {
-          "sourceId": "ADR-1946",
-          "sourceFile": "text/1946-intra-rustdoc-links.md",
-          "missingId": "text/super::ipsum",
-          "rawLinkText": "(super::ipsum)"
-        },
-        {
-          "sourceId": "ADR-1946",
-          "sourceFile": "text/1946-intra-rustdoc-links.md",
-          "missingId": "text/storage::Filesystem.size",
-          "rawLinkText": "(storage::Filesystem.size)"
+          "sourceId": "ADR-3764",
+          "sourceFile": "text/3764-Project-Goals-2025h1.md",
+          "missingId": "text/build-std.html",
+          "rawLinkText": "(./build-std.html)"
         }
       ]
     },
     {
       "repo": "kubernetes/enhancements",
       "commitSha": "cac930cb9d7c70192016865425f943c339414011",
+      "excludedFiles": [
+        "keps/NNNN-kep-template/README.md",
+        "keps/README.md",
+        "keps/prod-readiness/README.md",
+        "keps/sig-auth/5681-conditional-authorization/images/authorizer-chain-computation.md",
+        "keps/sig-cli/FAQ.md",
+        "keps/sig-cloud-provider/providers/0000-cloud-provider-template/README.md",
+        "keps/sig-cluster-lifecycle/clusterapi/FAQ.md"
+      ],
       "cycles": [],
       "mutualReferences": [
         {
@@ -252,46 +268,29 @@
           "rawLinkText": "(/contributors/devel/sig-architecture/api_changes.md#backward-compatibility-gotchas)"
         },
         {
-          "sourceId": "2185-random-pod-select-on-replicaset-downscale",
-          "sourceFile": "keps/sig-apps/2185-random-pod-select-on-replicaset-downscale/README.md",
-          "missingId": "keps/sig-apps/2185-random-pod-select-on-replicaset-downscale/git.k8s.io/enhancements/keps/sig-apps/2255-pod-cost",
-          "rawLinkText": "(git.k8s.io/enhancements/keps/sig-apps/2255-pod-cost)"
-        },
-        {
           "sourceId": "3335-statefulset-slice",
           "sourceFile": "keps/sig-apps/3335-statefulset-slice/README.md",
           "missingId": "keps/sig-apps/3335-statefulset-slice/StatefulSet",
           "rawLinkText": "(StatefulSet)"
+        },
+        {
+          "sourceId": "1314-node-restriction-pods",
+          "sourceFile": "keps/sig-auth/1314-node-restriction-pods/README.md",
+          "missingId": "keps/sig-auth/1314-node-restriction-pods/0000-20170814-bounding-self-labeling-kubelets.md",
+          "rawLinkText": "(0000-20170814-bounding-self-labeling-kubelets.md)"
         }
       ]
     },
     {
       "repo": "cosmos/cosmos-sdk",
       "commitSha": "06a015222f13fe7b41bc3969504da7dee875ae5c",
+      "excludedFiles": [
+        "docs/architecture/PROCESS.md",
+        "docs/architecture/README.md",
+        "docs/architecture/adr-template.md"
+      ],
       "cycles": [],
       "mutualReferences": [
-        {
-          "pair": [
-            "PROCESS",
-            "architecture"
-          ],
-          "edges": [
-            {
-              "dependentId": "PROCESS",
-              "dependentFile": "docs/architecture/PROCESS.md",
-              "dependencyId": "architecture",
-              "dependencyFile": "docs/architecture/README.md",
-              "rawLinkText": "(./README.md)"
-            },
-            {
-              "dependentId": "architecture",
-              "dependentFile": "docs/architecture/README.md",
-              "dependencyId": "PROCESS",
-              "dependencyFile": "docs/architecture/PROCESS.md",
-              "rawLinkText": "(./PROCESS.md)"
-            }
-          ]
-        },
         {
           "pair": [
             "adr-007-specialization-groups",
@@ -393,6 +392,10 @@
     {
       "repo": "JabRef/jabref",
       "commitSha": "d0584506a13a7fb0dc6f404b89e3e47d6f7d129d",
+      "excludedFiles": [
+        "docs/decisions/adr-template.md",
+        "docs/decisions/index.md"
+      ],
       "cycles": [],
       "mutualReferences": [
         {
@@ -489,6 +492,10 @@
     {
       "repo": "alphagov/govuk-design-system-architecture",
       "commitSha": "89854bdaa299203bccae8b64bcfb690d4d8c5824",
+      "excludedFiles": [
+        "decision-records/000-template.md",
+        "decision-records/README.md"
+      ],
       "cycles": [],
       "mutualReferences": [],
       "brokenLinks": []

@@ -1,26 +1,28 @@
 {
-  "timestamp": "2026-11-26T12:32:19.588Z",
-  "runnerVersion": "1.0.0-phase2c.1.1",
+  "timestamp": "2026-11-26T13:13:04.040Z",
+  "runnerVersion": "1.0.0-phase2c.2a",
   "licenseNotice": "All repositories listed are publicly hosted open-source projects analyzed under their respective open-source licenses for evaluation and research purposes. NirnayDAG benchmarks local clones and does not redistribute repository contents.",
   "summary": {
     "totalReposAnalyzed": 7,
     "totalFilesFound": 1565,
-    "totalFilesParsedOK": 1565,
+    "totalExcludedFiles": 27,
+    "totalFilesParsedOK": 1538,
     "averageParseRatePercent": 100,
-    "totalNodes": 1565,
-    "totalEdges": 353,
-    "totalDuplicateIds": 4,
-    "totalUniqueIds": 1565,
+    "totalNodes": 1538,
+    "totalEdges": 150,
+    "totalDuplicateIds": 2,
+    "totalUniqueIds": 1538,
     "totalHardEdges": 0,
-    "totalSoftEdges": 353,
-    "totalResolvedLinks": 456,
-    "totalNonDecisionLinks": 176,
+    "totalSoftEdges": 150,
+    "totalResolvedLinks": 249,
+    "totalNonDecisionLinks": 323,
     "totalOutsideScopeLinks": 16,
     "totalAmbiguousLinks": 0,
-    "totalExternalLinks": 38682,
-    "totalBrokenLinks": 73,
+    "totalExternalLinks": 13156,
+    "totalNotAFileLinks": 25341,
+    "totalBrokenLinks": 55,
     "totalCyclesDetected": 0,
-    "totalMutualReferences": 14
+    "totalMutualReferences": 13
   },
   "results": [
     {
@@ -30,17 +32,17 @@
       "license": "Apache-2.0",
       "commitSha": "b3ed9690207fe606362f5785b7cbe91ccc8a8542",
       "filesFound": 17,
-      "filesParsedOK": 17,
+      "filesParsedOK": 15,
       "parseRatePercent": 100,
       "parseFailuresCount": 0,
       "parseFailures": [],
       "topFailureReasons": [],
       "extractionQuality": {
-        "realTitleCount": 17,
+        "realTitleCount": 15,
         "realTitlePercent": 100,
         "statusFoundCount": 0,
         "statusFoundPercent": 0,
-        "idFromFrontmatterCount": 17,
+        "idFromFrontmatterCount": 15,
         "idFromFrontmatterPercent": 100,
         "idFromFilenameCount": 0,
         "idFromFilenamePercent": 0,
@@ -49,13 +51,13 @@
         "edgeSourceBreakdownSupported": true
       },
       "duplicateIdsCount": 0,
-      "uniqueIdsCount": 17,
-      "nodes": 17,
+      "uniqueIdsCount": 15,
+      "nodes": 15,
       "edges": 4,
       "hardEdges": 0,
       "softEdges": 4,
-      "edgeDensity": 0.235,
-      "isolatedNodes": 12,
+      "edgeDensity": 0.267,
+      "isolatedNodes": 10,
       "cyclesFound": false,
       "mutualReferencesCount": 1,
       "mutualReferences": [
@@ -70,17 +72,20 @@
       "nonDecisionLinks": 0,
       "outsideScopeLinks": 1,
       "ambiguousLinks": 0,
-      "externalLinks": 29,
+      "externalLinks": 26,
+      "notAFileLinks": 0,
       "brokenLinks": 0,
       "missingDependencies": [],
+      "excludedCount": 2,
       "before": {
-        "edges": 0,
-        "brokenLinks": 4
+        "nodes": 17,
+        "edges": 4,
+        "brokenLinks": 0
       },
       "timing": {
-        "cloneMs": 96,
-        "analysisMs": 126,
-        "totalMs": 222
+        "cloneMs": 58,
+        "analysisMs": 111,
+        "totalMs": 169
       }
     },
     {
@@ -90,31 +95,31 @@
       "license": "MIT",
       "commitSha": "ba75bb1b20d42af5746b246ad348c202419ae681",
       "filesFound": 21,
-      "filesParsedOK": 21,
+      "filesParsedOK": 19,
       "parseRatePercent": 100,
       "parseFailuresCount": 0,
       "parseFailures": [],
       "topFailureReasons": [],
       "extractionQuality": {
-        "realTitleCount": 21,
+        "realTitleCount": 19,
         "realTitlePercent": 100,
         "statusFoundCount": 1,
-        "statusFoundPercent": 4.8,
+        "statusFoundPercent": 5.3,
         "idFromFrontmatterCount": 0,
         "idFromFrontmatterPercent": 0,
-        "idFromFilenameCount": 21,
+        "idFromFilenameCount": 19,
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
         "edgeSourceBreakdownSupported": true
       },
       "duplicateIdsCount": 0,
-      "uniqueIdsCount": 21,
-      "nodes": 21,
-      "edges": 4,
+      "uniqueIdsCount": 19,
+      "nodes": 19,
+      "edges": 3,
       "hardEdges": 0,
-      "softEdges": 4,
-      "edgeDensity": 0.19,
+      "softEdges": 3,
+      "edgeDensity": 0.158,
       "isolatedNodes": 16,
       "cyclesFound": false,
       "mutualReferencesCount": 1,
@@ -126,21 +131,24 @@
           ]
         }
       ],
-      "resolvedLinks": 4,
+      "resolvedLinks": 3,
       "nonDecisionLinks": 4,
       "outsideScopeLinks": 0,
       "ambiguousLinks": 0,
-      "externalLinks": 34,
+      "externalLinks": 33,
+      "notAFileLinks": 0,
       "brokenLinks": 0,
       "missingDependencies": [],
+      "excludedCount": 2,
       "before": {
-        "edges": 3,
+        "nodes": 21,
+        "edges": 4,
         "brokenLinks": 0
       },
       "timing": {
-        "cloneMs": 89,
-        "analysisMs": 85,
-        "totalMs": 174
+        "cloneMs": 53,
+        "analysisMs": 77,
+        "totalMs": 130
       }
     },
     {
@@ -150,49 +158,46 @@
       "license": "MIT / Apache-2.0",
       "commitSha": "f43d5789b838fb0d80962e3d4b45fb9ddfcc9a07",
       "filesFound": 654,
-      "filesParsedOK": 654,
+      "filesParsedOK": 645,
       "parseRatePercent": 100,
       "parseFailuresCount": 0,
       "parseFailures": [],
       "topFailureReasons": [],
       "extractionQuality": {
-        "realTitleCount": 49,
-        "realTitlePercent": 7.5,
+        "realTitleCount": 40,
+        "realTitlePercent": 6.2,
         "statusFoundCount": 0,
         "statusFoundPercent": 0,
         "idFromFrontmatterCount": 0,
         "idFromFrontmatterPercent": 0,
-        "idFromFilenameCount": 654,
+        "idFromFilenameCount": 645,
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
         "edgeSourceBreakdownSupported": true
       },
       "duplicateIdsCount": 2,
-      "uniqueIdsCount": 654,
-      "nodes": 654,
-      "edges": 12,
+      "uniqueIdsCount": 645,
+      "nodes": 645,
+      "edges": 8,
       "hardEdges": 0,
-      "softEdges": 12,
-      "edgeDensity": 0.018,
+      "softEdges": 8,
+      "edgeDensity": 0.012,
       "isolatedNodes": 624,
       "cyclesFound": false,
       "mutualReferencesCount": 0,
       "mutualReferences": [],
-      "resolvedLinks": 13,
-      "nonDecisionLinks": 1,
+      "resolvedLinks": 9,
+      "nonDecisionLinks": 5,
       "outsideScopeLinks": 0,
       "ambiguousLinks": 0,
-      "externalLinks": 5734,
-      "brokenLinks": 21,
+      "externalLinks": 5209,
+      "notAFileLinks": 415,
+      "brokenLinks": 8,
       "missingDependencies": [
         {
           "adrId": "ADR-0019",
           "missingId": "text/0003-opt-in-builtin-traits.md"
-        },
-        {
-          "adrId": "ADR-0474",
-          "missingId": "text/www.boost.org/doc/libs/1_57_0/libs/filesystem/doc/reference.html"
         },
         {
           "adrId": "ADR-1558",
@@ -203,48 +208,12 @@
           "missingId": "text/URL"
         },
         {
-          "adrId": "ADR-1946",
-          "missingId": "text/std::iter::Iterator"
-        },
-        {
-          "adrId": "ADR-1946",
-          "missingId": "text/bars::Bar"
-        },
-        {
-          "adrId": "ADR-1946",
-          "missingId": "text/ipsum::Dolor"
-        },
-        {
-          "adrId": "ADR-1946",
-          "missingId": "text/ipsum::sit"
-        },
-        {
-          "adrId": "ADR-1946",
-          "missingId": "text/super::ipsum"
-        },
-        {
-          "adrId": "ADR-1946",
-          "missingId": "text/storage::Filesystem.size"
-        },
-        {
-          "adrId": "ADR-1946",
-          "missingId": "text/storage::Engine::Other"
-        },
-        {
           "adrId": "ADR-2314",
           "missingId": "text/link needed"
         },
         {
           "adrId": "ADR-2945",
           "missingId": "text/forced-unwind"
-        },
-        {
-          "adrId": "ADR-3101",
-          "missingId": "text/archive.adaic.com/standards/83lrm/html/lrm-02-04.html"
-        },
-        {
-          "adrId": "ADR-3502",
-          "missingId": "text/play.rust-lang.org"
         },
         {
           "adrId": "ADR-3637",
@@ -255,30 +224,20 @@
           "missingId": "text/add_spawn_hook"
         },
         {
-          "adrId": "ADR-3668",
-          "missingId": "text/crate::ops::FnOnce"
-        },
-        {
-          "adrId": "ADR-3668",
-          "missingId": "text/crate::ops::FnMut"
-        },
-        {
-          "adrId": "ADR-3668",
-          "missingId": "text/crate::ops::Fn"
-        },
-        {
           "adrId": "ADR-3764",
           "missingId": "text/build-std.html"
         }
       ],
+      "excludedCount": 9,
       "before": {
-        "edges": 0,
-        "brokenLinks": 4
+        "nodes": 654,
+        "edges": 12,
+        "brokenLinks": 21
       },
       "timing": {
-        "cloneMs": 88,
-        "analysisMs": 662,
-        "totalMs": 750
+        "cloneMs": 52,
+        "analysisMs": 487,
+        "totalMs": 539
       }
     },
     {
@@ -288,32 +247,32 @@
       "license": "Apache-2.0",
       "commitSha": "cac930cb9d7c70192016865425f943c339414011",
       "filesFound": 708,
-      "filesParsedOK": 708,
+      "filesParsedOK": 701,
       "parseRatePercent": 100,
       "parseFailuresCount": 0,
       "parseFailures": [],
       "topFailureReasons": [],
       "extractionQuality": {
-        "realTitleCount": 693,
+        "realTitleCount": 686,
         "realTitlePercent": 97.9,
         "statusFoundCount": 0,
         "statusFoundPercent": 0,
         "idFromFrontmatterCount": 0,
         "idFromFrontmatterPercent": 0,
-        "idFromFilenameCount": 708,
+        "idFromFilenameCount": 701,
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
         "edgeSourceBreakdownSupported": true
       },
-      "duplicateIdsCount": 2,
-      "uniqueIdsCount": 708,
-      "nodes": 708,
-      "edges": 216,
+      "duplicateIdsCount": 0,
+      "uniqueIdsCount": 701,
+      "nodes": 701,
+      "edges": 72,
       "hardEdges": 0,
-      "softEdges": 216,
-      "edgeDensity": 0.305,
-      "isolatedNodes": 461,
+      "softEdges": 72,
+      "edgeDensity": 0.103,
+      "isolatedNodes": 582,
       "cyclesFound": false,
       "mutualReferencesCount": 3,
       "mutualReferences": [
@@ -336,12 +295,13 @@
           ]
         }
       ],
-      "resolvedLinks": 254,
-      "nonDecisionLinks": 165,
+      "resolvedLinks": 106,
+      "nonDecisionLinks": 308,
       "outsideScopeLinks": 0,
       "ambiguousLinks": 0,
-      "externalLinks": 32259,
-      "brokenLinks": 51,
+      "externalLinks": 7283,
+      "notAFileLinks": 24908,
+      "brokenLinks": 46,
       "missingDependencies": [
         {
           "adrId": "1040-priority-and-fairness",
@@ -376,20 +336,12 @@
           "missingId": "contributors/devel/sig-architecture/api_changes.md"
         },
         {
-          "adrId": "2185-random-pod-select-on-replicaset-downscale",
-          "missingId": "keps/sig-apps/2185-random-pod-select-on-replicaset-downscale/git.k8s.io/enhancements/keps/sig-apps/2255-pod-cost"
-        },
-        {
           "adrId": "3335-statefulset-slice",
           "missingId": "keps/sig-apps/3335-statefulset-slice/StatefulSet"
         },
         {
           "adrId": "1314-node-restriction-pods",
           "missingId": "keps/sig-auth/1314-node-restriction-pods/0000-20170814-bounding-self-labeling-kubelets.md"
-        },
-        {
-          "adrId": "5681-conditional-authorization",
-          "missingId": "keps/sig-auth/5681-conditional-authorization/github.com/kubernetes/kubernetes/issues/128154"
         },
         {
           "adrId": "2299-kustomize-plugin-composition",
@@ -504,24 +456,12 @@
           "missingId": "keps/sig-scheduling/5027-dra-admin-controlled-device-attributes/("
         },
         {
-          "adrId": "5142-pop-backoffq-when-activeq-empty",
-          "missingId": "keps/sig-scheduling/5142-pop-backoffq-when-activeq-empty/github.com/kubernetes/kubernetes/pull/128748"
-        },
-        {
           "adrId": "5491-dra-list-types-for-attributes",
           "missingId": "keps/sig-scheduling/5491-dra-list-types-for-attributes/list"
         },
         {
           "adrId": "121-local-persistent-volumes",
           "missingId": "keps/sig-storage/121-local-persistent-volumes/local-storage-overview.md"
-        },
-        {
-          "adrId": "1710-selinux-relabeling",
-          "missingId": "keps/sig-storage/1710-selinux-relabeling/github.com/util-linux/util-linux"
-        },
-        {
-          "adrId": "3751-volume-attributes-class",
-          "missingId": "keps/sig-storage/3751-volume-attributes-class/kubernetes.io/vpc-protection"
         },
         {
           "adrId": "5936-atomic-write-volume-user-fields",
@@ -548,14 +488,16 @@
           "missingId": "keps/sig-windows/4885-windows-cpu-and-memory-affinity/keps/sig-node/693-topology-manager\""
         }
       ],
+      "excludedCount": 7,
       "before": {
-        "edges": 0,
-        "brokenLinks": 93
+        "nodes": 708,
+        "edges": 216,
+        "brokenLinks": 51
       },
       "timing": {
-        "cloneMs": 82,
-        "analysisMs": 919,
-        "totalMs": 1001
+        "cloneMs": 54,
+        "analysisMs": 640,
+        "totalMs": 694
       }
     },
     {
@@ -565,41 +507,35 @@
       "license": "Apache-2.0",
       "commitSha": "06a015222f13fe7b41bc3969504da7dee875ae5c",
       "filesFound": 65,
-      "filesParsedOK": 65,
+      "filesParsedOK": 62,
       "parseRatePercent": 100,
       "parseFailuresCount": 0,
       "parseFailures": [],
       "topFailureReasons": [],
       "extractionQuality": {
-        "realTitleCount": 65,
+        "realTitleCount": 62,
         "realTitlePercent": 100,
         "statusFoundCount": 0,
         "statusFoundPercent": 0,
         "idFromFrontmatterCount": 0,
         "idFromFrontmatterPercent": 0,
-        "idFromFilenameCount": 65,
+        "idFromFilenameCount": 62,
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
         "edgeSourceBreakdownSupported": true
       },
       "duplicateIdsCount": 0,
-      "uniqueIdsCount": 65,
-      "nodes": 65,
-      "edges": 88,
+      "uniqueIdsCount": 62,
+      "nodes": 62,
+      "edges": 39,
       "hardEdges": 0,
-      "softEdges": 88,
-      "edgeDensity": 1.354,
-      "isolatedNodes": 7,
+      "softEdges": 39,
+      "edgeDensity": 0.629,
+      "isolatedNodes": 29,
       "cyclesFound": false,
-      "mutualReferencesCount": 5,
+      "mutualReferencesCount": 4,
       "mutualReferences": [
-        {
-          "pair": [
-            "PROCESS",
-            "architecture"
-          ]
-        },
         {
           "pair": [
             "adr-007-specialization-groups",
@@ -625,11 +561,12 @@
           ]
         }
       ],
-      "resolvedLinks": 137,
+      "resolvedLinks": 88,
       "nonDecisionLinks": 0,
       "outsideScopeLinks": 5,
       "ambiguousLinks": 0,
-      "externalLinks": 312,
+      "externalLinks": 302,
+      "notAFileLinks": 8,
       "brokenLinks": 1,
       "missingDependencies": [
         {
@@ -637,14 +574,16 @@
           "missingId": "docs/proto/cosmos/app/v1alpha1/module.proto"
         }
       ],
+      "excludedCount": 3,
       "before": {
-        "edges": 0,
-        "brokenLinks": 92
+        "nodes": 65,
+        "edges": 88,
+        "brokenLinks": 1
       },
       "timing": {
-        "cloneMs": 83,
-        "analysisMs": 137,
-        "totalMs": 220
+        "cloneMs": 54,
+        "analysisMs": 104,
+        "totalMs": 158
       }
     },
     {
@@ -654,31 +593,31 @@
       "license": "MIT",
       "commitSha": "d0584506a13a7fb0dc6f404b89e3e47d6f7d129d",
       "filesFound": 88,
-      "filesParsedOK": 88,
+      "filesParsedOK": 86,
       "parseRatePercent": 100,
       "parseFailuresCount": 0,
       "parseFailures": [],
       "topFailureReasons": [],
       "extractionQuality": {
-        "realTitleCount": 88,
+        "realTitleCount": 86,
         "realTitlePercent": 100,
         "statusFoundCount": 8,
-        "statusFoundPercent": 9.1,
+        "statusFoundPercent": 9.3,
         "idFromFrontmatterCount": 0,
         "idFromFrontmatterPercent": 0,
-        "idFromFilenameCount": 88,
+        "idFromFilenameCount": 86,
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
         "edgeSourceBreakdownSupported": true
       },
       "duplicateIdsCount": 0,
-      "uniqueIdsCount": 88,
-      "nodes": 88,
-      "edges": 25,
+      "uniqueIdsCount": 86,
+      "nodes": 86,
+      "edges": 20,
       "hardEdges": 0,
-      "softEdges": 25,
-      "edgeDensity": 0.284,
+      "softEdges": 20,
+      "edgeDensity": 0.233,
       "isolatedNodes": 62,
       "cyclesFound": false,
       "mutualReferencesCount": 4,
@@ -708,21 +647,24 @@
           ]
         }
       ],
-      "resolvedLinks": 39,
+      "resolvedLinks": 34,
       "nonDecisionLinks": 6,
       "outsideScopeLinks": 10,
       "ambiguousLinks": 0,
-      "externalLinks": 260,
+      "externalLinks": 258,
+      "notAFileLinks": 1,
       "brokenLinks": 0,
       "missingDependencies": [],
+      "excludedCount": 2,
       "before": {
-        "edges": 12,
-        "brokenLinks": 4
+        "nodes": 88,
+        "edges": 25,
+        "brokenLinks": 0
       },
       "timing": {
-        "cloneMs": 76,
-        "analysisMs": 160,
-        "totalMs": 236
+        "cloneMs": 52,
+        "analysisMs": 124,
+        "totalMs": 176
       }
     },
     {
@@ -732,32 +674,32 @@
       "license": "MIT",
       "commitSha": "89854bdaa299203bccae8b64bcfb690d4d8c5824",
       "filesFound": 12,
-      "filesParsedOK": 12,
+      "filesParsedOK": 10,
       "parseRatePercent": 100,
       "parseFailuresCount": 0,
       "parseFailures": [],
       "topFailureReasons": [],
       "extractionQuality": {
-        "realTitleCount": 12,
+        "realTitleCount": 10,
         "realTitlePercent": 100,
         "statusFoundCount": 0,
         "statusFoundPercent": 0,
         "idFromFrontmatterCount": 0,
         "idFromFrontmatterPercent": 0,
-        "idFromFilenameCount": 12,
+        "idFromFilenameCount": 10,
         "idFromFilenamePercent": 100,
         "idGeneratedCount": 0,
         "idGeneratedPercent": 0,
         "edgeSourceBreakdownSupported": true
       },
       "duplicateIdsCount": 0,
-      "uniqueIdsCount": 12,
-      "nodes": 12,
+      "uniqueIdsCount": 10,
+      "nodes": 10,
       "edges": 4,
       "hardEdges": 0,
       "softEdges": 4,
-      "edgeDensity": 0.333,
-      "isolatedNodes": 6,
+      "edgeDensity": 0.4,
+      "isolatedNodes": 4,
       "cyclesFound": false,
       "mutualReferencesCount": 0,
       "mutualReferences": [],
@@ -765,17 +707,20 @@
       "nonDecisionLinks": 0,
       "outsideScopeLinks": 0,
       "ambiguousLinks": 0,
-      "externalLinks": 54,
+      "externalLinks": 45,
+      "notAFileLinks": 9,
       "brokenLinks": 0,
       "missingDependencies": [],
+      "excludedCount": 2,
       "before": {
-        "edges": 0,
-        "brokenLinks": 4
+        "nodes": 12,
+        "edges": 4,
+        "brokenLinks": 0
       },
       "timing": {
-        "cloneMs": 83,
-        "analysisMs": 100,
-        "totalMs": 183
+        "cloneMs": 50,
+        "analysisMs": 63,
+        "totalMs": 113
       }
     }
   ],
