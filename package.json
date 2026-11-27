@@ -15,7 +15,9 @@
   "files": [
     "dist",
     "bin",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "docs/RISK_MODEL.md"
   ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
