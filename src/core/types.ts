@@ -36,6 +36,8 @@ export interface NirnayADR extends Record<string, unknown> {
   supersedesList?: string[];
   supersededBy?: string[];
   tags?: string[];
+  affects?: string[];
+  warnings?: string[];
   filePath?: string;
 }
 
@@ -75,6 +77,7 @@ export interface ADRFrontmatter {
   supersedes?: string[];
   superseded_by?: string[];
   conflicts_with?: string[];
+  affects?: string[];
 }
 
 export interface ADRConsequences {
@@ -106,6 +109,7 @@ export interface ParsedADR {
   filePath?: string;
   edges?: ADREdgeRef[];
   links?: ClassifiedLink[];
+  warnings?: string[];
 }
 
 export type BlastRadiusMap = Record<string, {

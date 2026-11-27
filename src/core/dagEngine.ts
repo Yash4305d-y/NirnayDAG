@@ -418,6 +418,8 @@ export function mapParsedToNirnay(parsed: ParsedADR): NirnayADR {
     supersedesList: parsed.frontmatter.supersedes || [],
     supersededBy: parsed.frontmatter.superseded_by || [],
     tags: parsed.frontmatter.tags || [],
+    affects: parsed.frontmatter.affects,
+    warnings: parsed.warnings,
     filePath: parsed.filePath,
   };
 }
