@@ -187,6 +187,12 @@ Dec
       arguments: { paths: ['../secret.txt'] }
     });
     expect(travRes.isError).toBe(true);
+
+    const winTravRes = await sendRpc('tools/call', {
+      name: 'get_adrs_for_files',
+      arguments: { paths: ['..\\..\\Windows\\win.ini'] }
+    });
+    expect(winTravRes.isError).toBe(true);
   });
 });
 
@@ -209,9 +215,10 @@ describe('get_adrs_for_files path security', () => {
       expect(() => validateSafeRepoPaths(['C:\\Windows\\System32\\cmd.exe'], tmpRoot)).toThrow(/absolute/i);
       expect(() => validateSafeRepoPaths(['\\\\server\\share\\file.ts'], tmpRoot)).toThrow(/absolute/i);
 
-      // Reject .. traversal
+      // Reject .. traversal (POSIX and Windows separators)
       expect(() => validateSafeRepoPaths(['../secret.txt'], tmpRoot)).toThrow(/\.\./);
       expect(() => validateSafeRepoPaths(['src/../../secret.txt'], tmpRoot)).toThrow(/\.\./);
+      expect(() => validateSafeRepoPaths(['..\\..\\Windows\\win.ini'], tmpRoot)).toThrow(/\.\./);
 
       // Reject symlinked directory/file without following
       const linkPath = path.join(tmpRoot, 'src', 'linked');
