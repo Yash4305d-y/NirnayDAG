@@ -3,6 +3,11 @@ id: ADR-0001
 title: Choose Kahn's Topological Sort and Dagre for Graph Engine
 status: accepted
 date: 2026-08-23
+affects:
+  - "src/core/dagEngine.ts"
+  - "src/core/layoutEngine.ts"
+  - "src/core/risk.ts"
+  - "src/core/simulationEngine.ts"
 ---
 
 # Choose Kahn's Topological Sort and Dagre for Graph Engine
