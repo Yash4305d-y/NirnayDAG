@@ -46,7 +46,7 @@
     "lint": "oxlint",
     "test": "vitest run",
     "build": "vite build && tsup",
-    "check": "npm run typecheck && npm run lint && npm run test && npm run build",
+    "check": "npm run typecheck && npm run lint && npm run build && npm run test",
     "build:cli": "tsup",
     "build:web": "vite build",
     "dev": "vite",

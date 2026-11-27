@@ -27,6 +27,7 @@ file_structure.txt
 node_modules/
 dist/
 .tmp/
+.tmp-report-test/
 *.log
 nirnay-pr-summary.md
 *.tgz
