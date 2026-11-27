@@ -8,6 +8,7 @@ import { parseADRContent, deriveFallbackId } from '../core/adrParser.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
 import { calculateGraphRisk } from '../core/risk.js';
 import { lintArchitecture, loadNirnayConfig } from '../core/linter.js';
+import { getAdrsForFiles } from './tools.js';
 import type { ParsedADR } from '../core/types.js';
 
 const server = new Server(
@@ -95,10 +96,25 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'lint_architecture',
-        description: 'Run ADR lint rules (accepted-depends-on-deprecated, superseded-without-successor, broken-supersedes, orphan).',
+        description: 'Run ADR lint rules (accepted-depends-on-deprecated, superseded-without-successor, broken-supersedes, orphan, affects-no-match, deprecated-governs-code).',
         inputSchema: {
           type: 'object',
           properties: {}
+        }
+      },
+      {
+        name: 'get_adrs_for_files',
+        description: 'Get architectural decisions (and their upstream hard-dependency ancestors) governing the given repo-relative file paths.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            paths: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Repo-relative file paths (no absolute paths, .., or symlinks)'
+            }
+          },
+          required: ['paths']
         }
       }
     ]
@@ -198,11 +214,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (name === 'lint_architecture') {
       const { engine, mappedAdrs } = validateAndComputeDAG(adrs);
       const config = await loadNirnayConfig(process.env.ADR_DIR || process.argv[2] || './docs/adr');
-      const lintResult = lintArchitecture(mappedAdrs, engine, config);
+      const lintResult = lintArchitecture(mappedAdrs, engine, config, { repoRoot: process.cwd() });
       return {
         content: [{
           type: 'text',
           text: JSON.stringify(lintResult, null, 2),
+        }]
+      };
+    }
+
+    if (name === 'get_adrs_for_files') {
+      const { engine, mappedAdrs } = validateAndComputeDAG(adrs);
+      const response = getAdrsForFiles(args?.paths, mappedAdrs, engine, process.cwd());
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify(response, null, 2),
         }]
       };
     }

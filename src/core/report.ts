@@ -6,6 +6,7 @@ import { parseBatchADRs } from './adrParser.js';
 import { validateAndComputeDAG, type DAGValidationResult } from './dagEngine.js';
 import { calculateGraphRisk, computeBetweennessCentrality } from './risk.js';
 import { lintArchitecture, loadNirnayConfig, type LintResult } from './linter.js';
+import { getGoverningDecisionsForFiles } from './affects.js';
 import type { ParsedADR } from './types.js';
 
 export interface ReportOptions {
@@ -95,7 +96,7 @@ export async function generatePRReport(options: ReportOptions = {}): Promise<Rep
   const { validationResult, engine, mappedAdrs } = validateAndComputeDAG(parsedADRs);
   const betweenness = computeBetweennessCentrality(engine);
   const lintConfig = await loadNirnayConfig(fullPath);
-  const lintResult = lintArchitecture(mappedAdrs, engine, lintConfig);
+  const lintResult = lintArchitecture(mappedAdrs, engine, lintConfig, { repoRoot: cwd });
 
   // Identify changed ADRs
   let changedAdrs = parsedADRs;
@@ -182,6 +183,30 @@ export async function generatePRReport(options: ReportOptions = {}): Promise<Rep
       validationResult.mutualReferences.forEach((m) => {
         md += `- ${m.pair[0]} <-> ${m.pair[1]} (soft body references)\n`;
       });
+    }
+  }
+
+  md += `\n### Decisions governing changed files\n\n`;
+  if (changedFilesList.length === 0) {
+    md += `*No changed files detected to map against \`affects\` globs.*\n`;
+  } else {
+    const governing = getGoverningDecisionsForFiles(changedFilesList, mappedAdrs, engine);
+    const governedFiles = governing.filter((g) => g.decisions.length > 0);
+    if (governedFiles.length === 0) {
+      md += `*No changed files match any ADR \`affects\` globs.*\n`;
+    } else {
+      md += `| File | Governing Decision | Status | Matched Glob | Upstream Constraints |\n`;
+      md += `|------|--------------------|--------|--------------|----------------------|\n`;
+      for (const item of governedFiles) {
+        for (const dec of item.decisions) {
+          const statusLabel = dec.isDeprecatedOrSuperseded ? `⚠️ ${dec.status}` : dec.status;
+          const ancestors =
+            dec.ancestors.length > 0
+              ? dec.ancestors.map((a) => `${a.id} (${a.status})`).join(', ')
+              : 'None';
+          md += `| \`${item.file}\` | **${dec.id}** (${dec.title}) | ${statusLabel} | \`${dec.matchingGlob}\` | ${ancestors} |\n`;
+        }
+      }
     }
   }
 

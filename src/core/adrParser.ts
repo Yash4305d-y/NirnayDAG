@@ -55,6 +55,52 @@ function parseConsequences(text: string): ADRConsequences {
   return { positive, negative };
 }
 
+function parseAffectsField(
+  rawAffects: unknown,
+  adrId: string
+): { affects: string[] | undefined; warnings: string[] } {
+  if (rawAffects === undefined || rawAffects === null) {
+    return { affects: undefined, warnings: [] };
+  }
+
+  const warnings: string[] = [];
+  if (!Array.isArray(rawAffects)) {
+    const msg = `Invalid "affects" field in ${adrId}: expected an array of glob strings.`;
+    warnings.push(msg);
+    console.warn(msg);
+    return { affects: [], warnings };
+  }
+
+  const normalized: string[] = [];
+  const seen = new Set<string>();
+  for (let i = 0; i < rawAffects.length; i++) {
+    const entry = rawAffects[i];
+    if (typeof entry !== 'string') {
+      const msg = `Invalid "affects" entry at index ${i} in ${adrId}: expected string, got ${typeof entry}.`;
+      warnings.push(msg);
+      console.warn(msg);
+      continue;
+    }
+    const clean = entry
+      .trim()
+      .replace(/\\/g, '/')
+      .replace(/^\.\//, '')
+      .replace(/^\/+/, '');
+    if (!clean) {
+      const msg = `Empty "affects" glob entry at index ${i} in ${adrId}.`;
+      warnings.push(msg);
+      console.warn(msg);
+      continue;
+    }
+    if (!seen.has(clean)) {
+      seen.add(clean);
+      normalized.push(clean);
+    }
+  }
+
+  return { affects: normalized, warnings };
+}
+
 export function parseADRContent(content: string, fallbackId?: string): ParsedADR {
   let frontmatterData: any = {};
   let bodyContent = content;
@@ -209,6 +255,8 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
     }
   }
 
+  const { affects, warnings: affectsWarnings } = parseAffectsField(frontmatterData.affects, id);
+
   const frontmatter: ADRFrontmatter = {
     id: id,
     title: title,
@@ -221,6 +269,7 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
     supersedes: supersedes,
     superseded_by: supersededBy,
     conflicts_with: frontmatterData.conflicts_with,
+    ...(affects !== undefined ? { affects } : {}),
   };
 
   const context = extractSection(bodyContent, ['Context', 'Problem Statement']);
@@ -235,6 +284,7 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
     consequences,
     rawContent: content,
     edges,
+    ...(affectsWarnings.length > 0 ? { warnings: affectsWarnings } : {}),
   };
 }
 

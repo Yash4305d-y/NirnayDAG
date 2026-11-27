@@ -221,4 +221,30 @@ describe('PR Blast Radius Report Generator', () => {
     expect(result.markdown).toContain('ADR-0002');
     expect(result.markdown).toContain('Mutual References');
   });
+
+  it('includes Decisions governing changed files section for changed source files', async () => {
+    const govDir = path.join(tmpDir, 'gov-adrs');
+    await fs.ensureDir(govDir);
+    await fs.writeFile(
+      path.join(govDir, '0001-root.md'),
+      `---\nid: ADR-0001\ntitle: Root Platform\nstatus: accepted\n---\n# Root\n`
+    );
+    await fs.writeFile(
+      path.join(govDir, '0002-auth.md'),
+      `---\nid: ADR-0002\ntitle: Legacy Auth\nstatus: deprecated\ndepends_on:\n  - ADR-0001\naffects:\n  - "src/auth/**"\n---\n# Auth\n`
+    );
+
+    const outputFile = path.join(tmpDir, 'gov-summary.md');
+    const result = await generatePRReport({
+      adrDir: govDir,
+      outputFile,
+      mockChangedFiles: ['src/auth/login.ts', 'README.md'],
+    });
+
+    expect(result.markdown).toContain('### Decisions governing changed files');
+    expect(result.markdown).toContain('`src/auth/login.ts`');
+    expect(result.markdown).toContain('ADR-0002');
+    expect(result.markdown).toContain('deprecated');
+    expect(result.markdown).toContain('ADR-0001');
+  });
 });

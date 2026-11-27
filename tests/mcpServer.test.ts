@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { spawn, ChildProcess } from 'child_process';
+import os from 'os';
 import path from 'path';
 import fs from 'fs-extra';
+import { validateSafeRepoPaths } from '../src/mcp/tools.js';
 
 describe('MCP Server Integration', () => {
   let serverProcess: ChildProcess;
@@ -16,6 +18,8 @@ category: Infrastructure
 status: accepted
 timestamp: 2026-05-05
 dependencies: []
+affects:
+  - "src/core/**"
 ---
 ## Context
 Ctx
@@ -156,5 +160,73 @@ Dec
     expect(res.rootDecisions.length).toBeGreaterThan(0);
     expect(res.rootDecisions).toContain('ADR-001');
     expect(Array.isArray(res.mutualReferences)).toBe(true);
+  });
+
+  it('should handle get_adrs_for_files with valid repo-relative paths', async () => {
+    const result = await sendRpc('tools/call', {
+      name: 'get_adrs_for_files',
+      arguments: { paths: ['src/core/dagEngine.ts', 'README.md'] }
+    });
+    expect(result.isError).not.toBe(true);
+    const res = JSON.parse(result.content[0].text);
+    expect(res.results).toHaveLength(2);
+    expect(res.results[0].file).toBe('src/core/dagEngine.ts');
+    expect(res.results[0].decisions[0].id).toBe('ADR-001');
+    expect(res.results[1].decisions).toEqual([]);
+  });
+
+  it('should reject path traversal and absolute paths in get_adrs_for_files', async () => {
+    const absRes = await sendRpc('tools/call', {
+      name: 'get_adrs_for_files',
+      arguments: { paths: ['/etc/passwd'] }
+    });
+    expect(absRes.isError).toBe(true);
+
+    const travRes = await sendRpc('tools/call', {
+      name: 'get_adrs_for_files',
+      arguments: { paths: ['../secret.txt'] }
+    });
+    expect(travRes.isError).toBe(true);
+
+    const winTravRes = await sendRpc('tools/call', {
+      name: 'get_adrs_for_files',
+      arguments: { paths: ['..\\..\\Windows\\win.ini'] }
+    });
+    expect(winTravRes.isError).toBe(true);
+  });
+});
+
+describe('get_adrs_for_files path security', () => {
+  it('rejects absolute paths, .. traversal, out-of-repo resolution, and symlinks', async () => {
+    const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'ndag-mcp-sec-'));
+    const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ndag-mcp-outside-'));
+    try {
+      await fs.ensureDir(path.join(tmpRoot, 'src'));
+      await fs.writeFile(path.join(tmpRoot, 'src', 'ok.ts'), 'export {};');
+      await fs.writeFile(path.join(outsideDir, 'secret.txt'), 'secret');
+
+      // Valid relative path
+      expect(validateSafeRepoPaths(['src/ok.ts'], tmpRoot)).toEqual(['src/ok.ts']);
+
+      // Reject POSIX absolute path
+      expect(() => validateSafeRepoPaths(['/etc/passwd'], tmpRoot)).toThrow(/absolute/i);
+
+      // Reject Windows absolute path & UNC path
+      expect(() => validateSafeRepoPaths(['C:\\Windows\\System32\\cmd.exe'], tmpRoot)).toThrow(/absolute/i);
+      expect(() => validateSafeRepoPaths(['\\\\server\\share\\file.ts'], tmpRoot)).toThrow(/absolute/i);
+
+      // Reject .. traversal (POSIX and Windows separators)
+      expect(() => validateSafeRepoPaths(['../secret.txt'], tmpRoot)).toThrow(/\.\./);
+      expect(() => validateSafeRepoPaths(['src/../../secret.txt'], tmpRoot)).toThrow(/\.\./);
+      expect(() => validateSafeRepoPaths(['..\\..\\Windows\\win.ini'], tmpRoot)).toThrow(/\.\./);
+
+      // Reject symlinked directory/file without following
+      const linkPath = path.join(tmpRoot, 'src', 'linked');
+      await fs.symlink(outsideDir, linkPath, process.platform === 'win32' ? 'junction' : 'dir');
+      expect(() => validateSafeRepoPaths(['src/linked/secret.txt'], tmpRoot)).toThrow(/symlink/i);
+    } finally {
+      await fs.remove(tmpRoot);
+      await fs.remove(outsideDir);
+    }
   });
 });

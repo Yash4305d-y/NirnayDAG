@@ -5,6 +5,10 @@ status: accepted
 date: 2026-08-23
 depends_on:
   - ADR-0001
+affects:
+  - "src/core/adrParser.ts"
+  - "src/utils/githubLoader.ts"
+  - "src/utils/localFolderLoader.ts"
 ---
 
 # Dual-Source Ingestion Architecture

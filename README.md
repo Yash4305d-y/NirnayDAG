@@ -172,6 +172,9 @@ depends_on:
 tags:
   - backend
   - infrastructure
+affects:
+  - "src/events/**"
+  - "services/messaging/*.ts"
 ---
 
 # Context and Problem Statement
@@ -195,6 +198,20 @@ requirements defined in [ADR-0001](./ADR-0001-microservices-core.md).
 * `accepted`
 * `deprecated`
 * `superseded`
+
+### Linking Decisions to Code (`affects:`)
+
+ADRs can optionally declare an `affects:` list of repo-root-relative glob patterns (forward slashes) in YAML frontmatter:
+
+```yaml
+affects:
+  - "src/auth/**"
+  - "services/pay/*.ts"
+```
+
+* Evaluated with `picomatch` using **case-sensitive POSIX matching** (`nocase: false`, `dot: true`) so glob behavior is identical across Linux CI, macOS, and Windows.
+* Windows backslashes (`\\`) in input file paths are normalized to `/` before matching.
+* Non-array `affects` values or non-string entries emit parse warnings without crashing.
 
 ### Dependency Edge Kinds (Hard vs. Soft)
 
@@ -287,6 +304,8 @@ Built-in rules:
 - `superseded-without-successor` (`warn`): a decision is marked `superseded` without any `superseded-by` or incoming `supersedes` target.
 - `broken-supersedes` (`error`): a `supersedes` or `superseded-by` target does not exist.
 - `orphan` (`info`): a decision with no incoming or outgoing edges (never fails CI).
+- `affects-no-match` (`warn`): an `affects:` glob matches zero files in the repository (discovered via `git ls-files`, falling back to a filesystem walk ignoring `node_modules` and `.git`).
+- `deprecated-governs-code` (`warn`): a `deprecated` or `superseded` decision still matches existing repository files via `affects:`.
 
 Status-dependent rules skip nodes whose status was defaulted (no explicit `status`, `stage`, or `state` in frontmatter). Configure rule enable/disable and severity overrides in `.nirnayrc.json`:
 
@@ -296,12 +315,32 @@ Status-dependent rules skip nodes whose status was defaulted (no explicit `statu
     "accepted-depends-on-deprecated": "error",
     "superseded-without-successor": "warn",
     "broken-supersedes": "error",
-    "orphan": "off"
+    "orphan": "off",
+    "affects-no-match": "warn",
+    "deprecated-governs-code": "warn"
   }
 }
 ```
 
 `ndag lint` exits `1` only when at least one `error`-severity finding is reported.
+
+### File-to-Decision Lookup (`ndag why`)
+
+Query which architectural decisions (and their upstream hard-dependency ancestors) govern one or more repo-relative files:
+
+```bash
+npx nirnay-dag why src/core/dagEngine.ts
+npx nirnay-dag why src/core/dagEngine.ts ./docs/adr --json
+```
+
+Example output on this repository:
+
+```text
+src/core/dagEngine.ts
+  ADR-0001 — Choose Kahn's Topological Sort and Dagre for Graph Engine [accepted] (glob: src/core/dagEngine.ts)
+```
+
+This tells engineers and CI which ADR governs `src/core/dagEngine.ts`, its current status, which `affects:` glob matched, and any upstream hard-dependency constraints (and flags `deprecated` or `superseded` decisions). With `--json`, `ndag why` outputs `{ adrDir, results: [{ file, decisions: [{ id, title, status, statusSource, matchingGlob, isDeprecatedOrSuperseded, ancestors }] }] }` and exits `0`.
 
 ---
 
@@ -409,6 +448,15 @@ Add the following configuration to your MCP client, such as Cursor, Antigravity,
 "Which infrastructure decisions are superseded by newer records?"
 ```
 
+### Available MCP Tools
+
+- `list_adrs` — List ADRs with optional `status` and `tag` filters.
+- `get_adr_context` — Retrieve full Context, Decision, Consequences, and metadata for an ADR ID.
+- `query_blast_radius` — Compute downstream dependents, depth, affected systems, and Risk Model v2 score.
+- `validate_architecture` — Validate the ADR DAG for cycles and missing dependencies.
+- `lint_architecture` — Run all configured ADR lint rules.
+- `get_adrs_for_files` — Given an array of repo-relative `paths`, return the governing decisions and upstream hard-dependency ancestors (same schema as `ndag why`). Rejects absolute paths, `..` traversal segments, paths resolving outside the repository root, and symlinks without reading file contents.
+
 ---
 
 # 🧰 CLI Reference
@@ -433,6 +481,8 @@ After global installation, use the `ndag` binary:
 | `ndag interactive [dir]`                   | Launch interactive terminal UI (TUI)             | `ndag interactive ./docs/adr`    |
 | `ndag validate [dir]`                      | Check DAG for circular loops and broken links    | `ndag validate ./docs/adr`       |
 | `ndag blast <id> [dir]`                    | Calculate downstream blast radius and risk score | `ndag blast ADR-0001 ./docs/adr` |
+| `ndag why <file...> [dir] [--json]`       | Show ADRs governing repo-relative files          | `ndag why src/core/dagEngine.ts` |
+| `ndag lint [dir] [--json]`                | Run architectural lint rules                     | `ndag lint ./docs/adr`           |
 | `ndag report [dir]`                        | Generate Markdown blast-radius report            | `ndag report ./docs/adr`         |
 | `ndag mcp`                                 | Start the stdio MCP server                       | `ndag mcp`                       |
 

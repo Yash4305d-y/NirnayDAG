@@ -208,3 +208,76 @@ describe('deriveFallbackId and disambiguateDuplicateIds (Phase 2C-1)', () => {
     expect(parsed[1].frontmatter.id).toBe('1027-shared::sig-b/1027-shared/README.md');
   });
 });
+
+describe('parseADRContent affects frontmatter (Phase 4)', () => {
+  it('parses valid affects glob list and normalizes backslashes', () => {
+    const markdown = `---
+id: ADR-0020
+title: Auth Boundaries
+status: accepted
+affects:
+  - "src/auth/**"
+  - "services\\\\pay\\\\*.ts"
+  - "./src/session/index.ts"
+---
+## Context
+Governs auth.
+`;
+    const parsed = parseADRContent(markdown);
+    expect(parsed.frontmatter.affects).toEqual([
+      'src/auth/**',
+      'services/pay/*.ts',
+      'src/session/index.ts',
+    ]);
+    expect(parsed.warnings ?? []).toEqual([]);
+  });
+
+  it('omits affects when not specified', () => {
+    const markdown = `---
+id: ADR-0021
+title: No Affects
+status: accepted
+---
+## Context
+No affects field.
+`;
+    const parsed = parseADRContent(markdown);
+    expect(parsed.frontmatter.affects).toBeUndefined();
+    expect(parsed.warnings ?? []).toEqual([]);
+  });
+
+  it('emits a parse warning without crashing when affects is not an array', () => {
+    const markdown = `---
+id: ADR-0022
+title: Invalid Affects Scalar
+status: accepted
+affects: "src/auth/**"
+---
+## Context
+Invalid scalar affects.
+`;
+    const parsed = parseADRContent(markdown);
+    expect(parsed.frontmatter.affects).toEqual([]);
+    expect(parsed.warnings?.some((w) => w.includes('affects'))).toBe(true);
+  });
+
+  it('emits a parse warning and filters non-string or empty entries in affects', () => {
+    const markdown = `---
+id: ADR-0023
+title: Mixed Affects Array
+status: accepted
+affects:
+  - "src/auth/**"
+  - 123
+  - ""
+  - null
+  - "src/users/*.ts"
+---
+## Context
+Mixed affects entries.
+`;
+    const parsed = parseADRContent(markdown);
+    expect(parsed.frontmatter.affects).toEqual(['src/auth/**', 'src/users/*.ts']);
+    expect(parsed.warnings?.some((w) => w.includes('affects'))).toBe(true);
+  });
+});

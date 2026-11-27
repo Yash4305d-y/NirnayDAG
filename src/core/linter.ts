@@ -1,5 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
+import { execFileSync } from 'child_process';
+import { compileAffectsMatcher, normalizeRepoPath } from './affects.js';
 import type { DAGEngine } from './dagEngine.js';
 import type { NirnayADR } from './types.js';
 
@@ -7,7 +9,14 @@ export type LintRuleId =
   | 'accepted-depends-on-deprecated'
   | 'superseded-without-successor'
   | 'broken-supersedes'
-  | 'orphan';
+  | 'orphan'
+  | 'affects-no-match'
+  | 'deprecated-governs-code';
+
+export interface LintOptions {
+  repoFiles?: string[];
+  repoRoot?: string;
+}
 
 export type LintSeverity = 'error' | 'warn' | 'info';
 
@@ -49,6 +58,8 @@ export const DEFAULT_LINT_RULES: Record<LintRuleId, { enabled: boolean; severity
   'superseded-without-successor': { enabled: true, severity: 'warn' },
   'broken-supersedes': { enabled: true, severity: 'error' },
   orphan: { enabled: true, severity: 'info' },
+  'affects-no-match': { enabled: true, severity: 'warn' },
+  'deprecated-governs-code': { enabled: true, severity: 'warn' },
 };
 
 function resolveRuleSettings(
@@ -59,6 +70,8 @@ function resolveRuleSettings(
     'superseded-without-successor': { ...DEFAULT_LINT_RULES['superseded-without-successor'] },
     'broken-supersedes': { ...DEFAULT_LINT_RULES['broken-supersedes'] },
     orphan: { ...DEFAULT_LINT_RULES.orphan },
+    'affects-no-match': { ...DEFAULT_LINT_RULES['affects-no-match'] },
+    'deprecated-governs-code': { ...DEFAULT_LINT_RULES['deprecated-governs-code'] },
   };
 
   if (!config?.rules) return resolved;
@@ -128,6 +141,50 @@ function getSupersedesTargets(adr: NirnayADR): string[] {
   return adr.supersedes ? [adr.supersedes] : [];
 }
 
+function walkRepoFiles(rootDir: string): string[] {
+  const results: string[] = [];
+  const walk = (currentDir: string) => {
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(currentDir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (entry.name === 'node_modules' || entry.name === '.git') continue;
+      const fullPath = path.join(currentDir, entry.name);
+      if (entry.isDirectory()) {
+        walk(fullPath);
+      } else if (entry.isFile()) {
+        results.push(normalizeRepoPath(path.relative(rootDir, fullPath)));
+      }
+    }
+  };
+  walk(rootDir);
+  return results;
+}
+
+/**
+ * Lists repo-relative file paths using `git ls-files`, falling back to a
+ * filesystem walk that ignores `node_modules` and `.git`.
+ */
+export function listRepoFiles(repoRoot: string = process.cwd()): string[] {
+  const resolvedRoot = path.resolve(repoRoot);
+  try {
+    const out = execFileSync('git', ['ls-files', '-z'], {
+      cwd: resolvedRoot,
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    return out
+      .split('\0')
+      .map((f) => normalizeRepoPath(f))
+      .filter(Boolean);
+  } catch {
+    return walkRepoFiles(resolvedRoot);
+  }
+}
+
 /**
  * Runs all configured ADR lint rules against the parsed ADRs and DAG.
  * Rules that depend on decision status skip nodes whose status is `'default'`.
@@ -135,10 +192,21 @@ function getSupersedesTargets(adr: NirnayADR): string[] {
 export function lintArchitecture(
   adrs: NirnayADR[],
   engine: DAGEngine,
-  config?: LintConfig
+  config?: LintConfig,
+  options?: LintOptions
 ): LintResult {
   const rules = resolveRuleSettings(config);
   const findings: LintFinding[] = [];
+
+  const needsRepoFiles =
+    (rules['affects-no-match'].enabled || rules['deprecated-governs-code'].enabled) &&
+    adrs.some((a) => Array.isArray(a.affects) && a.affects.length > 0);
+
+  const repoFiles = needsRepoFiles
+    ? (options?.repoFiles
+        ? options.repoFiles.map((f) => normalizeRepoPath(f))
+        : listRepoFiles(options?.repoRoot))
+    : [];
 
   const adrMap = new Map<string, NirnayADR>();
   for (const adr of adrs) {
@@ -247,6 +315,42 @@ export function lintArchitecture(
         });
       }
     }
+
+    const affectsGlobs = adr.affects || [];
+    if (affectsGlobs.length > 0) {
+      let hasAnyMatchedFile = false;
+
+      for (const globPattern of affectsGlobs) {
+        const matcher = compileAffectsMatcher(globPattern);
+        const matches = repoFiles.some((f) => matcher(f));
+        if (matches) {
+          hasAnyMatchedFile = true;
+        } else if (rules['affects-no-match'].enabled) {
+          findings.push({
+            ruleId: 'affects-no-match',
+            severity: rules['affects-no-match'].severity,
+            message: `Decision ${adr.id} affects glob "${globPattern}" matches no files in the repository.`,
+            files: [fileLabel],
+            nodeId: adr.id,
+          });
+        }
+      }
+
+      if (
+        rules['deprecated-governs-code'].enabled &&
+        !isDefaultStatus &&
+        (adr.status === 'deprecated' || adr.status === 'superseded') &&
+        hasAnyMatchedFile
+      ) {
+        findings.push({
+          ruleId: 'deprecated-governs-code',
+          severity: rules['deprecated-governs-code'].severity,
+          message: `${adr.status === 'deprecated' ? 'Deprecated' : 'Superseded'} decision ${adr.id} still governs existing files via affects.`,
+          files: [fileLabel],
+          nodeId: adr.id,
+        });
+      }
+    }
   }
 
   const byRule: Record<LintRuleId, number> = {
@@ -254,6 +358,8 @@ export function lintArchitecture(
     'superseded-without-successor': 0,
     'broken-supersedes': 0,
     orphan: 0,
+    'affects-no-match': 0,
+    'deprecated-governs-code': 0,
   };
 
   let errors = 0;

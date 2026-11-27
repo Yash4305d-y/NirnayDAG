@@ -12,6 +12,7 @@ import { validateAndComputeDAG } from '../core/dagEngine.js';
 import { calculateGraphRisk } from '../core/risk.js';
 import { lintArchitecture, loadNirnayConfig } from '../core/linter.js';
 import { generatePRReport } from '../core/report.js';
+import { getGoverningDecisionsForFiles, normalizeRepoPath } from '../core/affects.js';
 import { startServer } from '../server/serve.js';
 import { runInteractiveSession } from './interactive.js';
 
@@ -275,7 +276,7 @@ program
     const targetDir = options.dir || positionalDir || process.env.ADR_DIR || './docs/adr';
     const { engine, mappedAdrs } = await loadAndValidate(targetDir);
     const config = await loadNirnayConfig(targetDir);
-    const result = lintArchitecture(mappedAdrs, engine, config);
+    const result = lintArchitecture(mappedAdrs, engine, config, { repoRoot: process.cwd() });
 
     if (options.json || process.env.NDAG_OUTPUT === 'json') {
       console.log(JSON.stringify(result, null, 2));
@@ -306,6 +307,76 @@ program
       `\nSummary: ${result.summary.errors} error(s), ${result.summary.warnings} warning(s), ${result.summary.infos} info(s)`
     );
     process.exit(result.hasErrors ? 1 : 0);
+  });
+
+// 8. why
+program
+  .command('why <files...>')
+  .description('Show architectural decisions governing one or more repo-relative files')
+  .option('--json', 'Outputs raw JSON')
+  .option('-d, --dir <path>', 'Directory containing ADR markdown files')
+  .action(async (rawFiles: string[], options) => {
+    let targetDir = options.dir || process.env.ADR_DIR || './docs/adr';
+    let fileArgs = rawFiles;
+
+    if (!options.dir && rawFiles.length >= 2) {
+      const lastArg = rawFiles[rawFiles.length - 1];
+      const resolvedLast = path.resolve(process.cwd(), lastArg);
+      if (fs.existsSync(resolvedLast) && fs.statSync(resolvedLast).isDirectory()) {
+        targetDir = lastArg;
+        fileArgs = rawFiles.slice(0, -1);
+      }
+    }
+
+    const normalizedFiles = fileArgs.map((f) => {
+      if (path.isAbsolute(f)) {
+        const rel = path.relative(process.cwd(), f);
+        return normalizeRepoPath(rel);
+      }
+      return normalizeRepoPath(f);
+    });
+
+    const { engine, mappedAdrs } = await loadAndValidate(targetDir);
+    const results = getGoverningDecisionsForFiles(normalizedFiles, mappedAdrs, engine);
+
+    if (options.json || process.env.NDAG_OUTPUT === 'json') {
+      console.log(
+        JSON.stringify(
+          {
+            adrDir: targetDir,
+            results,
+          },
+          null,
+          2
+        )
+      );
+      process.exit(0);
+    }
+
+    for (const item of results) {
+      console.log(chalk.cyan.bold(`\n${item.file}`));
+      if (item.decisions.length === 0) {
+        console.log(chalk.gray('  No governing decisions found.'));
+        continue;
+      }
+
+      for (const dec of item.decisions) {
+        const statusBadge = dec.isDeprecatedOrSuperseded
+          ? chalk.yellow(`⚠️  ${dec.status}`)
+          : chalk.green(dec.status);
+        console.log(
+          `  ${chalk.bold(dec.id)} — ${dec.title} [${statusBadge}] ${chalk.gray(`(glob: ${dec.matchingGlob})`)}`
+        );
+        if (dec.ancestors.length > 0) {
+          const ancestorStr = dec.ancestors
+            .map((a) => `${a.id} (${a.status})`)
+            .join(', ');
+          console.log(chalk.gray(`    Upstream constraints: ${ancestorStr}`));
+        }
+      }
+    }
+    console.log('');
+    process.exit(0);
   });
 
 program.parse(process.argv);
