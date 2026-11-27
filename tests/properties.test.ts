@@ -32,10 +32,8 @@ const arbDirectedGraph = fc
       .map((edges) => {
         const deps = Array.from({ length: n }, () => new Set<string>());
         for (const [u, v] of edges) {
-          // v depends on u (exclude self-loops)
-          if (u !== v) {
-            deps[v].add(`ADR-${u}`);
-          }
+          // v depends on u
+          deps[v].add(`ADR-${u}`);
         }
         return Array.from({ length: n }, (_, i) => makeAdr(`ADR-${i}`, Array.from(deps[i])));
       })
@@ -110,9 +108,7 @@ describe('Property-based tests (fast-check)', () => {
           const cascade = engine.getBlastRadius(adr.id);
           expect(cascade.length).toBeGreaterThanOrEqual(direct.length);
           for (const d of direct) {
-            if (d !== adr.id) {
-              expect(cascade).toContain(d);
-            }
+            expect(cascade).toContain(d);
           }
         }
       }),

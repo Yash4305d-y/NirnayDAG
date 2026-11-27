@@ -263,7 +263,7 @@ export class DAGEngine {
    * Returns direct dependents (nodes that depend ON this node)
    */
   public getDirectDependents(id: string, options?: DAGQueryOptions): string[] {
-    return [...this.getDependentsList(id, options?.includeSoft)];
+    return this.getDependentsList(id, options?.includeSoft).filter((depId) => depId !== id);
   }
 
   /**
