@@ -41,11 +41,13 @@ export type {
 export {
   lintArchitecture,
   loadNirnayConfig,
+  listRepoFiles,
   DEFAULT_LINT_RULES,
 } from './core/linter.js';
 export type {
   LintConfig,
   LintFinding,
+  LintOptions,
   LintResult,
   LintRuleId,
   LintSeverity,

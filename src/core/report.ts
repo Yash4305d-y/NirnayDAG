@@ -95,7 +95,7 @@ export async function generatePRReport(options: ReportOptions = {}): Promise<Rep
   const { validationResult, engine, mappedAdrs } = validateAndComputeDAG(parsedADRs);
   const betweenness = computeBetweennessCentrality(engine);
   const lintConfig = await loadNirnayConfig(fullPath);
-  const lintResult = lintArchitecture(mappedAdrs, engine, lintConfig);
+  const lintResult = lintArchitecture(mappedAdrs, engine, lintConfig, { repoRoot: cwd });
 
   // Identify changed ADRs
   let changedAdrs = parsedADRs;

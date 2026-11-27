@@ -1,17 +1,21 @@
 import { describe, it, expect } from 'vitest';
+import fs from 'fs-extra';
+import os from 'os';
+import path from 'path';
 import { parseBatchADRs } from '../src/core/adrParser.js';
 import { validateAndComputeDAG } from '../src/core/dagEngine.js';
-import { lintArchitecture, type LintConfig } from '../src/core/linter.js';
+import { lintArchitecture, listRepoFiles, type LintConfig, type LintOptions } from '../src/core/linter.js';
 
 function buildAndLint(
   files: { name: string; content: string }[],
-  config?: LintConfig
+  config?: LintConfig,
+  options?: LintOptions
 ) {
   const parsed = parseBatchADRs(
     files.map((f) => ({ name: f.name, filePath: f.name, content: f.content }))
   );
   const { engine, mappedAdrs } = validateAndComputeDAG(parsed);
-  return lintArchitecture(mappedAdrs, engine, config);
+  return lintArchitecture(mappedAdrs, engine, config, options);
 }
 
 describe('ADR Lint Rules Engine', () => {
@@ -178,5 +182,69 @@ describe('ADR Lint Rules Engine', () => {
       }
     );
     expect(disabled.findings).toHaveLength(0);
+  });
+
+  it('flags affects-no-match when an affects glob matches zero repo files', () => {
+    const result = buildAndLint(
+      [
+        {
+          name: '0001-auth.md',
+          content: `---\nid: ADR-0001\ntitle: Auth\nstatus: accepted\naffects:\n  - "src/auth/**"\n  - "src/missing/**"\n---\n# Auth`,
+        },
+      ],
+      undefined,
+      { repoFiles: ['src/auth/login.ts', 'src/core/index.ts'] }
+    );
+
+    const findings = result.findings.filter((f) => f.ruleId === 'affects-no-match');
+    expect(findings).toHaveLength(1);
+    expect(findings[0].severity).toBe('warn');
+    expect(findings[0].message).toContain('src/missing/**');
+    expect(findings[0].files).toEqual(['0001-auth.md']);
+  });
+
+  it('flags deprecated-governs-code for explicit deprecated/superseded ADRs with matching files, and skips default status', () => {
+    const result = buildAndLint(
+      [
+        {
+          name: '0001-legacy.md',
+          content: `---\nid: ADR-0001\ntitle: Legacy\nstatus: deprecated\naffects:\n  - "src/legacy/**"\n---\n# Legacy`,
+        },
+        {
+          name: '0002-superseded.md',
+          content: `---\nid: ADR-0002\ntitle: Old\nstatus: superseded\naffects:\n  - "src/old/**"\n---\n# Old`,
+        },
+        {
+          name: '0003-default.md',
+          content: `---\nid: ADR-0003\ntitle: Default\naffects:\n  - "src/legacy/**"\n---\n# Default`,
+        },
+      ],
+      { rules: { 'superseded-without-successor': 'off', orphan: 'off' } },
+      { repoFiles: ['src/legacy/a.ts', 'src/old/b.ts'] }
+    );
+
+    const findings = result.findings.filter((f) => f.ruleId === 'deprecated-governs-code');
+    expect(findings).toHaveLength(2);
+    expect(findings.every((f) => f.severity === 'warn')).toBe(true);
+    expect(findings.map((f) => f.nodeId).sort()).toEqual(['ADR-0001', 'ADR-0002']);
+  });
+
+  it('falls back to filesystem walk ignoring node_modules and .git when not a git repo', async () => {
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ndag-walk-test-'));
+    try {
+      await fs.ensureDir(path.join(tmpDir, 'src'));
+      await fs.ensureDir(path.join(tmpDir, 'node_modules', 'pkg'));
+      await fs.ensureDir(path.join(tmpDir, '.git', 'objects'));
+      await fs.writeFile(path.join(tmpDir, 'src', 'app.ts'), 'export {};');
+      await fs.writeFile(path.join(tmpDir, 'node_modules', 'pkg', 'index.js'), '');
+      await fs.writeFile(path.join(tmpDir, '.git', 'objects', 'abc'), '');
+
+      const files = listRepoFiles(tmpDir);
+      expect(files).toContain('src/app.ts');
+      expect(files.some((f) => f.includes('node_modules'))).toBe(false);
+      expect(files.some((f) => f.includes('.git'))).toBe(false);
+    } finally {
+      await fs.remove(tmpDir);
+    }
   });
 });

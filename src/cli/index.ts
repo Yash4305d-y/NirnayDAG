@@ -276,7 +276,7 @@ program
     const targetDir = options.dir || positionalDir || process.env.ADR_DIR || './docs/adr';
     const { engine, mappedAdrs } = await loadAndValidate(targetDir);
     const config = await loadNirnayConfig(targetDir);
-    const result = lintArchitecture(mappedAdrs, engine, config);
+    const result = lintArchitecture(mappedAdrs, engine, config, { repoRoot: process.cwd() });
 
     if (options.json || process.env.NDAG_OUTPUT === 'json') {
       console.log(JSON.stringify(result, null, 2));

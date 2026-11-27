@@ -198,7 +198,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (name === 'lint_architecture') {
       const { engine, mappedAdrs } = validateAndComputeDAG(adrs);
       const config = await loadNirnayConfig(process.env.ADR_DIR || process.argv[2] || './docs/adr');
-      const lintResult = lintArchitecture(mappedAdrs, engine, config);
+      const lintResult = lintArchitecture(mappedAdrs, engine, config, { repoRoot: process.cwd() });
       return {
         content: [{
           type: 'text',
