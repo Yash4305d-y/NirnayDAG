@@ -9,7 +9,7 @@ import fs from 'fs-extra';
 import glob from 'fast-glob';
 import { parseBatchADRs } from '../core/adrParser.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
-import { calculateArchitectureRisk } from '../core/risk.js';
+import { calculateGraphRisk } from '../core/risk.js';
 
 // Shared utility function for loading ADRs
 export async function loadGraph(dir: string) {
@@ -133,7 +133,7 @@ const BlastRadiusView = ({ adr, engine, onBack }: any) => {
   const downstreamIds = engine.getBlastRadius(adr.id);
   const direct = engine.getDirectDependents(adr.id);
   const depth = engine.getDepth(adr.id);
-  const risk = calculateArchitectureRisk({ directDependentsCount: direct.length, cascadeCount: downstreamIds.length, depth });
+  const risk = calculateGraphRisk(engine, adr.id);
 
   return (
     <Box flexDirection="column">

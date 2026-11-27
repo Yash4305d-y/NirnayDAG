@@ -1,6 +1,63 @@
 {
-  "timestamp": "2026-11-26T12:32:19.588Z",
-  "runnerVersion": "1.0.0-phase2c.1.1",
+  "timestamp": "2026-11-26T14:12:22.817Z",
+  "runnerVersion": "1.0.0-phase3",
+  "lintFindingsByRule": {
+    "accepted-depends-on-deprecated": [],
+    "superseded-without-successor": [],
+    "broken-supersedes": [],
+    "orphan": [
+      {
+        "ruleId": "orphan",
+        "severity": "info",
+        "nodeId": "adrs-adr000",
+        "files": [
+          "docs/architecture-decisions/adr000-template.md"
+        ],
+        "reason": "Decision adrs-adr000 has no incoming or outgoing edges (orphan).",
+        "repo": "backstage/backstage"
+      },
+      {
+        "ruleId": "orphan",
+        "severity": "info",
+        "nodeId": "adrs-adr001",
+        "files": [
+          "docs/architecture-decisions/adr001-add-adr-log.md"
+        ],
+        "reason": "Decision adrs-adr001 has no incoming or outgoing edges (orphan).",
+        "repo": "backstage/backstage"
+      },
+      {
+        "ruleId": "orphan",
+        "severity": "info",
+        "nodeId": "adrs-adr003",
+        "files": [
+          "docs/architecture-decisions/adr003-avoid-default-exports.md"
+        ],
+        "reason": "Decision adrs-adr003 has no incoming or outgoing edges (orphan).",
+        "repo": "backstage/backstage"
+      },
+      {
+        "ruleId": "orphan",
+        "severity": "info",
+        "nodeId": "adrs-adr004",
+        "files": [
+          "docs/architecture-decisions/adr004-module-export-structure.md"
+        ],
+        "reason": "Decision adrs-adr004 has no incoming or outgoing edges (orphan).",
+        "repo": "backstage/backstage"
+      },
+      {
+        "ruleId": "orphan",
+        "severity": "info",
+        "nodeId": "adrs-adr005",
+        "files": [
+          "docs/architecture-decisions/adr005-catalog-core-entities.md"
+        ],
+        "reason": "Decision adrs-adr005 has no incoming or outgoing edges (orphan).",
+        "repo": "backstage/backstage"
+      }
+    ]
+  },
   "repositories": [
     {
       "repo": "backstage/backstage",
@@ -30,7 +87,56 @@
           ]
         }
       ],
-      "brokenLinks": []
+      "brokenLinks": [],
+      "lintFindings": {
+        "orphan": [
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "adrs-adr000",
+            "files": [
+              "docs/architecture-decisions/adr000-template.md"
+            ],
+            "reason": "Decision adrs-adr000 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "adrs-adr001",
+            "files": [
+              "docs/architecture-decisions/adr001-add-adr-log.md"
+            ],
+            "reason": "Decision adrs-adr001 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "adrs-adr003",
+            "files": [
+              "docs/architecture-decisions/adr003-avoid-default-exports.md"
+            ],
+            "reason": "Decision adrs-adr003 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "adrs-adr004",
+            "files": [
+              "docs/architecture-decisions/adr004-module-export-structure.md"
+            ],
+            "reason": "Decision adrs-adr004 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "adrs-adr005",
+            "files": [
+              "docs/architecture-decisions/adr005-catalog-core-entities.md"
+            ],
+            "reason": "Decision adrs-adr005 has no incoming or outgoing edges (orphan)."
+          }
+        ]
+      }
     },
     {
       "repo": "adr/madr",
@@ -60,7 +166,56 @@
           ]
         }
       ],
-      "brokenLinks": []
+      "brokenLinks": [],
+      "lintFindings": {
+        "orphan": [
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-0000",
+            "files": [
+              "docs/decisions/0000-use-markdown-architectural-decision-records.md"
+            ],
+            "reason": "Decision ADR-0000 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-0001",
+            "files": [
+              "docs/decisions/0001-use-CC0-or-MIT-as-license.md"
+            ],
+            "reason": "Decision ADR-0001 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-0002",
+            "files": [
+              "docs/decisions/0002-do-not-use-numbers-in-headings.md"
+            ],
+            "reason": "Decision ADR-0002 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-0003",
+            "files": [
+              "docs/decisions/0003-provide-own-madr-tools.md"
+            ],
+            "reason": "Decision ADR-0003 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-0004",
+            "files": [
+              "docs/decisions/0004-write-own-toc-tool.md"
+            ],
+            "reason": "Decision ADR-0004 has no incoming or outgoing edges (orphan)."
+          }
+        ]
+      }
     },
     {
       "repo": "rust-lang/rfcs",
@@ -128,7 +283,56 @@
           "missingId": "text/storage::Filesystem.size",
           "rawLinkText": "(storage::Filesystem.size)"
         }
-      ]
+      ],
+      "lintFindings": {
+        "orphan": [
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-0001",
+            "files": [
+              "text/0001-private-fields.md"
+            ],
+            "reason": "Decision ADR-0001 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-0002",
+            "files": [
+              "text/0002-rfc-process.md"
+            ],
+            "reason": "Decision ADR-0002 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-0003",
+            "files": [
+              "text/0003-attribute-usage.md"
+            ],
+            "reason": "Decision ADR-0003 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-0008",
+            "files": [
+              "text/0008-new-intrinsics.md"
+            ],
+            "reason": "Decision ADR-0008 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-0016",
+            "files": [
+              "text/0016-more-attributes.md"
+            ],
+            "reason": "Decision ADR-0016 has no incoming or outgoing edges (orphan)."
+          }
+        ]
+      }
     },
     {
       "repo": "kubernetes/enhancements",
@@ -263,7 +467,56 @@
           "missingId": "keps/sig-apps/3335-statefulset-slice/StatefulSet",
           "rawLinkText": "(StatefulSet)"
         }
-      ]
+      ],
+      "lintFindings": {
+        "orphan": [
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "prod-readiness",
+            "files": [
+              "keps/prod-readiness/README.md"
+            ],
+            "reason": "Decision prod-readiness has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "2313-aws-k8s-tester",
+            "files": [
+              "keps/provider-aws/2313-aws-k8s-tester/README.md"
+            ],
+            "reason": "Decision 2313-aws-k8s-tester has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "2314-custom-endpoints-support-for-aws-cloud-provider",
+            "files": [
+              "keps/provider-aws/2314-custom-endpoints-support-for-aws-cloud-provider/README.md"
+            ],
+            "reason": "Decision 2314-custom-endpoints-support-for-aws-cloud-provider has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "2315-aws-loadbalancer-prefix",
+            "files": [
+              "keps/provider-aws/2315-aws-loadbalancer-prefix/README.md"
+            ],
+            "reason": "Decision 2315-aws-loadbalancer-prefix has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "423-network-load-balancer",
+            "files": [
+              "keps/provider-aws/423-network-load-balancer/README.md"
+            ],
+            "reason": "Decision 423-network-load-balancer has no incoming or outgoing edges (orphan)."
+          }
+        ]
+      }
     },
     {
       "repo": "cosmos/cosmos-sdk",
@@ -388,7 +641,56 @@
           "missingId": "docs/proto/cosmos/app/v1alpha1/module.proto",
           "rawLinkText": "(../proto/cosmos/app/v1alpha1/module.proto)"
         }
-      ]
+      ],
+      "lintFindings": {
+        "orphan": [
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "adr-014-proportional-slashing",
+            "files": [
+              "docs/architecture/adr-014-proportional-slashing.md"
+            ],
+            "reason": "Decision adr-014-proportional-slashing has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "adr-036-arbitrary-signature",
+            "files": [
+              "docs/architecture/adr-036-arbitrary-signature.md"
+            ],
+            "reason": "Decision adr-036-arbitrary-signature has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "adr-041-in-place-store-migrations",
+            "files": [
+              "docs/architecture/adr-041-in-place-store-migrations.md"
+            ],
+            "reason": "Decision adr-041-in-place-store-migrations has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "adr-043-nft-module",
+            "files": [
+              "docs/architecture/adr-043-nft-module.md"
+            ],
+            "reason": "Decision adr-043-nft-module has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "adr-048-consensus-fees",
+            "files": [
+              "docs/architecture/adr-048-consensus-fees.md"
+            ],
+            "reason": "Decision adr-048-consensus-fees has no incoming or outgoing edges (orphan)."
+          }
+        ]
+      }
     },
     {
       "repo": "JabRef/jabref",
@@ -484,14 +786,112 @@
           ]
         }
       ],
-      "brokenLinks": []
+      "brokenLinks": [],
+      "lintFindings": {
+        "orphan": [
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-0000",
+            "files": [
+              "docs/decisions/0000-use-markdown-architectural-decision-records.md"
+            ],
+            "reason": "Decision ADR-0000 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-0002",
+            "files": [
+              "docs/decisions/0002-use-slf4j-for-logging.md"
+            ],
+            "reason": "Decision ADR-0002 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-0003",
+            "files": [
+              "docs/decisions/0003-use-gradle-as-build-tool.md"
+            ],
+            "reason": "Decision ADR-0003 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-0004",
+            "files": [
+              "docs/decisions/0004-use-mariadb-connector.md"
+            ],
+            "reason": "Decision ADR-0004 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-0005",
+            "files": [
+              "docs/decisions/0005-fully-support-utf8-only-for-latex-files.md"
+            ],
+            "reason": "Decision ADR-0005 has no incoming or outgoing edges (orphan)."
+          }
+        ]
+      }
     },
     {
       "repo": "alphagov/govuk-design-system-architecture",
       "commitSha": "89854bdaa299203bccae8b64bcfb690d4d8c5824",
       "cycles": [],
       "mutualReferences": [],
-      "brokenLinks": []
+      "brokenLinks": [],
+      "lintFindings": {
+        "orphan": [
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-000",
+            "files": [
+              "decision-records/000-template.md"
+            ],
+            "reason": "Decision ADR-000 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-002",
+            "files": [
+              "decision-records/002-restructure-based-on-single-package.md"
+            ],
+            "reason": "Decision ADR-002 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-003",
+            "files": [
+              "decision-records/003-templating-languages.md"
+            ],
+            "reason": "Decision ADR-003 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-004",
+            "files": [
+              "decision-records/004-new-version-font.md"
+            ],
+            "reason": "Decision ADR-004 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "ADR-008",
+            "files": [
+              "decision-records/008-reset-the-javascript-api.md"
+            ],
+            "reason": "Decision ADR-008 has no incoming or outgoing edges (orphan)."
+          }
+        ]
+      }
     }
   ]
 }

@@ -75,6 +75,20 @@ export function generateFindingsMarkdown(report: CorpusBenchmarkReport): string 
     })
     .join('\n');
 
+  const lintRows = results
+    .map((r) => {
+      const byRule = r.lintSummary?.byRule;
+      const dep = byRule?.['accepted-depends-on-deprecated'] ?? 0;
+      const sup = byRule?.['superseded-without-successor'] ?? 0;
+      const brk = byRule?.['broken-supersedes'] ?? 0;
+      const orp = byRule?.orphan ?? 0;
+      return `| **${r.repo}** | ${dep} | ${sup} | ${brk} | ${orp} | ${r.lintSummary?.total ?? 0} |`;
+    })
+    .join('\n');
+
+  const totalLint = summary.totalLintByRule;
+  const lintTotalRow = `| **Total** | **${totalLint?.['accepted-depends-on-deprecated'] ?? 0}** | **${totalLint?.['superseded-without-successor'] ?? 0}** | **${totalLint?.['broken-supersedes'] ?? 0}** | **${totalLint?.orphan ?? 0}** | **${(totalLint?.['accepted-depends-on-deprecated'] ?? 0) + (totalLint?.['superseded-without-successor'] ?? 0) + (totalLint?.['broken-supersedes'] ?? 0) + (totalLint?.orphan ?? 0)}** |`;
+
   const droppedRows = droppedRepositories
     .map((d) => `| [${d.name}](${d.url}) | ${d.license} | **Dropped** | ${d.reason} |`)
     .join('\n');
@@ -138,6 +152,17 @@ ${linkComparisonRows}
 - **Outside-Scope**: Relative Markdown links whose target exists in the repository's full \`git ls-tree\` at the pinned commit, outside the analyzed decision folder.
 - **Ambiguous**: Bare ID mentions (e.g., \`[ADR-020]\`) matching multiple decisions; no edge is created.
 - **Truly Broken Links**: Targets absent from the full repository tree (plus unresolved hard/bare-ID references); external \`http(s)\` links are excluded.
+
+### Lint Rules Breakdown (Phase 3)
+
+| Repository | \`accepted-depends-on-deprecated\` | \`superseded-without-successor\` | \`broken-supersedes\` | \`orphan\` | Total Findings |
+| :--- |:---:|:---:|:---:|:---:|:---:|
+${lintRows}
+${lintTotalRow}
+
+*Notes:*
+- Status-dependent rules (\`accepted-depends-on-deprecated\`, \`superseded-without-successor\`) skip nodes whose status is defaulted (no explicit \`status\`, \`stage\`, or \`state\` in frontmatter).
+- Up to 5 concrete findings per rule (with file paths and reasons) are recorded in \`results/evidence.json\`.
 
 ---
 

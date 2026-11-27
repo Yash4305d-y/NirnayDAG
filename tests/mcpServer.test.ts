@@ -119,7 +119,20 @@ Dec
     expect(typeof res.affectedSystems).toBe('object');
     expect(res.riskBreakdown).toBeDefined();
     expect(res.riskLevel).toBeDefined();
+    expect(res.riskModelVersion).toBe('v2');
+    expect(res.riskBreakdown.betweennessCentrality).toBeDefined();
     expect(Array.isArray(res.alsoReferencedBy)).toBe(true);
+  });
+
+  it('should handle lint_architecture tool', async () => {
+    const result = await sendRpc('tools/call', {
+      name: 'lint_architecture',
+      arguments: {}
+    });
+    expect(result.content[0].type).toBe('text');
+    const res = JSON.parse(result.content[0].text);
+    expect(res.summary).toBeDefined();
+    expect(Array.isArray(res.findings)).toBe(true);
   });
 
   it('should handle get_blast_radius with invalid id gracefully', async () => {

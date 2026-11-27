@@ -36,6 +36,8 @@ describe('PR Blast Radius Report Generator', () => {
 
     expect(result.changedCount).toBe(1);
     expect(result.totalCount).toBeGreaterThanOrEqual(5);
+    expect(result.lintResult).toBeDefined();
+    expect(content).toContain('Architecture Lint Results');
   });
 
   it('generates report when no ADRs were modified', async () => {

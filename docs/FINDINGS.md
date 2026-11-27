@@ -1,7 +1,7 @@
 # NirnayDAG Corpus Benchmark Findings (Phase 2A.2 + 2B)
 
-> Benchmark Executed: 2026-11-26T12:32:19.588Z  
-> Runner Version: `1.0.0-phase2c.1.1`  
+> Benchmark Executed: 2026-11-26T14:12:22.817Z  
+> Runner Version: `1.0.0-phase3`  
 > Scope: Hard vs. Soft dependency edge classification and Data-Integrity Fixes across pinned open-source decision-record commits.
 
 ---
@@ -31,13 +31,13 @@ In Phase 2A.1, `kubernetes/enhancements` had 708 markdown files, 689 of which we
 
 | Repository | Commit | Format | License | Files Found | Parsed OK | Parse Rate | Real Title % | Status Found % | ID Source (FM / File / Gen) | Duplicate IDs | Unique IDs | Nodes | Edges (Hard / Soft) | Edge Density | Isolated Nodes | Hard Cycles | Mutual Refs | Broken Links | Analysis Time | Checkout Time (cached) |
 | :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [backstage/backstage](https://github.com/backstage/backstage.git) | `b3ed969` | `madr` | Apache-2.0 | 17 | 17 | 100% | 100% | 0% | 100% / 0% / 0% | 0 | 17 | 17 | 0 / 4 | 0.235 | 12 | None | 1 | 0 | 126ms | 96ms |
-| [adr/madr](https://github.com/adr/madr.git) | `ba75bb1` | `madr` | MIT | 21 | 21 | 100% | 100% | 4.8% | 0% / 100% / 0% | 0 | 21 | 21 | 0 / 4 | 0.19 | 16 | None | 1 | 0 | 85ms | 89ms |
-| [rust-lang/rfcs](https://github.com/rust-lang/rfcs.git) | `f43d578` | `rfc` | MIT / Apache-2.0 | 654 | 654 | 100% | 7.5% | 0% | 0% / 100% / 0% | 2 | 654 | 654 | 0 / 12 | 0.018 | 624 | None | 0 | 21 | 662ms | 88ms |
-| [kubernetes/enhancements](https://github.com/kubernetes/enhancements.git) | `cac930c` | `kep` | Apache-2.0 | 708 | 708 | 100% | 97.9% | 0% | 0% / 100% / 0% | 2 | 708 | 708 | 0 / 216 | 0.305 | 461 | None | 3 | 51 | 919ms | 82ms |
-| [cosmos/cosmos-sdk](https://github.com/cosmos/cosmos-sdk.git) | `06a0152` | `adr` | Apache-2.0 | 65 | 65 | 100% | 100% | 0% | 0% / 100% / 0% | 0 | 65 | 65 | 0 / 88 | 1.354 | 7 | None | 5 | 1 | 137ms | 83ms |
-| [JabRef/jabref](https://github.com/JabRef/jabref.git) | `d058450` | `madr` | MIT | 88 | 88 | 100% | 100% | 9.1% | 0% / 100% / 0% | 0 | 88 | 88 | 0 / 25 | 0.284 | 62 | None | 4 | 0 | 160ms | 76ms |
-| [alphagov/govuk-design-system-architecture](https://github.com/alphagov/govuk-design-system-architecture.git) | `89854bd` | `nygard` | MIT | 12 | 12 | 100% | 100% | 0% | 0% / 100% / 0% | 0 | 12 | 12 | 0 / 4 | 0.333 | 6 | None | 0 | 0 | 100ms | 83ms |
+| [backstage/backstage](https://github.com/backstage/backstage.git) | `b3ed969` | `madr` | Apache-2.0 | 17 | 17 | 100% | 100% | 0% | 100% / 0% / 0% | 0 | 17 | 17 | 0 / 4 | 0.235 | 12 | None | 1 | 0 | 106ms | 57ms |
+| [adr/madr](https://github.com/adr/madr.git) | `ba75bb1` | `madr` | MIT | 21 | 21 | 100% | 100% | 4.8% | 0% / 100% / 0% | 0 | 21 | 21 | 0 / 4 | 0.19 | 16 | None | 1 | 0 | 70ms | 48ms |
+| [rust-lang/rfcs](https://github.com/rust-lang/rfcs.git) | `f43d578` | `rfc` | MIT / Apache-2.0 | 654 | 654 | 100% | 7.5% | 0% | 0% / 100% / 0% | 2 | 654 | 654 | 0 / 12 | 0.018 | 624 | None | 0 | 21 | 341ms | 48ms |
+| [kubernetes/enhancements](https://github.com/kubernetes/enhancements.git) | `cac930c` | `kep` | Apache-2.0 | 708 | 708 | 100% | 97.9% | 0% | 0% / 100% / 0% | 2 | 708 | 708 | 0 / 216 | 0.305 | 461 | None | 3 | 51 | 576ms | 53ms |
+| [cosmos/cosmos-sdk](https://github.com/cosmos/cosmos-sdk.git) | `06a0152` | `adr` | Apache-2.0 | 65 | 65 | 100% | 100% | 0% | 0% / 100% / 0% | 0 | 65 | 65 | 0 / 88 | 1.354 | 7 | None | 5 | 1 | 104ms | 50ms |
+| [JabRef/jabref](https://github.com/JabRef/jabref.git) | `d058450` | `madr` | MIT | 88 | 88 | 100% | 100% | 9.1% | 0% / 100% / 0% | 0 | 88 | 88 | 0 / 25 | 0.284 | 62 | None | 4 | 0 | 120ms | 49ms |
+| [alphagov/govuk-design-system-architecture](https://github.com/alphagov/govuk-design-system-architecture.git) | `89854bd` | `nygard` | MIT | 12 | 12 | 100% | 100% | 0% | 0% / 100% / 0% | 0 | 12 | 12 | 0 / 4 | 0.333 | 6 | None | 0 | 0 | 62ms | 48ms |
 
 *Column notes:*
 - **Real Title %**: % of parsed files whose extracted title is not the parser fallback `'Untitled ADR'`.
@@ -67,6 +67,23 @@ In Phase 2A.1, `kubernetes/enhancements` had 708 markdown files, 689 of which we
 - **Outside-Scope**: Relative Markdown links whose target exists in the repository's full `git ls-tree` at the pinned commit, outside the analyzed decision folder.
 - **Ambiguous**: Bare ID mentions (e.g., `[ADR-020]`) matching multiple decisions; no edge is created.
 - **Truly Broken Links**: Targets absent from the full repository tree (plus unresolved hard/bare-ID references); external `http(s)` links are excluded.
+
+### Lint Rules Breakdown (Phase 3)
+
+| Repository | `accepted-depends-on-deprecated` | `superseded-without-successor` | `broken-supersedes` | `orphan` | Total Findings |
+| :--- |:---:|:---:|:---:|:---:|:---:|
+| **backstage/backstage** | 0 | 0 | 0 | 12 | 12 |
+| **adr/madr** | 0 | 0 | 0 | 16 | 16 |
+| **rust-lang/rfcs** | 0 | 0 | 0 | 624 | 624 |
+| **kubernetes/enhancements** | 0 | 0 | 0 | 461 | 461 |
+| **cosmos/cosmos-sdk** | 0 | 0 | 0 | 7 | 7 |
+| **JabRef/jabref** | 0 | 0 | 0 | 62 | 62 |
+| **alphagov/govuk-design-system-architecture** | 0 | 0 | 0 | 6 | 6 |
+| **Total** | **0** | **0** | **0** | **1188** | **1188** |
+
+*Notes:*
+- Status-dependent rules (`accepted-depends-on-deprecated`, `superseded-without-successor`) skip nodes whose status is defaulted (no explicit `status`, `stage`, or `state` in frontmatter).
+- Up to 5 concrete findings per rule (with file paths and reasons) are recorded in `results/evidence.json`.
 
 ---
 

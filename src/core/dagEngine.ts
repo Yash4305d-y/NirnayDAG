@@ -263,7 +263,7 @@ export class DAGEngine {
    * Returns direct dependents (nodes that depend ON this node)
    */
   public getDirectDependents(id: string, options?: DAGQueryOptions): string[] {
-    return [...this.getDependentsList(id, options?.includeSoft)];
+    return this.getDependentsList(id, options?.includeSoft).filter((depId) => depId !== id);
   }
 
   /**
@@ -403,6 +403,7 @@ export function mapParsedToNirnay(parsed: ParsedADR): NirnayADR {
     title: parsed.frontmatter.title,
     category: 'Infrastructure', // fallback
     status: parsed.frontmatter.status as any,
+    statusSource: parsed.frontmatter.statusSource,
     timestamp: parsed.frontmatter.date,
     context: parsed.context,
     decision: parsed.decision,
@@ -414,6 +415,8 @@ export function mapParsedToNirnay(parsed: ParsedADR): NirnayADR {
     softDependencies,
     edgeRefs: parsed.edges,
     supersedes: parsed.frontmatter.supersedes?.[0],
+    supersedesList: parsed.frontmatter.supersedes || [],
+    supersededBy: parsed.frontmatter.superseded_by || [],
     tags: parsed.frontmatter.tags || [],
     filePath: parsed.filePath,
   };

@@ -86,7 +86,12 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
   const id = frontmatterData.id || fallbackId || `ADR-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
   // Process Status with Aliases and Normalization
-  let rawStatus = frontmatterData.status || frontmatterData.stage || frontmatterData.state || 'accepted';
+  const rawStatusInput = frontmatterData.status ?? frontmatterData.stage ?? frontmatterData.state;
+  const statusSource: 'explicit' | 'default' =
+    rawStatusInput !== undefined && rawStatusInput !== null && String(rawStatusInput).trim() !== ''
+      ? 'explicit'
+      : 'default';
+  let rawStatus = rawStatusInput || 'accepted';
   rawStatus = String(rawStatus).toLowerCase();
   
   let status: ADRStatus = 'accepted';
@@ -110,12 +115,20 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
   );
 
   // Process Supersedes with Aliases (Hard edges)
-  let rawSupersedes: unknown = frontmatterData.supersedes || frontmatterData.replaces || frontmatterData['superseded-by'] || [];
+  let rawSupersedes: unknown = frontmatterData.supersedes || frontmatterData.replaces || [];
   if (!Array.isArray(rawSupersedes)) {
     rawSupersedes = [rawSupersedes];
   }
   const supersedesSet = new Set<string>(
     (rawSupersedes as unknown[]).map((s) => String(s).trim()).filter(Boolean)
+  );
+
+  let rawSupersededBy: unknown = frontmatterData['superseded-by'] ?? frontmatterData.superseded_by ?? [];
+  if (!Array.isArray(rawSupersededBy)) {
+    rawSupersededBy = [rawSupersededBy];
+  }
+  const supersededBy = Array.from(
+    new Set((rawSupersededBy as unknown[]).map((s) => String(s).trim()).filter(Boolean))
   );
 
   const edges: ADREdgeRef[] = [];
@@ -200,11 +213,13 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
     id: id,
     title: title,
     status: status,
+    statusSource,
     date: frontmatterData.date || new Date().toISOString().split('T')[0],
     deciders: frontmatterData.deciders,
     tags: frontmatterData.tags,
     depends_on: dependsOn,
     supersedes: supersedes,
+    superseded_by: supersededBy,
     conflicts_with: frontmatterData.conflicts_with,
   };
 
