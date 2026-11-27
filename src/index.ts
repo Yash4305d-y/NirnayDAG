@@ -53,3 +53,13 @@ export type {
 } from './core/linter.js';
 export { generatePRReport } from './core/report.js';
 export type { ReportOptions, ReportResult } from './core/report.js';
+export {
+  getGoverningDecisionsForFiles,
+  compileAffectsMatcher,
+  normalizeRepoPath,
+} from './core/affects.js';
+export type {
+  AncestorDecision,
+  GoverningDecision,
+  FileGoverningResult,
+} from './core/affects.js';
