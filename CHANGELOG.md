@@ -2,6 +2,14 @@
 
 All notable changes to NirnayDAG are documented in this file based on the project's git history.
 
+## [2.0.1] - 2026-11-28
+
+### Fixed
+- Read CLI `--version` dynamically from `package.json` instead of hardcoding `0.1.0`.
+- Detect repository root (`.git` or `.nirnayrc.json`) from the ADR directory for `ndag lint` and `ndag why`, add `--root <path>` override, and skip `affects-no-match` / `deprecated-governs-code` with an info notice when no root is found.
+- Normalize `package.json` `bin` paths and `repository.url` (`git+https://...`) to eliminate `npm publish` warnings, and remove unused `bin/ndag.js`.
+- Strengthened CI tarball install smoke test to verify `node_modules/.bin/ndag`, `--version`, and out-of-repo `lint`/`why` execution.
+
 ## [2.0.0] - 2026-11-28
 
 ### Phase 4 — `affects` Glob Matching & `ndag why`
