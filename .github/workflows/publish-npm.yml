@@ -1,9 +1,7 @@
 name: Publish to npm
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch: # Allows manual trigger from Actions tab
+  workflow_dispatch: # manual only, run from the Actions tab
 
 jobs:
   publish:
@@ -20,8 +18,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - run: npm ci
-      - run: npm test
-      - run: npm run build
+      - run: npm run check
 
       - run: npm publish --access public --provenance
         env:
