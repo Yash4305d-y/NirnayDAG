@@ -23,7 +23,10 @@ describe('Built CLI Module & Execution', () => {
   });
 
   it('runs built CLI with --version', () => {
+    const pkg = JSON.parse(
+      fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf-8')
+    );
     const output = execSync(`node ${distCliPath} --version`, { encoding: 'utf-8' });
-    expect(output.trim()).toMatch(/^\d+\.\d+\.\d+/);
+    expect(output.trim()).toBe(pkg.version);
   });
 });

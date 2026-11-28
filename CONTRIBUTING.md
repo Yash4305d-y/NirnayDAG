@@ -13,6 +13,7 @@ Thank you for contributing to NirnayDAG!
    npm run check
    ```
    `npm run check` runs TypeScript type-checking (`npm run typecheck`), Oxlint (`npm run lint`), production builds (`npm run build`), and the Vitest suite (`npm run test`) in order so that `dist/cli.js` is up to date for CLI integration tests.
+   Always run `npm run check` rather than `npm test` alone, because some tests run the built CLI.
 
 ## Branch Conventions
 

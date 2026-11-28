@@ -10,7 +10,7 @@ import Table from 'cli-table3';
 import { parseBatchADRs } from '../core/adrParser.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
 import { calculateGraphRisk } from '../core/risk.js';
-import { lintArchitecture, loadNirnayConfig } from '../core/linter.js';
+import { detectRepoRoot, lintArchitecture, loadNirnayConfig } from '../core/linter.js';
 import { generatePRReport } from '../core/report.js';
 import { getGoverningDecisionsForFiles, normalizeRepoPath } from '../core/affects.js';
 import { startServer } from '../server/serve.js';
@@ -19,12 +19,26 @@ import { runInteractiveSession } from './interactive.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function readCliVersion(): string {
+  const candidates = [
+    path.resolve(__dirname, '../package.json'),
+    path.resolve(__dirname, '../../package.json'),
+  ];
+  for (const pkgPath of candidates) {
+    if (fs.existsSync(pkgPath)) {
+      const pkg = fs.readJsonSync(pkgPath) as { version?: string };
+      if (pkg.version) return pkg.version;
+    }
+  }
+  return '0.0.0';
+}
+
 const program = new Command();
 
 program
   .name('ndag')
   .description('NirnayDAG CLI - Architecture Decision Graph Tool')
-  .version('0.1.0');
+  .version(readCliVersion());
 
 // Helper to load and parse ADRs
 async function loadAndValidate(dir: string) {
@@ -272,15 +286,29 @@ program
   .description('Run architecture decision lint rules')
   .option('--json', 'Outputs raw JSON')
   .option('-d, --dir <path>', 'Directory containing ADR markdown files')
+  .option('--root <path>', 'Repository root directory override')
   .action(async (positionalDir, options) => {
     const targetDir = options.dir || positionalDir || process.env.ADR_DIR || './docs/adr';
+    const resolvedAdrDir = path.resolve(process.cwd(), targetDir);
+    const effectiveRoot = options.root
+      ? path.resolve(process.cwd(), options.root)
+      : detectRepoRoot(resolvedAdrDir);
     const { engine, mappedAdrs } = await loadAndValidate(targetDir);
-    const config = await loadNirnayConfig(targetDir);
-    const result = lintArchitecture(mappedAdrs, engine, config, { repoRoot: process.cwd() });
+    const config = await loadNirnayConfig(targetDir, effectiveRoot);
+    const result = lintArchitecture(mappedAdrs, engine, config, { repoRoot: effectiveRoot });
+    const isJson = Boolean(options.json || process.env.NDAG_OUTPUT === 'json');
 
-    if (options.json || process.env.NDAG_OUTPUT === 'json') {
+    if (isJson) {
       console.log(JSON.stringify(result, null, 2));
       process.exit(result.hasErrors ? 1 : 0);
+    }
+
+    if (effectiveRoot === null) {
+      console.log(
+        chalk.blue(
+          'ℹ️  No repository root (.git or .nirnayrc.json) found; skipping affects-no-match and deprecated-governs-code rules.'
+        )
+      );
     }
 
     if (result.findings.length === 0) {
@@ -315,6 +343,7 @@ program
   .description('Show architectural decisions governing one or more repo-relative files')
   .option('--json', 'Outputs raw JSON')
   .option('-d, --dir <path>', 'Directory containing ADR markdown files')
+  .option('--root <path>', 'Repository root directory override')
   .action(async (rawFiles: string[], options) => {
     let targetDir = options.dir || process.env.ADR_DIR || './docs/adr';
     let fileArgs = rawFiles;
@@ -328,9 +357,14 @@ program
       }
     }
 
+    const resolvedAdrDir = path.resolve(process.cwd(), targetDir);
+    const effectiveRoot = options.root
+      ? path.resolve(process.cwd(), options.root)
+      : (detectRepoRoot(resolvedAdrDir) ?? process.cwd());
+
     const normalizedFiles = fileArgs.map((f) => {
       if (path.isAbsolute(f)) {
-        const rel = path.relative(process.cwd(), f);
+        const rel = path.relative(effectiveRoot, f);
         return normalizeRepoPath(rel);
       }
       return normalizeRepoPath(f);
