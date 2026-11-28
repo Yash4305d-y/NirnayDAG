@@ -2,7 +2,7 @@
 
 All notable changes to NirnayDAG are documented in this file based on the project's git history.
 
-## [0.9.0] - Unreleased (Phase 5a: Release Readiness)
+## [2.0.0] - 2026-11-28
 
 ### Phase 4 — `affects` Glob Matching & `ndag why`
 - Parsed and validated `affects` frontmatter globs in `adrParser`.
