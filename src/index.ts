@@ -66,3 +66,16 @@ export type {
   GoverningDecision,
   FileGoverningResult,
 } from './core/affects.js';
+export {
+  listDecisionFiles,
+  listDecisionFilesSync,
+  loadNirnayConfig as loadDecisionLoaderConfig,
+  loadNirnayConfigSync,
+  DEFAULT_INCLUDE_GLOBS,
+  DEFAULT_EXCLUDE_GLOBS,
+} from './core/decisionLoader.js';
+export type {
+  NirnayConfig,
+  ListDecisionFilesOptions,
+  DecisionFileListResult,
+} from './core/decisionLoader.js';

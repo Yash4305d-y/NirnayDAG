@@ -91,6 +91,7 @@ export type LinkClassification =
   | 'outside-scope'
   | 'ambiguous'
   | 'external'
+  | 'not-a-file-link'
   | 'broken';
 
 export interface ClassifiedLink {

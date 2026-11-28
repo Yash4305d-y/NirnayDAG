@@ -3,6 +3,8 @@ export interface CorpusRepoConfig {
   url: string;
   commitSha: string;
   subfolders: string[];
+  include?: string[];
+  exclude?: string[];
   format: 'madr' | 'nygard' | 'rfc' | 'kep' | 'adr' | string;
   license: string;
   description?: string;
@@ -91,6 +93,7 @@ export interface RepoLintSummary {
 export interface RepoEvidence {
   repo: string;
   commitSha: string;
+  excludedFiles?: string[];
   cycles: Array<{
     cyclePath: string[];
     edges: CycleEdgeEvidence[];
@@ -114,6 +117,7 @@ export interface RepoBenchmarkResult {
   license: string;
   commitSha: string;
   filesFound: number;
+  excludedCount?: number;
   filesParsedOK: number;
   parseRatePercent: number;
   parseFailuresCount: number;
@@ -137,8 +141,10 @@ export interface RepoBenchmarkResult {
   outsideScopeLinks?: number;
   ambiguousLinks?: number;
   externalLinks?: number;
+  notAFileLinks?: number;
   brokenLinks: number;
   before?: {
+    nodes?: number;
     edges: number;
     brokenLinks: number;
   };
@@ -158,6 +164,7 @@ export interface CorpusBenchmarkReport {
   summary: {
     totalReposAnalyzed: number;
     totalFilesFound: number;
+    totalExcludedFiles?: number;
     totalFilesParsedOK: number;
     averageParseRatePercent: number;
     totalNodes: number;
@@ -171,6 +178,7 @@ export interface CorpusBenchmarkReport {
     totalOutsideScopeLinks?: number;
     totalAmbiguousLinks?: number;
     totalExternalLinks?: number;
+    totalNotAFileLinks?: number;
     totalBrokenLinks: number;
     totalCyclesDetected: number;
     totalMutualReferences: number;

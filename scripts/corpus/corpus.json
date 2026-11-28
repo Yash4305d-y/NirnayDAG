@@ -10,6 +10,13 @@
       "subfolders": [
         "docs/architecture-decisions"
       ],
+      "include": [
+        "adr*.md"
+      ],
+      "exclude": [
+        "adr000-template.md",
+        "index.md"
+      ],
       "format": "madr",
       "license": "Apache-2.0",
       "description": "Spotify Backstage architecture decision records"
@@ -20,6 +27,13 @@
       "commitSha": "ba75bb1b20d42af5746b246ad348c202419ae681",
       "subfolders": [
         "docs/decisions"
+      ],
+      "include": [
+        "[0-9]*.md"
+      ],
+      "exclude": [
+        "adr-template.md",
+        "index.md"
       ],
       "format": "madr",
       "license": "MIT",
@@ -32,6 +46,12 @@
       "subfolders": [
         "text"
       ],
+      "include": [
+        "*.md"
+      ],
+      "exclude": [
+        "3392-leadership-council/**"
+      ],
       "format": "rfc",
       "license": "MIT / Apache-2.0",
       "description": "Rust RFC (Request for Comments) decision documents"
@@ -42,6 +62,17 @@
       "commitSha": "cac930cb9d7c70192016865425f943c339414011",
       "subfolders": [
         "keps"
+      ],
+      "include": [
+        "**/*.md"
+      ],
+      "exclude": [
+        "README.md",
+        "prod-readiness/README.md",
+        "NNNN-kep-template/**",
+        "**/0000-cloud-provider-template/**",
+        "**/FAQ.md",
+        "**/images/**"
       ],
       "format": "kep",
       "license": "Apache-2.0",
@@ -54,6 +85,14 @@
       "subfolders": [
         "docs/architecture"
       ],
+      "include": [
+        "adr-*.md"
+      ],
+      "exclude": [
+        "README.md",
+        "PROCESS.md",
+        "adr-template.md"
+      ],
       "format": "adr",
       "license": "Apache-2.0",
       "description": "Cosmos SDK architectural decision records"
@@ -65,6 +104,13 @@
       "subfolders": [
         "docs/decisions"
       ],
+      "include": [
+        "[0-9]*.md"
+      ],
+      "exclude": [
+        "adr-template.md",
+        "index.md"
+      ],
       "format": "madr",
       "license": "MIT",
       "description": "JabRef open-source reference manager MADR records"
@@ -75,6 +121,13 @@
       "commitSha": "89854bdaa299203bccae8b64bcfb690d4d8c5824",
       "subfolders": [
         "decision-records"
+      ],
+      "include": [
+        "[0-9]*.md"
+      ],
+      "exclude": [
+        "000-template.md",
+        "README.md"
       ],
       "format": "nygard",
       "license": "MIT",

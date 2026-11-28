@@ -29,14 +29,31 @@ export function generateFindingsMarkdown(report: CorpusBenchmarkReport): string 
   const maxDensity = results.length > 0 ? Math.max(...results.map((r) => r.edgeDensity)) : 0;
   const totalIsolated = results.reduce((acc, r) => acc + r.isolatedNodes, 0);
 
+  const isPhase2c2a = summary.totalExcludedFiles !== undefined;
+
+  const tableHeader = isPhase2c2a
+    ? `| Repository | Commit | Format | License | Files Found | Excluded | Decision Nodes | Nodes (Before → After) | Edges (Hard / Soft) | Mutual Refs | Hard Cycles | Resolved / Non-decision / Outside-scope / Ambiguous / Truly Broken | Truly Broken (Before → After) | Real Title % | Status Found % |
+| :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |`
+    : `| Repository | Commit | Format | License | Files Found | Parsed OK | Parse Rate | Real Title % | Status Found % | ID Source (FM / File / Gen) | Duplicate IDs | Unique IDs | Nodes | Edges (Hard / Soft) | Edge Density | Isolated Nodes | Hard Cycles | Mutual Refs | Broken Links | Analysis Time | Checkout Time (cached) |
+| :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |`;
+
   const tableRows = results
     .map((r) => {
       const shortSha = r.commitSha ? `\`${r.commitSha.substring(0, 7)}\`` : '`unknown`';
       const eq = r.extractionQuality;
-      const idSourceDisplay = `${eq.idFromFrontmatterPercent}% / ${eq.idFromFilenamePercent}% / ${eq.idGeneratedPercent}%`;
       const edgesDisplay = `${r.hardEdges} / ${r.softEdges}`;
       const cycleDisplay = r.cyclesFound ? `Detected (${r.cyclePath?.length || 0} nodes)` : 'None';
       const mutualDisplay = `${r.mutualReferencesCount}`;
+      if (isPhase2c2a) {
+        const excluded = r.excludedCount ?? 0;
+        const beforeNodes = r.before?.nodes !== undefined ? `${r.before.nodes}` : '—';
+        const nodesCompare = `${beforeNodes} → ${r.nodes}`;
+        const linkBreakdown = `${r.resolvedLinks ?? 0} / ${r.nonDecisionLinks ?? 0} / ${r.outsideScopeLinks ?? 0} / ${r.ambiguousLinks ?? 0} / ${r.brokenLinks}`;
+        const beforeBroken = r.before ? `${r.before.brokenLinks}` : '—';
+        const brokenCompare = `${beforeBroken} → ${r.brokenLinks}`;
+        return `| [${r.repo}](${r.url}) | ${shortSha} | \`${r.format}\` | ${r.license} | ${r.filesFound} | ${excluded} | ${r.nodes} | ${nodesCompare} | ${edgesDisplay} | ${mutualDisplay} | ${cycleDisplay} | ${linkBreakdown} | ${brokenCompare} | ${eq.realTitlePercent}% | ${eq.statusFoundPercent}% |`;
+      }
+      const idSourceDisplay = `${eq.idFromFrontmatterPercent}% / ${eq.idFromFilenamePercent}% / ${eq.idGeneratedPercent}%`;
       const brokenDisplay = `${r.brokenLinks}`;
       return `| [${r.repo}](${r.url}) | ${shortSha} | \`${r.format}\` | ${r.license} | ${r.filesFound} | ${r.filesParsedOK} | ${r.parseRatePercent}% | ${eq.realTitlePercent}% | ${eq.statusFoundPercent}% | ${idSourceDisplay} | ${r.duplicateIdsCount} | ${r.uniqueIdsCount} | ${r.nodes} | ${edgesDisplay} | ${r.edgeDensity} | ${r.isolatedNodes} | ${cycleDisplay} | ${mutualDisplay} | ${brokenDisplay} | ${r.timing.analysisMs}ms | ${r.timing.cloneMs}ms |`;
     })
@@ -126,8 +143,7 @@ In Phase 2A.1, \`kubernetes/enhancements\` had 708 markdown files, 689 of which 
 
 ## 2. Benchmark Results & Extraction Quality
 
-| Repository | Commit | Format | License | Files Found | Parsed OK | Parse Rate | Real Title % | Status Found % | ID Source (FM / File / Gen) | Duplicate IDs | Unique IDs | Nodes | Edges (Hard / Soft) | Edge Density | Isolated Nodes | Hard Cycles | Mutual Refs | Broken Links | Analysis Time | Checkout Time (cached) |
-| :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+${tableHeader}
 ${tableRows}
 
 *Column notes:*

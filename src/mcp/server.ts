@@ -3,8 +3,8 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import fs from 'fs-extra';
 import path from 'path';
-import glob from 'fast-glob';
 import { parseADRContent, deriveFallbackId } from '../core/adrParser.js';
+import { listDecisionFilesSync } from '../core/decisionLoader.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
 import { calculateGraphRisk } from '../core/risk.js';
 import { lintArchitecture, loadNirnayConfig } from '../core/linter.js';
@@ -31,7 +31,9 @@ function loadAdrs(): ParsedADR[] {
     return [];
   }
 
-  const files = glob.sync("**/*.{md,markdown}", { cwd: resolvedDir, absolute: true });
+  const { included: files } = listDecisionFilesSync(resolvedDir, {
+    basePatterns: ['**/*.{md,markdown}'],
+  });
   const adrs: ParsedADR[] = [];
   
   for (const file of files) {

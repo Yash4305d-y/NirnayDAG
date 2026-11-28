@@ -524,10 +524,37 @@ function resolveAliasToken(
   return { status: 'resolved', resolvedId: targetAdr.frontmatter.id };
 }
 
+const COMMON_DOMAIN_TLDS = new Set([
+  'com', 'org', 'net', 'io', 'dev', 'edu', 'gov', 'co', 'uk', 'de',
+  'jp', 'fr', 'ai', 'app', 'rs', 'me', 'info', 'biz', 'xyz', 'tech', 'cloud',
+]);
+
+function isNotAFileLink(target: string): boolean {
+  if (!target || target.startsWith('#')) return true;
+  if (/^(?:mailto:|tel:)/i.test(target)) return true;
+  if (target.includes('::')) return true;
+  if (/^www\.[a-z0-9-]+/i.test(target)) return true;
+
+  // Scheme-less domain-like hostnames (e.g. git.k8s.io/enhancements/..., example.com/spec)
+  // Exclude relative paths (./, ../, /) and files with non-TLD extensions (.md, .go, .proto)
+  if (!target.startsWith('.') && !target.startsWith('/')) {
+    const hostMatch = target.match(/^([a-z0-9-]+(?:\.[a-z0-9-]+)+)(?::\d+)?(?:[/?#]|$)/i);
+    if (hostMatch) {
+      const host = hostMatch[1];
+      const lastLabel = host.split('.').pop()?.toLowerCase() || '';
+      if (COMMON_DOMAIN_TLDS.has(lastLabel)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 /**
  * Resolves relative Markdown body links and bare ID mentions across a batch of
  * parsed ADRs, classifying each as `resolved`, `non-decision`, `outside-scope`,
- * `ambiguous`, `external`, or `broken`.
+ * `ambiguous`, `external`, `not-a-file-link`, or `broken`.
  */
 export function resolveBatchLinks(parsedADRs: ParsedADR[], options?: LinkResolutionOptions): void {
   const pathToId = new Map<string, string>();
@@ -566,11 +593,20 @@ export function resolveBatchLinks(parsedADRs: ParsedADR[], options?: LinkResolut
       const rawLinkText = `(${rawInner})`;
       const targetWithFragment = parseLinkTarget(rawInner);
 
-      if (!targetWithFragment || /^(?:https?:|mailto:|tel:|ftp:|\/\/|#)/i.test(targetWithFragment)) {
+      if (/^(?:https?:|ftp:|\/\/)/i.test(targetWithFragment)) {
         classifiedLinks.push({
           rawLinkText,
           targetPath: targetWithFragment,
           classification: 'external',
+        });
+        continue;
+      }
+
+      if (isNotAFileLink(targetWithFragment)) {
+        classifiedLinks.push({
+          rawLinkText,
+          targetPath: targetWithFragment,
+          classification: 'not-a-file-link',
         });
         continue;
       }
@@ -580,7 +616,7 @@ export function resolveBatchLinks(parsedADRs: ParsedADR[], options?: LinkResolut
         classifiedLinks.push({
           rawLinkText,
           targetPath: targetWithFragment,
-          classification: 'external',
+          classification: 'not-a-file-link',
         });
         continue;
       }

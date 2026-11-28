@@ -2,7 +2,7 @@ import http, { type Server, type IncomingMessage, type ServerResponse } from 'no
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fs from 'fs-extra';
-import fg from 'fast-glob';
+import { listDecisionFiles } from '../core/decisionLoader.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -121,7 +121,7 @@ export function createServerApp(options: ServeOptions = {}) {
           return;
         }
 
-        const files = await fg('**/*.{md,mdx}', { cwd: targetDir, absolute: true });
+        const { included: files } = await listDecisionFiles(targetDir);
         const fileData = await Promise.all(
           files.map(async (file) => ({
             name: path.basename(file),

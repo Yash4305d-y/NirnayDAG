@@ -6,8 +6,8 @@ import chokidar from 'chokidar';
 import path from 'path';
 import chalk from 'chalk';
 import fs from 'fs-extra';
-import glob from 'fast-glob';
 import { parseBatchADRs } from '../core/adrParser.js';
+import { listDecisionFiles } from '../core/decisionLoader.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
 import { calculateGraphRisk } from '../core/risk.js';
 
@@ -17,7 +17,7 @@ export async function loadGraph(dir: string) {
   if (!fs.existsSync(fullPath)) {
     throw new Error(`Directory not found: ${fullPath}`);
   }
-  const files = await glob('**/*.{md,mdx}', { cwd: fullPath, absolute: true });
+  const { included: files } = await listDecisionFiles(fullPath);
   if (files.length === 0) {
     throw new Error(`No ADR files found in ${fullPath}`);
   }

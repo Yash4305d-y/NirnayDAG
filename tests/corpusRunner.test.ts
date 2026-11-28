@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import {
   analyzeDecisionFiles,
   readDirectoryDecisionFiles,
+  readDirectoryDecisionFilesWithExclusions,
   aggregateFailureReasons,
   deriveFallbackId,
 } from '../scripts/corpus/analyzer.js';
@@ -405,6 +406,113 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
       expect(md).toContain('Outside-Scope');
       expect(md).toContain('Ambiguous');
       expect(md).toContain('| **org/repo** | 0 | 0 | 1 | 1 | 1 | 0 → 0 | 3 → 1 |');
+    });
+
+    it('filters non-decision files via include/exclude globs and records excludedFiles + Phase 2C-2a columns', async () => {
+      const linkFixtureDir = path.resolve(__dirname, 'fixtures', 'link-resolution');
+      const { files, excludedFiles } = await readDirectoryDecisionFilesWithExclusions(
+        linkFixtureDir,
+        ['docs/architecture'],
+        {
+          include: ['adr-*.md'],
+          exclude: ['PROCESS.md', 'README.md'],
+        }
+      );
+
+      expect(files.map((f) => f.relativePath).sort()).toEqual([
+        'docs/architecture/adr-004-keys.md',
+        'docs/architecture/adr-005-auth.md',
+        'docs/architecture/adr-006-no-ext.md',
+      ]);
+      expect(excludedFiles.sort()).toEqual([
+        'docs/architecture/PROCESS.md',
+        'docs/architecture/README.md',
+      ]);
+
+      const md = generateFindingsMarkdown({
+        timestamp: '2026-11-26T00:00:00.000Z',
+        runnerVersion: '1.0.0-phase2c.2a',
+        licenseNotice: 'Test notice',
+        summary: {
+          totalReposAnalyzed: 1,
+          totalFilesFound: 5,
+          totalExcludedFiles: 2,
+          totalFilesParsedOK: 3,
+          averageParseRatePercent: 100,
+          totalNodes: 3,
+          totalEdges: 0,
+          totalDuplicateIds: 0,
+          totalUniqueIds: 3,
+          totalHardEdges: 0,
+          totalSoftEdges: 0,
+          totalResolvedLinks: 0,
+          totalNonDecisionLinks: 0,
+          totalOutsideScopeLinks: 0,
+          totalAmbiguousLinks: 0,
+          totalExternalLinks: 0,
+          totalNotAFileLinks: 0,
+          totalBrokenLinks: 0,
+          totalCyclesDetected: 0,
+          totalMutualReferences: 0,
+        },
+        results: [
+          {
+            repo: 'cosmos/cosmos-sdk',
+            url: 'https://github.com/cosmos/cosmos-sdk.git',
+            format: 'adr',
+            license: 'Apache-2.0',
+            commitSha: '06a015222f13fe7b41bc3969504da7dee875ae5c',
+            filesFound: 5,
+            excludedCount: 2,
+            filesParsedOK: 3,
+            parseRatePercent: 100,
+            parseFailuresCount: 0,
+            parseFailures: [],
+            topFailureReasons: [],
+            extractionQuality: {
+              realTitleCount: 3,
+              realTitlePercent: 100,
+              statusFoundCount: 0,
+              statusFoundPercent: 0,
+              idFromFrontmatterCount: 0,
+              idFromFrontmatterPercent: 0,
+              idFromFilenameCount: 3,
+              idFromFilenamePercent: 100,
+              idGeneratedCount: 0,
+              idGeneratedPercent: 0,
+              edgeSourceBreakdownSupported: true,
+            },
+            duplicateIdsCount: 0,
+            uniqueIdsCount: 3,
+            nodes: 3,
+            edges: 0,
+            hardEdges: 0,
+            softEdges: 0,
+            edgeDensity: 0,
+            isolatedNodes: 3,
+            cyclesFound: false,
+            mutualReferencesCount: 0,
+            mutualReferences: [],
+            resolvedLinks: 0,
+            nonDecisionLinks: 0,
+            outsideScopeLinks: 0,
+            ambiguousLinks: 0,
+            externalLinks: 0,
+            notAFileLinks: 0,
+            brokenLinks: 0,
+            before: { nodes: 5, edges: 0, brokenLinks: 1 },
+            missingDependencies: [],
+            timing: { cloneMs: 10, analysisMs: 5, totalMs: 15 },
+          },
+        ],
+        droppedRepositories: [],
+      });
+
+      expect(md).toContain('Excluded');
+      expect(md).toContain('Decision Nodes');
+      expect(md).toContain('Nodes (Before → After)');
+      expect(md).toContain('5 → 3');
+      expect(md).toContain('1 → 0');
     });
   });
 });
