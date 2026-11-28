@@ -648,6 +648,7 @@ export function applyKepMetadata(parsed: ParsedADR, kepYamlContent: string): voi
     const mapped = mapStatus(String(kepData.status));
     if (mapped) {
       parsed.frontmatter.status = mapped;
+      parsed.frontmatter.statusSource = 'kep-yaml';
       parsed.statusSource = 'kep-yaml';
     }
   }

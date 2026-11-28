@@ -1,19 +1,19 @@
 import picomatch from 'picomatch';
 import type { DAGEngine } from './dagEngine.js';
-import type { DecisionStatus, NirnayADR } from './types.js';
+import type { DecisionStatus, NirnayADR, StatusSource } from './types.js';
 
 export interface AncestorDecision {
   id: string;
   title: string;
   status: DecisionStatus;
-  statusSource: 'explicit' | 'default';
+  statusSource: StatusSource;
 }
 
 export interface GoverningDecision {
   id: string;
   title: string;
   status: DecisionStatus;
-  statusSource: 'explicit' | 'default';
+  statusSource: StatusSource;
   matchingGlob: string;
   isDeprecatedOrSuperseded: boolean;
   ancestors: AncestorDecision[];

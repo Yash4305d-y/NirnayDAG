@@ -409,7 +409,7 @@ export function mapParsedToNirnay(parsed: ParsedADR): NirnayADR {
     title: parsed.frontmatter.title,
     category: 'Infrastructure', // fallback
     status: parsed.frontmatter.status as any,
-    statusSource: parsed.frontmatter.statusSource,
+    statusSource: parsed.statusSource ?? parsed.frontmatter.statusSource,
     timestamp: parsed.frontmatter.date,
     context: parsed.context,
     decision: parsed.decision,

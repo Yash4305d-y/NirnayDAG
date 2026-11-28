@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { execSync } from 'child_process';
 import { parseBatchADRs } from './adrParser.js';
-import { listDecisionFiles } from './decisionLoader.js';
+import { loadDecisionFileInputs } from './decisionLoader.js';
 import { validateAndComputeDAG, type DAGValidationResult } from './dagEngine.js';
 import { calculateGraphRisk, computeBetweennessCentrality } from './risk.js';
 import { lintArchitecture, loadNirnayConfig, type LintResult } from './linter.js';
@@ -83,16 +83,8 @@ export async function generatePRReport(options: ReportOptions = {}): Promise<Rep
     };
   }
 
-  const { included: files } = await listDecisionFiles(fullPath);
-  const fileData = await Promise.all(
-    files.map(async (file) => ({
-      name: path.basename(file),
-      content: await fs.readFile(file, 'utf-8'),
-      absPath: file.replace(/\\/g, '/'),
-    }))
-  );
-
-  const parsedADRs = parseBatchADRs(fileData);
+  const { files: fileData } = await loadDecisionFileInputs(fullPath);
+  const parsedADRs = parseBatchADRs(fileData, { baseDir: fullPath });
   const { validationResult, engine, mappedAdrs } = validateAndComputeDAG(parsedADRs);
   const betweenness = computeBetweennessCentrality(engine);
   const lintConfig = await loadNirnayConfig(fullPath);

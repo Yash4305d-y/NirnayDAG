@@ -67,7 +67,7 @@ affects:
         id: 'ADR-0002',
         title: 'Legacy Auth',
         status: 'deprecated',
-        statusSource: 'explicit',
+        statusSource: 'frontmatter',
         matchingGlob: 'src/auth/*.ts',
         isDeprecatedOrSuperseded: true,
       });

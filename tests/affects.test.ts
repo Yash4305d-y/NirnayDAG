@@ -64,7 +64,7 @@ affects:
       id: 'ADR-0001',
       title: 'Core Architecture',
       status: 'accepted',
-      statusSource: 'explicit',
+      statusSource: 'frontmatter',
       matchingGlob: 'src/core/**',
       isDeprecatedOrSuperseded: false,
       ancestors: [],
@@ -73,7 +73,7 @@ affects:
       id: 'ADR-0002',
       title: 'Auth Boundary',
       status: 'accepted',
-      statusSource: 'explicit',
+      statusSource: 'frontmatter',
       matchingGlob: 'src/core/auth*.ts',
       isDeprecatedOrSuperseded: false,
       ancestors: [
@@ -81,7 +81,7 @@ affects:
           id: 'ADR-0001',
           title: 'Core Architecture',
           status: 'accepted',
-          statusSource: 'explicit',
+          statusSource: 'frontmatter',
         },
       ],
     });
@@ -210,7 +210,7 @@ affects:
     expect(results[0].decisions[0]).toMatchObject({
       id: 'ADR-0003',
       status: 'deprecated',
-      statusSource: 'explicit',
+      statusSource: 'frontmatter',
       isDeprecatedOrSuperseded: true,
     });
     expect(results[0].decisions[0].ancestors).toEqual([
@@ -218,7 +218,7 @@ affects:
         id: 'ADR-0002',
         title: 'Mid Layer',
         status: 'accepted',
-        statusSource: 'explicit',
+        statusSource: 'frontmatter',
       },
       {
         id: 'ADR-0001',

@@ -2,7 +2,7 @@ import http, { type Server, type IncomingMessage, type ServerResponse } from 'no
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fs from 'fs-extra';
-import { listDecisionFiles } from '../core/decisionLoader.js';
+import { loadDecisionFileInputs } from '../core/decisionLoader.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -121,14 +121,14 @@ export function createServerApp(options: ServeOptions = {}) {
           return;
         }
 
-        const { included: files } = await listDecisionFiles(targetDir);
-        const fileData = await Promise.all(
-          files.map(async (file) => ({
-            name: path.basename(file),
-            content: await fs.readFile(file, 'utf-8'),
-            path: file.replace(/\\/g, '/'),
-          }))
-        );
+        const { files } = await loadDecisionFileInputs(targetDir);
+        const fileData = files.map((file) => ({
+          name: file.name,
+          filePath: file.filePath,
+          content: file.content,
+          path: file.absPath,
+          ...(file.kepYamlContent !== undefined ? { kepYamlContent: file.kepYamlContent } : {}),
+        }));
 
         sendJson(res, 200, {
           files: fileData,

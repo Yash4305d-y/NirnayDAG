@@ -24,7 +24,7 @@ export interface NirnayADR extends Record<string, unknown> {
   title: string;
   category: 'Infrastructure' | 'Database' | 'AI / Engine' | 'Security';
   status: DecisionStatus;
-  statusSource?: 'explicit' | 'default';
+  statusSource?: StatusSource;
   timestamp: string;
   context: string;
   decision: string;
@@ -68,7 +68,7 @@ export interface NirnayValidationError {
 
 export type ADRStatus = 'proposed' | 'accepted' | 'deprecated' | 'superseded' | 'rejected';
 
-export type StatusSource = 'frontmatter' | 'section' | 'line' | 'kep-yaml' | 'default';
+export type StatusSource = 'frontmatter' | 'section' | 'line' | 'kep-yaml' | 'explicit' | 'default';
 
 export type TitleSource = 'frontmatter' | 'heading' | 'metadata-line' | 'kep-yaml' | 'slug' | 'default';
 
@@ -76,7 +76,7 @@ export interface ADRFrontmatter {
   id: string;
   title: string;
   status: ADRStatus;
-  statusSource?: 'explicit' | 'default';
+  statusSource?: StatusSource;
   date: string;
   deciders?: string[];
   tags?: string[];

@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 import * as yaml from 'js-yaml';
-import { listDecisionFiles } from '../../src/core/decisionLoader.js';
+import { listDecisionFiles, readSiblingKepYaml } from '../../src/core/decisionLoader.js';
 import {
   parseADRContent,
   applyKepMetadata,
@@ -555,17 +555,7 @@ export async function readDirectoryDecisionFilesWithExclusions(
       try {
         const content = await fs.readFile(absolutePath, 'utf-8');
         const relativeToRepo = path.relative(repoRoot, absolutePath).replace(/\\/g, '/');
-        let kepYamlContent: string | undefined;
-        if (path.basename(absolutePath).toLowerCase() === 'readme.md') {
-          const dir = path.dirname(absolutePath);
-          const kepYamlPath = path.join(dir, 'kep.yaml');
-          const kepYmlPath = path.join(dir, 'kep.yml');
-          if (await fs.pathExists(kepYamlPath)) {
-            kepYamlContent = await fs.readFile(kepYamlPath, 'utf-8');
-          } else if (await fs.pathExists(kepYmlPath)) {
-            kepYamlContent = await fs.readFile(kepYmlPath, 'utf-8');
-          }
-        }
+        const kepYamlContent = await readSiblingKepYaml(absolutePath);
         allFiles.push({
           relativePath: relativeToRepo,
           content,

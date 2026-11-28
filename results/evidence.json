@@ -1,21 +1,136 @@
 {
-  "timestamp": "2026-11-26T14:12:22.817Z",
-  "runnerVersion": "1.0.0-phase3",
+  "timestamp": "2026-11-28T14:56:54.302Z",
+  "runnerVersion": "1.0.0-phase6c",
   "lintFindingsByRule": {
-    "accepted-depends-on-deprecated": [],
-    "superseded-without-successor": [],
-    "broken-supersedes": [],
-    "orphan": [
+    "accepted-depends-on-deprecated": [
       {
-        "ruleId": "orphan",
-        "severity": "info",
-        "nodeId": "adrs-adr000",
+        "ruleId": "accepted-depends-on-deprecated",
+        "severity": "error",
+        "nodeId": "1205-bound-service-account-tokens",
         "files": [
-          "docs/architecture-decisions/adr000-template.md"
+          "keps/sig-auth/1205-bound-service-account-tokens/README.md",
+          "keps/sig-storage/2451-service-account-token-volumes/README.md"
         ],
-        "reason": "Decision adrs-adr000 has no incoming or outgoing edges (orphan).",
-        "repo": "backstage/backstage"
+        "reason": "Accepted decision 1205-bound-service-account-tokens has a hard dependency on superseded decision 2451-service-account-token-volumes.",
+        "repo": "kubernetes/enhancements"
       },
+      {
+        "ruleId": "accepted-depends-on-deprecated",
+        "severity": "error",
+        "nodeId": "3299-kms-v2-improvements",
+        "files": [
+          "keps/sig-auth/3299-kms-v2-improvements/README.md",
+          "keps/sig-auth/3130-kms-observability/README.md"
+        ],
+        "reason": "Accepted decision 3299-kms-v2-improvements has a hard dependency on superseded decision 3130-kms-observability.",
+        "repo": "kubernetes/enhancements"
+      }
+    ],
+    "superseded-without-successor": [
+      {
+        "ruleId": "superseded-without-successor",
+        "severity": "warn",
+        "nodeId": "4153-declarative-validation",
+        "files": [
+          "keps/sig-api-machinery/4153-declarative-validation/README.md"
+        ],
+        "reason": "Decision 4153-declarative-validation is marked superseded but no decision declares it superseded-by or supersedes it.",
+        "repo": "kubernetes/enhancements"
+      },
+      {
+        "ruleId": "superseded-without-successor",
+        "severity": "warn",
+        "nodeId": "2133-out-of-tree-credential-provider",
+        "files": [
+          "keps/sig-cloud-provider/2133-out-of-tree-credential-provider/README.md"
+        ],
+        "reason": "Decision 2133-out-of-tree-credential-provider is marked superseded but no decision declares it superseded-by or supersedes it.",
+        "repo": "kubernetes/enhancements"
+      },
+      {
+        "ruleId": "superseded-without-successor",
+        "severity": "warn",
+        "nodeId": "1177-kubeadm-with-kustomize",
+        "files": [
+          "keps/sig-cluster-lifecycle/kubeadm/1177-kubeadm-with-kustomize/README.md"
+        ],
+        "reason": "Decision 1177-kubeadm-with-kustomize is marked superseded but no decision declares it superseded-by or supersedes it.",
+        "repo": "kubernetes/enhancements"
+      },
+      {
+        "ruleId": "superseded-without-successor",
+        "severity": "warn",
+        "nodeId": "5339-clusterprofile-plugin-credentials",
+        "files": [
+          "keps/sig-multicluster/5339-clusterprofile-plugin-credentials/README.md"
+        ],
+        "reason": "Decision 5339-clusterprofile-plugin-credentials is marked superseded but no decision declares it superseded-by or supersedes it.",
+        "repo": "kubernetes/enhancements"
+      },
+      {
+        "ruleId": "superseded-without-successor",
+        "severity": "warn",
+        "nodeId": "adr-010-modular-antehandler",
+        "files": [
+          "docs/architecture/adr-010-modular-antehandler.md"
+        ],
+        "reason": "Decision adr-010-modular-antehandler is marked superseded but no decision declares it superseded-by or supersedes it.",
+        "repo": "cosmos/cosmos-sdk"
+      }
+    ],
+    "broken-supersedes": [
+      {
+        "ruleId": "broken-supersedes",
+        "severity": "error",
+        "nodeId": "1152-less-object-serializations",
+        "files": [
+          "keps/sig-api-machinery/1152-less-object-serializations/README.md"
+        ],
+        "reason": "Decision 1152-less-object-serializations declares supersedes target \"n/a\", which does not exist.",
+        "repo": "kubernetes/enhancements"
+      },
+      {
+        "ruleId": "broken-supersedes",
+        "severity": "error",
+        "nodeId": "4020-unknown-version-interoperability-proxy",
+        "files": [
+          "keps/sig-api-machinery/4020-unknown-version-interoperability-proxy/README.md"
+        ],
+        "reason": "Decision 4020-unknown-version-interoperability-proxy declares supersedes target \"none\", which does not exist.",
+        "repo": "kubernetes/enhancements"
+      },
+      {
+        "ruleId": "broken-supersedes",
+        "severity": "error",
+        "nodeId": "555-server-side-apply",
+        "files": [
+          "keps/sig-api-machinery/555-server-side-apply/README.md"
+        ],
+        "reason": "Decision 555-server-side-apply declares supersedes target \"n/a\", which does not exist.",
+        "repo": "kubernetes/enhancements"
+      },
+      {
+        "ruleId": "broken-supersedes",
+        "severity": "error",
+        "nodeId": "598-crd-conversion-webhook",
+        "files": [
+          "keps/sig-api-machinery/598-crd-conversion-webhook/README.md"
+        ],
+        "reason": "Decision 598-crd-conversion-webhook declares supersedes target \"(https://github.com/kubernetes/design-proposals-archive/blob/master/api-machinery/customresource-conversion-webhook.md)\", which does not exist.",
+        "repo": "kubernetes/enhancements"
+      },
+      {
+        "ruleId": "broken-supersedes",
+        "severity": "error",
+        "nodeId": "956-watch-bookmark",
+        "files": [
+          "keps/sig-api-machinery/956-watch-bookmark/README.md"
+        ],
+        "reason": "Decision 956-watch-bookmark declares supersedes target \"n/a\", which does not exist.",
+        "repo": "kubernetes/enhancements"
+      }
+    ],
+    "orphan": [
       {
         "ruleId": "orphan",
         "severity": "info",
@@ -55,6 +170,16 @@
         ],
         "reason": "Decision adrs-adr005 has no incoming or outgoing edges (orphan).",
         "repo": "backstage/backstage"
+      },
+      {
+        "ruleId": "orphan",
+        "severity": "info",
+        "nodeId": "adrs-adr006",
+        "files": [
+          "docs/architecture-decisions/adr006-avoid-react-fc.md"
+        ],
+        "reason": "Decision adrs-adr006 has no incoming or outgoing edges (orphan).",
+        "repo": "backstage/backstage"
       }
     ]
   },
@@ -62,6 +187,36 @@
     {
       "repo": "backstage/backstage",
       "commitSha": "b3ed9690207fe606362f5785b7cbe91ccc8a8542",
+      "excludedFiles": [
+        "docs/architecture-decisions/adr000-template.md",
+        "docs/architecture-decisions/index.md"
+      ],
+      "extractionSamples": [
+        {
+          "file": "docs/architecture-decisions/adr001-add-adr-log.md",
+          "id": "adrs-adr001",
+          "title": "ADR001: Architecture Decision Record (ADR) log",
+          "titleSource": "frontmatter",
+          "status": "accepted",
+          "statusSource": "default"
+        },
+        {
+          "file": "docs/architecture-decisions/adr008-default-catalog-file-name.md",
+          "id": "adrs-adr008",
+          "title": "ADR008: Default Catalog File Name",
+          "titleSource": "frontmatter",
+          "status": "accepted",
+          "statusSource": "default"
+        },
+        {
+          "file": "docs/architecture-decisions/adr015-jsx-loader-structure.md",
+          "id": "adrs-adr015",
+          "title": "ADR015: Types and naming for element and component options",
+          "titleSource": "frontmatter",
+          "status": "accepted",
+          "statusSource": "default"
+        }
+      ],
       "cycles": [],
       "mutualReferences": [
         {
@@ -90,15 +245,6 @@
       "brokenLinks": [],
       "lintFindings": {
         "orphan": [
-          {
-            "ruleId": "orphan",
-            "severity": "info",
-            "nodeId": "adrs-adr000",
-            "files": [
-              "docs/architecture-decisions/adr000-template.md"
-            ],
-            "reason": "Decision adrs-adr000 has no incoming or outgoing edges (orphan)."
-          },
           {
             "ruleId": "orphan",
             "severity": "info",
@@ -134,6 +280,15 @@
               "docs/architecture-decisions/adr005-catalog-core-entities.md"
             ],
             "reason": "Decision adrs-adr005 has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "adrs-adr006",
+            "files": [
+              "docs/architecture-decisions/adr006-avoid-react-fc.md"
+            ],
+            "reason": "Decision adrs-adr006 has no incoming or outgoing edges (orphan)."
           }
         ]
       }
@@ -141,6 +296,36 @@
     {
       "repo": "adr/madr",
       "commitSha": "ba75bb1b20d42af5746b246ad348c202419ae681",
+      "excludedFiles": [
+        "docs/decisions/adr-template.md",
+        "docs/decisions/index.md"
+      ],
+      "extractionSamples": [
+        {
+          "file": "docs/decisions/0000-use-markdown-architectural-decision-records.md",
+          "id": "ADR-0000",
+          "title": "Use Markdown Architectural Decision Records",
+          "titleSource": "heading",
+          "status": "accepted",
+          "statusSource": "default"
+        },
+        {
+          "file": "docs/decisions/0009-support-links-between-adrs-inside-an-adrs.md",
+          "id": "ADR-0009",
+          "title": "Support Links To Other ADRs Inside an ADR",
+          "titleSource": "heading",
+          "status": "accepted",
+          "statusSource": "default"
+        },
+        {
+          "file": "docs/decisions/0018-use-confirmation-as-heading.md",
+          "id": "ADR-0018",
+          "title": "Use \"Confirmation\" as Heading",
+          "titleSource": "heading",
+          "status": "accepted",
+          "statusSource": "default"
+        }
+      ],
       "cycles": [],
       "mutualReferences": [
         {
@@ -220,6 +405,43 @@
     {
       "repo": "rust-lang/rfcs",
       "commitSha": "f43d5789b838fb0d80962e3d4b45fb9ddfcc9a07",
+      "excludedFiles": [
+        "text/3392-leadership-council/Leadership-Council-RFCja.md",
+        "text/3392-leadership-council/Leadership-Council-RFCko.md",
+        "text/3392-leadership-council/Leadership-Council-RFCru-RU.md",
+        "text/3392-leadership-council/Leadership-Council-RFCzh-Hans.md",
+        "text/3392-leadership-council/Leadership-Council-RFCzh-Hant.md",
+        "text/3392-leadership-council/alternatives.md",
+        "text/3392-leadership-council/initial-work-of-the-council.md",
+        "text/3392-leadership-council/motivation.md",
+        "text/3392-leadership-council/non-goals.md"
+      ],
+      "extractionSamples": [
+        {
+          "file": "text/0001-private-fields.md",
+          "id": "ADR-0001",
+          "title": "ADR-0001",
+          "titleSource": "slug",
+          "status": "accepted",
+          "statusSource": "default"
+        },
+        {
+          "file": "text/1940-must-use-functions.md",
+          "id": "ADR-1940",
+          "title": "none?",
+          "titleSource": "metadata-line",
+          "status": "accepted",
+          "statusSource": "default"
+        },
+        {
+          "file": "text/4013-cargo-required-targets.md",
+          "id": "ADR-4013",
+          "title": "Summary",
+          "titleSource": "heading",
+          "status": "accepted",
+          "statusSource": "default"
+        }
+      ],
       "cycles": [],
       "mutualReferences": [],
       "brokenLinks": [
@@ -228,12 +450,6 @@
           "sourceFile": "text/0019-opt-in-builtin-traits.md",
           "missingId": "text/0003-opt-in-builtin-traits.md",
           "rawLinkText": "(0003-opt-in-builtin-traits.md)"
-        },
-        {
-          "sourceId": "ADR-0474",
-          "sourceFile": "text/0474-path-reform.md",
-          "missingId": "text/www.boost.org/doc/libs/1_57_0/libs/filesystem/doc/reference.html",
-          "rawLinkText": "(www.boost.org/doc/libs/1_57_0/libs/filesystem/doc/reference.html)"
         },
         {
           "sourceId": "ADR-1558",
@@ -248,40 +464,34 @@
           "rawLinkText": "(URL)"
         },
         {
-          "sourceId": "ADR-1946",
-          "sourceFile": "text/1946-intra-rustdoc-links.md",
-          "missingId": "text/std::iter::Iterator",
-          "rawLinkText": "(std::iter::Iterator)"
+          "sourceId": "ADR-2314",
+          "sourceFile": "text/2314-roadmap-2018.md",
+          "missingId": "text/link needed",
+          "rawLinkText": "(link needed)"
         },
         {
-          "sourceId": "ADR-1946",
-          "sourceFile": "text/1946-intra-rustdoc-links.md",
-          "missingId": "text/bars::Bar",
-          "rawLinkText": "(bars::Bar)"
+          "sourceId": "ADR-2945",
+          "sourceFile": "text/2945-c-unwind-abi.md",
+          "missingId": "text/forced-unwind",
+          "rawLinkText": "(forced-unwind)"
         },
         {
-          "sourceId": "ADR-1946",
-          "sourceFile": "text/1946-intra-rustdoc-links.md",
-          "missingId": "text/ipsum::Dolor",
-          "rawLinkText": "(ipsum::Dolor)"
+          "sourceId": "ADR-3637",
+          "sourceFile": "text/3637-guard-patterns.md",
+          "missingId": "text/<https:/en.wikipedia.org/wiki/E_(programming_language",
+          "rawLinkText": "(<https://en.wikipedia.org/wiki/E_(programming_language)"
         },
         {
-          "sourceId": "ADR-1946",
-          "sourceFile": "text/1946-intra-rustdoc-links.md",
-          "missingId": "text/ipsum::sit",
-          "rawLinkText": "(ipsum::sit)"
+          "sourceId": "ADR-3642",
+          "sourceFile": "text/3642-thread-spawn-hook.md",
+          "missingId": "text/add_spawn_hook",
+          "rawLinkText": "(add_spawn_hook)"
         },
         {
-          "sourceId": "ADR-1946",
-          "sourceFile": "text/1946-intra-rustdoc-links.md",
-          "missingId": "text/super::ipsum",
-          "rawLinkText": "(super::ipsum)"
-        },
-        {
-          "sourceId": "ADR-1946",
-          "sourceFile": "text/1946-intra-rustdoc-links.md",
-          "missingId": "text/storage::Filesystem.size",
-          "rawLinkText": "(storage::Filesystem.size)"
+          "sourceId": "ADR-3764",
+          "sourceFile": "text/3764-Project-Goals-2025h1.md",
+          "missingId": "text/build-std.html",
+          "rawLinkText": "(./build-std.html)"
         }
       ],
       "lintFindings": {
@@ -337,8 +547,228 @@
     {
       "repo": "kubernetes/enhancements",
       "commitSha": "cac930cb9d7c70192016865425f943c339414011",
+      "excludedFiles": [
+        "keps/NNNN-kep-template/README.md",
+        "keps/README.md",
+        "keps/prod-readiness/README.md",
+        "keps/sig-auth/5681-conditional-authorization/images/authorizer-chain-computation.md",
+        "keps/sig-cli/FAQ.md",
+        "keps/sig-cloud-provider/providers/0000-cloud-provider-template/README.md",
+        "keps/sig-cluster-lifecycle/clusterapi/FAQ.md"
+      ],
+      "extractionSamples": [
+        {
+          "file": "keps/provider-aws/2313-aws-k8s-tester/README.md",
+          "id": "2313-aws-k8s-tester",
+          "title": "aws-k8s-tester",
+          "titleSource": "kep-yaml",
+          "status": "proposed",
+          "statusSource": "kep-yaml",
+          "tags": [
+            "sig-cloud-provider"
+          ]
+        },
+        {
+          "file": "keps/sig-network/2943-networkpolicy-status/README.md",
+          "id": "2943-networkpolicy-status",
+          "title": "Network Policy status subresource",
+          "titleSource": "kep-yaml",
+          "status": "deprecated",
+          "statusSource": "kep-yaml",
+          "tags": [
+            "sig-network"
+          ]
+        },
+        {
+          "file": "keps/sig-windows/689-windows-gmsa/README.md",
+          "id": "689-windows-gmsa",
+          "title": "Windows Group Managed Service Accounts for Container Identity",
+          "titleSource": "kep-yaml",
+          "status": "accepted",
+          "statusSource": "kep-yaml",
+          "tags": [
+            "sig-windows"
+          ]
+        }
+      ],
       "cycles": [],
       "mutualReferences": [
+        {
+          "pair": [
+            "2232-suspend-jobs",
+            "5440-mutable-job-pod-resource-updates"
+          ],
+          "edges": [
+            {
+              "dependentId": "2232-suspend-jobs",
+              "dependentFile": "keps/sig-apps/2232-suspend-jobs/README.md",
+              "dependencyId": "5440-mutable-job-pod-resource-updates",
+              "dependencyFile": "keps/sig-apps/5440-mutable-job-pod-resource-updates/README.md",
+              "rawLinkText": "see-also: /keps/sig-apps/5440-mutable-job-pod-resource-updates"
+            },
+            {
+              "dependentId": "5440-mutable-job-pod-resource-updates",
+              "dependentFile": "keps/sig-apps/5440-mutable-job-pod-resource-updates/README.md",
+              "dependencyId": "2232-suspend-jobs",
+              "dependencyFile": "keps/sig-apps/2232-suspend-jobs/README.md",
+              "rawLinkText": "see-also: /keps/sig-apps/2232-suspend-jobs"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "3329-retriable-and-non-retriable-failures",
+            "3939-allow-replacement-when-fully-terminated"
+          ],
+          "edges": [
+            {
+              "dependentId": "3329-retriable-and-non-retriable-failures",
+              "dependentFile": "keps/sig-apps/3329-retriable-and-non-retriable-failures/README.md",
+              "dependencyId": "3939-allow-replacement-when-fully-terminated",
+              "dependencyFile": "keps/sig-apps/3939-allow-replacement-when-fully-terminated/README.md",
+              "rawLinkText": "see-also: /keps/sig-apps/3939-allow-replacement-when-fully-terminated"
+            },
+            {
+              "dependentId": "3939-allow-replacement-when-fully-terminated",
+              "dependentFile": "keps/sig-apps/3939-allow-replacement-when-fully-terminated/README.md",
+              "dependencyId": "3329-retriable-and-non-retriable-failures",
+              "dependencyFile": "keps/sig-apps/3329-retriable-and-non-retriable-failures/README.md",
+              "rawLinkText": "see-also: /keps/sig-apps/3329-retriable-and-non-retriable-failures"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "3973-consider-terminating-pods-deployment",
+            "5882-deployment-pod-replacement-policy"
+          ],
+          "edges": [
+            {
+              "dependentId": "3973-consider-terminating-pods-deployment",
+              "dependentFile": "keps/sig-apps/3973-consider-terminating-pods-deployment/README.md",
+              "dependencyId": "5882-deployment-pod-replacement-policy",
+              "dependencyFile": "keps/sig-apps/5882-deployment-pod-replacement-policy/README.md",
+              "rawLinkText": "see-also: /keps/sig-apps/5882-deployment-pod-replacement-policy"
+            },
+            {
+              "dependentId": "5882-deployment-pod-replacement-policy",
+              "dependentFile": "keps/sig-apps/5882-deployment-pod-replacement-policy/README.md",
+              "dependencyId": "3973-consider-terminating-pods-deployment",
+              "dependencyFile": "keps/sig-apps/3973-consider-terminating-pods-deployment/README.md",
+              "rawLinkText": "see-also: /keps/sig-apps/3973-consider-terminating-pods-deployment"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "2926-job-mutable-scheduling-directives",
+            "5440-mutable-job-pod-resource-updates"
+          ],
+          "edges": [
+            {
+              "dependentId": "2926-job-mutable-scheduling-directives",
+              "dependentFile": "keps/sig-scheduling/2926-job-mutable-scheduling-directives/README.md",
+              "dependencyId": "5440-mutable-job-pod-resource-updates",
+              "dependencyFile": "keps/sig-apps/5440-mutable-job-pod-resource-updates/README.md",
+              "rawLinkText": "see-also: /keps/sig-apps/5440-mutable-job-pod-resource-updates"
+            },
+            {
+              "dependentId": "5440-mutable-job-pod-resource-updates",
+              "dependentFile": "keps/sig-apps/5440-mutable-job-pod-resource-updates/README.md",
+              "dependencyId": "2926-job-mutable-scheduling-directives",
+              "dependencyFile": "keps/sig-scheduling/2926-job-mutable-scheduling-directives/README.md",
+              "rawLinkText": "see-also: /keps/sig-scheduling/2926-job-mutable-scheduling-directives"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "5547-integrate-workload-with-job",
+            "6089-was-controller-apis"
+          ],
+          "edges": [
+            {
+              "dependentId": "5547-integrate-workload-with-job",
+              "dependentFile": "keps/sig-apps/5547-integrate-workload-with-job/README.md",
+              "dependencyId": "6089-was-controller-apis",
+              "dependencyFile": "keps/sig-scheduling/6089-was-controller-apis/README.md",
+              "rawLinkText": "see-also: /keps/sig-scheduling/6089-was-controller-apis"
+            },
+            {
+              "dependentId": "6089-was-controller-apis",
+              "dependentFile": "keps/sig-scheduling/6089-was-controller-apis/README.md",
+              "dependencyId": "5547-integrate-workload-with-job",
+              "dependencyFile": "keps/sig-apps/5547-integrate-workload-with-job/README.md",
+              "rawLinkText": "see-also: /keps/sig-apps/5547-integrate-workload-with-job"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "6089-was-controller-apis",
+            "6276-integrate-workload-with-deployment"
+          ],
+          "edges": [
+            {
+              "dependentId": "6089-was-controller-apis",
+              "dependentFile": "keps/sig-scheduling/6089-was-controller-apis/README.md",
+              "dependencyId": "6276-integrate-workload-with-deployment",
+              "dependencyFile": "keps/sig-apps/6276-integrate-workload-with-deployment/README.md",
+              "rawLinkText": "see-also: /keps/sig-apps/6276-integrate-workload-with-deployment"
+            },
+            {
+              "dependentId": "6276-integrate-workload-with-deployment",
+              "dependentFile": "keps/sig-apps/6276-integrate-workload-with-deployment/README.md",
+              "dependencyId": "6089-was-controller-apis",
+              "dependencyFile": "keps/sig-scheduling/6089-was-controller-apis/README.md",
+              "rawLinkText": "see-also: /keps/sig-scheduling/6089-was-controller-apis"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "2299-kustomize-plugin-composition",
+            "993-kustomize-generators-transformers"
+          ],
+          "edges": [
+            {
+              "dependentId": "2299-kustomize-plugin-composition",
+              "dependentFile": "keps/sig-cli/2299-kustomize-plugin-composition/README.md",
+              "dependencyId": "993-kustomize-generators-transformers",
+              "dependencyFile": "keps/sig-cli/993-kustomize-generators-transformers/README.md",
+              "rawLinkText": "see-also: /keps/sig-cli/993-kustomize-generators-transformers"
+            },
+            {
+              "dependentId": "993-kustomize-generators-transformers",
+              "dependentFile": "keps/sig-cli/993-kustomize-generators-transformers/README.md",
+              "dependencyId": "2299-kustomize-plugin-composition",
+              "dependencyFile": "keps/sig-cli/2299-kustomize-plugin-composition/README.md",
+              "rawLinkText": "see-also: /keps/sig-cli/2299-kustomize-plugin-composition"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "2384-kustomize-file-processing-integration",
+            "2386-kustomize-subcommand-integration"
+          ],
+          "edges": [
+            {
+              "dependentId": "2384-kustomize-file-processing-integration",
+              "dependentFile": "keps/sig-cli/2384-kustomize-file-processing-integration/README.md",
+              "dependencyId": "2386-kustomize-subcommand-integration",
+              "dependencyFile": "keps/sig-cli/2386-kustomize-subcommand-integration/README.md",
+              "rawLinkText": "see-also: /keps/sig-cli/2386-kustomize-subcommand-integration/"
+            },
+            {
+              "dependentId": "2386-kustomize-subcommand-integration",
+              "dependentFile": "keps/sig-cli/2386-kustomize-subcommand-integration/README.md",
+              "dependencyId": "2384-kustomize-file-processing-integration",
+              "dependencyFile": "keps/sig-cli/2384-kustomize-file-processing-integration/README.md",
+              "rawLinkText": "see-also: /keps/sig-cli/2384-kustomize-file-processing-integration/"
+            }
+          ]
+        },
         {
           "pair": [
             "kubernetes-control-plane-metrics-stability",
@@ -385,6 +815,72 @@
         },
         {
           "pair": [
+            "2625-cpumanager-policies-thread-placement",
+            "2902-cpumanager-distribute-cpus-policy-option"
+          ],
+          "edges": [
+            {
+              "dependentId": "2625-cpumanager-policies-thread-placement",
+              "dependentFile": "keps/sig-node/2625-cpumanager-policies-thread-placement/README.md",
+              "dependencyId": "2902-cpumanager-distribute-cpus-policy-option",
+              "dependencyFile": "keps/sig-node/2902-cpumanager-distribute-cpus-policy-option/README.md",
+              "rawLinkText": "see-also: keps/sig-node/2902-cpumanager-distribute-cpus-policy-option/"
+            },
+            {
+              "dependentId": "2902-cpumanager-distribute-cpus-policy-option",
+              "dependentFile": "keps/sig-node/2902-cpumanager-distribute-cpus-policy-option/README.md",
+              "dependencyId": "2625-cpumanager-policies-thread-placement",
+              "dependencyFile": "keps/sig-node/2625-cpumanager-policies-thread-placement/README.md",
+              "rawLinkText": "see-also: keps/sig-node/2625-cpumanager-policies-thread-placement"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "2625-cpumanager-policies-thread-placement",
+            "4622-topologymanager-max-allowable-numa-nodes"
+          ],
+          "edges": [
+            {
+              "dependentId": "2625-cpumanager-policies-thread-placement",
+              "dependentFile": "keps/sig-node/2625-cpumanager-policies-thread-placement/README.md",
+              "dependencyId": "4622-topologymanager-max-allowable-numa-nodes",
+              "dependencyFile": "keps/sig-node/4622-topologymanager-max-allowable-numa-nodes/README.md",
+              "rawLinkText": "see-also: keps/sig-node/4622-topologymanager-max-allowable-numa-nodes/"
+            },
+            {
+              "dependentId": "4622-topologymanager-max-allowable-numa-nodes",
+              "dependentFile": "keps/sig-node/4622-topologymanager-max-allowable-numa-nodes/README.md",
+              "dependencyId": "2625-cpumanager-policies-thread-placement",
+              "dependencyFile": "keps/sig-node/2625-cpumanager-policies-thread-placement/README.md",
+              "rawLinkText": "see-also: keps/sig-node/2625-cpumanager-policies-thread-placement/"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "2902-cpumanager-distribute-cpus-policy-option",
+            "4622-topologymanager-max-allowable-numa-nodes"
+          ],
+          "edges": [
+            {
+              "dependentId": "2902-cpumanager-distribute-cpus-policy-option",
+              "dependentFile": "keps/sig-node/2902-cpumanager-distribute-cpus-policy-option/README.md",
+              "dependencyId": "4622-topologymanager-max-allowable-numa-nodes",
+              "dependencyFile": "keps/sig-node/4622-topologymanager-max-allowable-numa-nodes/README.md",
+              "rawLinkText": "see-also: keps/sig-node/4622-topologymanager-max-allowable-numa-nodes/"
+            },
+            {
+              "dependentId": "4622-topologymanager-max-allowable-numa-nodes",
+              "dependentFile": "keps/sig-node/4622-topologymanager-max-allowable-numa-nodes/README.md",
+              "dependencyId": "2902-cpumanager-distribute-cpus-policy-option",
+              "dependencyFile": "keps/sig-node/2902-cpumanager-distribute-cpus-policy-option/README.md",
+              "rawLinkText": "see-also: keps/sig-node/2902-cpumanager-distribute-cpus-policy-option/"
+            }
+          ]
+        },
+        {
+          "pair": [
             "3063-dynamic-resource-allocation",
             "4381-dra-structured-parameters"
           ],
@@ -401,84 +897,424 @@
               "dependentFile": "keps/sig-node/4381-dra-structured-parameters/README.md",
               "dependencyId": "3063-dynamic-resource-allocation",
               "dependencyFile": "keps/sig-node/3063-dynamic-resource-allocation/README.md",
-              "rawLinkText": "(../3063-dynamic-resource-allocation/README.md)"
+              "rawLinkText": "see-also: /keps/sig-node/3063-dynamic-resource-allocation"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "4603-tune-crashloopbackoff",
+            "5593-configure-the-max-crashloopbackoff-delay"
+          ],
+          "edges": [
+            {
+              "dependentId": "4603-tune-crashloopbackoff",
+              "dependentFile": "keps/sig-node/4603-tune-crashloopbackoff/README.md",
+              "dependencyId": "5593-configure-the-max-crashloopbackoff-delay",
+              "dependencyFile": "keps/sig-node/5593-configure-the-max-crashloopbackoff-delay/README.md",
+              "rawLinkText": "see-also: /keps/sig-node/5593-configure-the-max-crashloopbackoff-delay"
+            },
+            {
+              "dependentId": "5593-configure-the-max-crashloopbackoff-delay",
+              "dependentFile": "keps/sig-node/5593-configure-the-max-crashloopbackoff-delay/README.md",
+              "dependencyId": "4603-tune-crashloopbackoff",
+              "dependencyFile": "keps/sig-node/4603-tune-crashloopbackoff/README.md",
+              "rawLinkText": "see-also: /keps/sig-node/4603-tune-crashloopbackoff"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "5075-dra-consumable-capacity",
+            "5677-dra-resource-availability-visibility"
+          ],
+          "edges": [
+            {
+              "dependentId": "5075-dra-consumable-capacity",
+              "dependentFile": "keps/sig-scheduling/5075-dra-consumable-capacity/README.md",
+              "dependencyId": "5677-dra-resource-availability-visibility",
+              "dependencyFile": "keps/sig-node/5677-dra-resource-availability-visibility/README.md",
+              "rawLinkText": "see-also: /keps/sig-node/5677-dra-resource-availability-visibility"
+            },
+            {
+              "dependentId": "5677-dra-resource-availability-visibility",
+              "dependentFile": "keps/sig-node/5677-dra-resource-availability-visibility/README.md",
+              "dependencyId": "5075-dra-consumable-capacity",
+              "dependencyFile": "keps/sig-scheduling/5075-dra-consumable-capacity/README.md",
+              "rawLinkText": "(/keps/sig-scheduling/5075-dra-consumable-capacity)"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "5491-dra-list-types-for-attributes",
+            "6072-dra-standard-numanode"
+          ],
+          "edges": [
+            {
+              "dependentId": "5491-dra-list-types-for-attributes",
+              "dependentFile": "keps/sig-scheduling/5491-dra-list-types-for-attributes/README.md",
+              "dependencyId": "6072-dra-standard-numanode",
+              "dependencyFile": "keps/sig-node/6072-dra-standard-numanode/README.md",
+              "rawLinkText": "(/keps/sig-node/6072-dra-standard-numanode)"
+            },
+            {
+              "dependentId": "6072-dra-standard-numanode",
+              "dependentFile": "keps/sig-node/6072-dra-standard-numanode/README.md",
+              "dependencyId": "5491-dra-list-types-for-attributes",
+              "dependencyFile": "keps/sig-scheduling/5491-dra-list-types-for-attributes/README.md",
+              "rawLinkText": "see-also: /keps/sig-scheduling/5491-dra-list-types-for-attributes"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "1451-multi-scheduling-profiles",
+            "785-scheduler-component-config-api"
+          ],
+          "edges": [
+            {
+              "dependentId": "1451-multi-scheduling-profiles",
+              "dependentFile": "keps/sig-scheduling/1451-multi-scheduling-profiles/README.md",
+              "dependencyId": "785-scheduler-component-config-api",
+              "dependencyFile": "keps/sig-scheduling/785-scheduler-component-config-api/README.md",
+              "rawLinkText": "see-also: /keps/sig-scheduling/785-scheduler-component-config-api"
+            },
+            {
+              "dependentId": "785-scheduler-component-config-api",
+              "dependentFile": "keps/sig-scheduling/785-scheduler-component-config-api/README.md",
+              "dependencyId": "1451-multi-scheduling-profiles",
+              "dependencyFile": "keps/sig-scheduling/1451-multi-scheduling-profiles/README.md",
+              "rawLinkText": "see-also: /keps/sig-scheduling/1451-multi-scheduling-profiles"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "4671-gang-scheduling",
+            "5710-workload-aware-preemption"
+          ],
+          "edges": [
+            {
+              "dependentId": "4671-gang-scheduling",
+              "dependentFile": "keps/sig-scheduling/4671-gang-scheduling/README.md",
+              "dependencyId": "5710-workload-aware-preemption",
+              "dependencyFile": "keps/sig-scheduling/5710-workload-aware-preemption/README.md",
+              "rawLinkText": "see-also: /keps/sig-scheduling/5710-workload-aware-preemption"
+            },
+            {
+              "dependentId": "5710-workload-aware-preemption",
+              "dependentFile": "keps/sig-scheduling/5710-workload-aware-preemption/README.md",
+              "dependencyId": "4671-gang-scheduling",
+              "dependencyFile": "keps/sig-scheduling/4671-gang-scheduling/README.md",
+              "rawLinkText": "see-also: /keps/sig-scheduling/4671-gang-scheduling"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "5027-dra-admin-controlled-device-attributes",
+            "5055-dra-device-taints-and-tolerations"
+          ],
+          "edges": [
+            {
+              "dependentId": "5027-dra-admin-controlled-device-attributes",
+              "dependentFile": "keps/sig-scheduling/5027-dra-admin-controlled-device-attributes/README.md",
+              "dependencyId": "5055-dra-device-taints-and-tolerations",
+              "dependencyFile": "keps/sig-scheduling/5055-dra-device-taints-and-tolerations/README.md",
+              "rawLinkText": "(../5055-dra-device-taints-and-tolerations/README.md)"
+            },
+            {
+              "dependentId": "5055-dra-device-taints-and-tolerations",
+              "dependentFile": "keps/sig-scheduling/5055-dra-device-taints-and-tolerations/README.md",
+              "dependencyId": "5027-dra-admin-controlled-device-attributes",
+              "dependencyFile": "keps/sig-scheduling/5027-dra-admin-controlled-device-attributes/README.md",
+              "rawLinkText": "see-also: /keps/sig-node/5027-dra-admin-controlled-device-attributes"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "5491-dra-list-types-for-attributes",
+            "6080-dra-derived-attributes"
+          ],
+          "edges": [
+            {
+              "dependentId": "5491-dra-list-types-for-attributes",
+              "dependentFile": "keps/sig-scheduling/5491-dra-list-types-for-attributes/README.md",
+              "dependencyId": "6080-dra-derived-attributes",
+              "dependencyFile": "keps/sig-scheduling/6080-dra-derived-attributes/README.md",
+              "rawLinkText": "(/keps/sig-scheduling/6080-dra-derived-attributes)"
+            },
+            {
+              "dependentId": "6080-dra-derived-attributes",
+              "dependentFile": "keps/sig-scheduling/6080-dra-derived-attributes/README.md",
+              "dependencyId": "5491-dra-list-types-for-attributes",
+              "dependencyFile": "keps/sig-scheduling/5491-dra-list-types-for-attributes/README.md",
+              "rawLinkText": "see-also: /keps/sig-scheduling/5491-dra-list-types-for-attributes"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "5710-workload-aware-preemption",
+            "5732-topology-aware-workload-scheduling"
+          ],
+          "edges": [
+            {
+              "dependentId": "5710-workload-aware-preemption",
+              "dependentFile": "keps/sig-scheduling/5710-workload-aware-preemption/README.md",
+              "dependencyId": "5732-topology-aware-workload-scheduling",
+              "dependencyFile": "keps/sig-scheduling/5732-topology-aware-workload-scheduling/README.md",
+              "rawLinkText": "see-also: /keps/sig-scheduling/5732-topology-aware-workload-scheduling"
+            },
+            {
+              "dependentId": "5732-topology-aware-workload-scheduling",
+              "dependentFile": "keps/sig-scheduling/5732-topology-aware-workload-scheduling/README.md",
+              "dependencyId": "5710-workload-aware-preemption",
+              "dependencyFile": "keps/sig-scheduling/5710-workload-aware-preemption/README.md",
+              "rawLinkText": "see-also: /keps/sig-scheduling/5710-workload-aware-preemption"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "5710-workload-aware-preemption",
+            "6012-composite-podgroup-api"
+          ],
+          "edges": [
+            {
+              "dependentId": "5710-workload-aware-preemption",
+              "dependentFile": "keps/sig-scheduling/5710-workload-aware-preemption/README.md",
+              "dependencyId": "6012-composite-podgroup-api",
+              "dependencyFile": "keps/sig-scheduling/6012-composite-podgroup-api/README.md",
+              "rawLinkText": "see-also: /keps/sig-scheduling/6012-composite-podgroup-api"
+            },
+            {
+              "dependentId": "6012-composite-podgroup-api",
+              "dependentFile": "keps/sig-scheduling/6012-composite-podgroup-api/README.md",
+              "dependencyId": "5710-workload-aware-preemption",
+              "dependencyFile": "keps/sig-scheduling/5710-workload-aware-preemption/README.md",
+              "rawLinkText": "see-also: /keps/sig-scheduling/5710-workload-aware-preemption"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "5732-topology-aware-workload-scheduling",
+            "6012-composite-podgroup-api"
+          ],
+          "edges": [
+            {
+              "dependentId": "5732-topology-aware-workload-scheduling",
+              "dependentFile": "keps/sig-scheduling/5732-topology-aware-workload-scheduling/README.md",
+              "dependencyId": "6012-composite-podgroup-api",
+              "dependencyFile": "keps/sig-scheduling/6012-composite-podgroup-api/README.md",
+              "rawLinkText": "see-also: /keps/sig-scheduling/6012-composite-podgroup-api"
+            },
+            {
+              "dependentId": "6012-composite-podgroup-api",
+              "dependentFile": "keps/sig-scheduling/6012-composite-podgroup-api/README.md",
+              "dependencyId": "5732-topology-aware-workload-scheduling",
+              "dependencyFile": "keps/sig-scheduling/5732-topology-aware-workload-scheduling/README.md",
+              "rawLinkText": "see-also: /keps/sig-scheduling/5732-topology-aware-workload-scheduling"
+            }
+          ]
+        },
+        {
+          "pair": [
+            "177-volume-snapshot",
+            "1900-volume-snapshot-validation-webhook"
+          ],
+          "edges": [
+            {
+              "dependentId": "177-volume-snapshot",
+              "dependentFile": "keps/sig-storage/177-volume-snapshot/README.md",
+              "dependencyId": "1900-volume-snapshot-validation-webhook",
+              "dependencyFile": "keps/sig-storage/1900-volume-snapshot-validation-webhook/README.md",
+              "rawLinkText": "see-also: keps/sig-storage/1900-volume-snapshot-validation-webhook"
+            },
+            {
+              "dependentId": "1900-volume-snapshot-validation-webhook",
+              "dependentFile": "keps/sig-storage/1900-volume-snapshot-validation-webhook/README.md",
+              "dependencyId": "177-volume-snapshot",
+              "dependencyFile": "keps/sig-storage/177-volume-snapshot/README.md",
+              "rawLinkText": "see-also: keps/sig-storage/177-volume-snapshot"
             }
           ]
         }
       ],
       "brokenLinks": [
         {
-          "sourceId": "1040-priority-and-fairness",
-          "sourceFile": "keps/sig-api-machinery/1040-priority-and-fairness/README.md",
-          "missingId": "keps/sig-api-machinery/1040-priority-and-fairness/%v",
-          "rawLinkText": "(%v)"
+          "sourceId": "1152-less-object-serializations",
+          "sourceFile": "keps/sig-api-machinery/1152-less-object-serializations/README.md",
+          "missingId": "n/a",
+          "rawLinkText": "replaces: n/a"
         },
         {
-          "sourceId": "3716-admission-webhook-match-conditions",
-          "sourceFile": "keps/sig-api-machinery/3716-admission-webhook-match-conditions/README.md",
-          "missingId": "pkg/apis/admission/types.go",
-          "rawLinkText": "(/pkg/apis/admission/types.go#AdmissionRequest)"
+          "sourceId": "4020-unknown-version-interoperability-proxy",
+          "sourceFile": "keps/sig-api-machinery/4020-unknown-version-interoperability-proxy/README.md",
+          "missingId": "none",
+          "rawLinkText": "replaces: none"
         },
         {
-          "sourceId": "4192-svm-in-tree",
-          "sourceFile": "keps/sig-api-machinery/4192-svm-in-tree/README.md",
-          "missingId": "keps/sig-api-machinery/4192-svm-in-tree/(https:/github.com/kubernetes/enhancements/blob/master/keps/sig-api-machinery/3157-watch-list/README.md",
-          "rawLinkText": "((https://github.com/kubernetes/enhancements/blob/master/keps/sig-api-machinery/3157-watch-list/README.md#motivation)"
-        },
-        {
-          "sourceId": "4988-snapshottable-api-server-cache",
-          "sourceFile": "keps/sig-api-machinery/4988-snapshottable-api-server-cache/README.md",
-          "missingId": "keps/sig-api-machinery/4988-snapshottable-api-server-cache/[https:/pkg.go.dev/hash/fnv](https:/pkg.go.dev/hash/fnv",
-          "rawLinkText": "([https://pkg.go.dev/hash/fnv](https://pkg.go.dev/hash/fnv)"
-        },
-        {
-          "sourceId": "5073-declarative-validation-with-validation-gen",
-          "sourceFile": "keps/sig-api-machinery/5073-declarative-validation-with-validation-gen/README.md",
-          "missingId": "keps/sig-api-machinery/5073-declarative-validation-with-validation-gen/v1.Recreate, v1.RollingUpdate",
-          "rawLinkText": "(v1.Recreate, v1.RollingUpdate)"
-        },
-        {
-          "sourceId": "575-crd-defaulting",
-          "sourceFile": "keps/sig-api-machinery/575-crd-defaulting/README.md",
-          "missingId": "keps/sig-api-machinery/20190425-structural-openapi.md",
-          "rawLinkText": "(/keps/sig-api-machinery/20190425-structural-openapi.md)"
-        },
-        {
-          "sourceId": "575-crd-defaulting",
-          "sourceFile": "keps/sig-api-machinery/575-crd-defaulting/README.md",
-          "missingId": "keps/sig-api-machinery/20180731-crd-pruning.md",
-          "rawLinkText": "(/keps/sig-api-machinery/20180731-crd-pruning.md)"
+          "sourceId": "555-server-side-apply",
+          "sourceFile": "keps/sig-api-machinery/555-server-side-apply/README.md",
+          "missingId": "n/a",
+          "rawLinkText": "replaces: n/a"
         },
         {
           "sourceId": "598-crd-conversion-webhook",
           "sourceFile": "keps/sig-api-machinery/598-crd-conversion-webhook/README.md",
-          "missingId": "contributors/devel/sig-architecture/api_changes.md",
-          "rawLinkText": "(/contributors/devel/sig-architecture/api_changes.md#backward-compatibility-gotchas)"
+          "missingId": "(https://github.com/kubernetes/design-proposals-archive/blob/master/api-machinery/customresource-conversion-webhook.md)",
+          "rawLinkText": "replaces: (https://github.com/kubernetes/design-proposals-archive/blob/master/api-machinery/customresource-conversion-webhook.md)"
         },
         {
-          "sourceId": "2185-random-pod-select-on-replicaset-downscale",
-          "sourceFile": "keps/sig-apps/2185-random-pod-select-on-replicaset-downscale/README.md",
-          "missingId": "keps/sig-apps/2185-random-pod-select-on-replicaset-downscale/git.k8s.io/enhancements/keps/sig-apps/2255-pod-cost",
-          "rawLinkText": "(git.k8s.io/enhancements/keps/sig-apps/2255-pod-cost)"
+          "sourceId": "956-watch-bookmark",
+          "sourceFile": "keps/sig-api-machinery/956-watch-bookmark/README.md",
+          "missingId": "n/a",
+          "rawLinkText": "replaces: n/a"
         },
         {
-          "sourceId": "3335-statefulset-slice",
-          "sourceFile": "keps/sig-apps/3335-statefulset-slice/README.md",
-          "missingId": "keps/sig-apps/3335-statefulset-slice/StatefulSet",
-          "rawLinkText": "(StatefulSet)"
+          "sourceId": "592-ttl-after-finish",
+          "sourceFile": "keps/sig-apps/592-ttl-after-finish/README.md",
+          "missingId": "n/a",
+          "rawLinkText": "replaces: n/a"
+        },
+        {
+          "sourceId": "2377-Kustomize",
+          "sourceFile": "keps/sig-cli/2377-Kustomize/README.md",
+          "missingId": "kinflate",
+          "rawLinkText": "replaces: kinflate"
+        },
+        {
+          "sourceId": "2379-kubectl-plugins",
+          "sourceFile": "keps/sig-cli/2379-kubectl-plugins/README.md",
+          "missingId": "n/a",
+          "rawLinkText": "superseded-by: n/a"
+        },
+        {
+          "sourceId": "2384-kustomize-file-processing-integration",
+          "sourceFile": "keps/sig-cli/2384-kustomize-file-processing-integration/README.md",
+          "missingId": "n/a",
+          "rawLinkText": "superseded-by: n/a"
+        },
+        {
+          "sourceId": "2386-kustomize-subcommand-integration",
+          "sourceFile": "keps/sig-cli/2386-kustomize-subcommand-integration/README.md",
+          "missingId": "0008-kustomize.md",
+          "rawLinkText": "replaces: 0008-kustomize.md"
         }
       ],
       "lintFindings": {
-        "orphan": [
+        "accepted-depends-on-deprecated": [
           {
-            "ruleId": "orphan",
-            "severity": "info",
-            "nodeId": "prod-readiness",
+            "ruleId": "accepted-depends-on-deprecated",
+            "severity": "error",
+            "nodeId": "1205-bound-service-account-tokens",
             "files": [
-              "keps/prod-readiness/README.md"
+              "keps/sig-auth/1205-bound-service-account-tokens/README.md",
+              "keps/sig-storage/2451-service-account-token-volumes/README.md"
             ],
-            "reason": "Decision prod-readiness has no incoming or outgoing edges (orphan)."
+            "reason": "Accepted decision 1205-bound-service-account-tokens has a hard dependency on superseded decision 2451-service-account-token-volumes."
           },
+          {
+            "ruleId": "accepted-depends-on-deprecated",
+            "severity": "error",
+            "nodeId": "3299-kms-v2-improvements",
+            "files": [
+              "keps/sig-auth/3299-kms-v2-improvements/README.md",
+              "keps/sig-auth/3130-kms-observability/README.md"
+            ],
+            "reason": "Accepted decision 3299-kms-v2-improvements has a hard dependency on superseded decision 3130-kms-observability."
+          }
+        ],
+        "superseded-without-successor": [
+          {
+            "ruleId": "superseded-without-successor",
+            "severity": "warn",
+            "nodeId": "4153-declarative-validation",
+            "files": [
+              "keps/sig-api-machinery/4153-declarative-validation/README.md"
+            ],
+            "reason": "Decision 4153-declarative-validation is marked superseded but no decision declares it superseded-by or supersedes it."
+          },
+          {
+            "ruleId": "superseded-without-successor",
+            "severity": "warn",
+            "nodeId": "2133-out-of-tree-credential-provider",
+            "files": [
+              "keps/sig-cloud-provider/2133-out-of-tree-credential-provider/README.md"
+            ],
+            "reason": "Decision 2133-out-of-tree-credential-provider is marked superseded but no decision declares it superseded-by or supersedes it."
+          },
+          {
+            "ruleId": "superseded-without-successor",
+            "severity": "warn",
+            "nodeId": "1177-kubeadm-with-kustomize",
+            "files": [
+              "keps/sig-cluster-lifecycle/kubeadm/1177-kubeadm-with-kustomize/README.md"
+            ],
+            "reason": "Decision 1177-kubeadm-with-kustomize is marked superseded but no decision declares it superseded-by or supersedes it."
+          },
+          {
+            "ruleId": "superseded-without-successor",
+            "severity": "warn",
+            "nodeId": "5339-clusterprofile-plugin-credentials",
+            "files": [
+              "keps/sig-multicluster/5339-clusterprofile-plugin-credentials/README.md"
+            ],
+            "reason": "Decision 5339-clusterprofile-plugin-credentials is marked superseded but no decision declares it superseded-by or supersedes it."
+          }
+        ],
+        "broken-supersedes": [
+          {
+            "ruleId": "broken-supersedes",
+            "severity": "error",
+            "nodeId": "1152-less-object-serializations",
+            "files": [
+              "keps/sig-api-machinery/1152-less-object-serializations/README.md"
+            ],
+            "reason": "Decision 1152-less-object-serializations declares supersedes target \"n/a\", which does not exist."
+          },
+          {
+            "ruleId": "broken-supersedes",
+            "severity": "error",
+            "nodeId": "4020-unknown-version-interoperability-proxy",
+            "files": [
+              "keps/sig-api-machinery/4020-unknown-version-interoperability-proxy/README.md"
+            ],
+            "reason": "Decision 4020-unknown-version-interoperability-proxy declares supersedes target \"none\", which does not exist."
+          },
+          {
+            "ruleId": "broken-supersedes",
+            "severity": "error",
+            "nodeId": "555-server-side-apply",
+            "files": [
+              "keps/sig-api-machinery/555-server-side-apply/README.md"
+            ],
+            "reason": "Decision 555-server-side-apply declares supersedes target \"n/a\", which does not exist."
+          },
+          {
+            "ruleId": "broken-supersedes",
+            "severity": "error",
+            "nodeId": "598-crd-conversion-webhook",
+            "files": [
+              "keps/sig-api-machinery/598-crd-conversion-webhook/README.md"
+            ],
+            "reason": "Decision 598-crd-conversion-webhook declares supersedes target \"(https://github.com/kubernetes/design-proposals-archive/blob/master/api-machinery/customresource-conversion-webhook.md)\", which does not exist."
+          },
+          {
+            "ruleId": "broken-supersedes",
+            "severity": "error",
+            "nodeId": "956-watch-bookmark",
+            "files": [
+              "keps/sig-api-machinery/956-watch-bookmark/README.md"
+            ],
+            "reason": "Decision 956-watch-bookmark declares supersedes target \"n/a\", which does not exist."
+          }
+        ],
+        "orphan": [
           {
             "ruleId": "orphan",
             "severity": "info",
@@ -514,6 +1350,15 @@
               "keps/provider-aws/423-network-load-balancer/README.md"
             ],
             "reason": "Decision 423-network-load-balancer has no incoming or outgoing edges (orphan)."
+          },
+          {
+            "ruleId": "orphan",
+            "severity": "info",
+            "nodeId": "629-alb-ingress-controller",
+            "files": [
+              "keps/provider-aws/629-alb-ingress-controller/README.md"
+            ],
+            "reason": "Decision 629-alb-ingress-controller has no incoming or outgoing edges (orphan)."
           }
         ]
       }
@@ -521,30 +1366,39 @@
     {
       "repo": "cosmos/cosmos-sdk",
       "commitSha": "06a015222f13fe7b41bc3969504da7dee875ae5c",
+      "excludedFiles": [
+        "docs/architecture/PROCESS.md",
+        "docs/architecture/README.md",
+        "docs/architecture/adr-template.md"
+      ],
+      "extractionSamples": [
+        {
+          "file": "docs/architecture/adr-002-docs-structure.md",
+          "id": "adr-002-docs-structure",
+          "title": "ADR 002: SDK Documentation Structure",
+          "titleSource": "heading",
+          "status": "accepted",
+          "statusSource": "section"
+        },
+        {
+          "file": "docs/architecture/adr-037-gov-split-vote.md",
+          "id": "adr-037-gov-split-vote",
+          "title": "ADR 037: Governance split votes",
+          "titleSource": "heading",
+          "status": "accepted",
+          "statusSource": "section"
+        },
+        {
+          "file": "docs/architecture/adr-076-tx-malleability.md",
+          "id": "adr-076-tx-malleability",
+          "title": "Cosmos SDK Transaction Malleability Risk Review and Recommendations",
+          "titleSource": "heading",
+          "status": "proposed",
+          "statusSource": "section"
+        }
+      ],
       "cycles": [],
       "mutualReferences": [
-        {
-          "pair": [
-            "PROCESS",
-            "architecture"
-          ],
-          "edges": [
-            {
-              "dependentId": "PROCESS",
-              "dependentFile": "docs/architecture/PROCESS.md",
-              "dependencyId": "architecture",
-              "dependencyFile": "docs/architecture/README.md",
-              "rawLinkText": "(./README.md)"
-            },
-            {
-              "dependentId": "architecture",
-              "dependentFile": "docs/architecture/README.md",
-              "dependencyId": "PROCESS",
-              "dependencyFile": "docs/architecture/PROCESS.md",
-              "rawLinkText": "(./PROCESS.md)"
-            }
-          ]
-        },
         {
           "pair": [
             "adr-007-specialization-groups",
@@ -643,51 +1497,71 @@
         }
       ],
       "lintFindings": {
+        "superseded-without-successor": [
+          {
+            "ruleId": "superseded-without-successor",
+            "severity": "warn",
+            "nodeId": "adr-010-modular-antehandler",
+            "files": [
+              "docs/architecture/adr-010-modular-antehandler.md"
+            ],
+            "reason": "Decision adr-010-modular-antehandler is marked superseded but no decision declares it superseded-by or supersedes it."
+          },
+          {
+            "ruleId": "superseded-without-successor",
+            "severity": "warn",
+            "nodeId": "adr-022-custom-panic-handling",
+            "files": [
+              "docs/architecture/adr-022-custom-panic-handling.md"
+            ],
+            "reason": "Decision adr-022-custom-panic-handling is marked superseded but no decision declares it superseded-by or supersedes it."
+          }
+        ],
         "orphan": [
           {
             "ruleId": "orphan",
             "severity": "info",
-            "nodeId": "adr-014-proportional-slashing",
+            "nodeId": "adr-002-docs-structure",
             "files": [
-              "docs/architecture/adr-014-proportional-slashing.md"
+              "docs/architecture/adr-002-docs-structure.md"
             ],
-            "reason": "Decision adr-014-proportional-slashing has no incoming or outgoing edges (orphan)."
+            "reason": "Decision adr-002-docs-structure has no incoming or outgoing edges (orphan)."
           },
           {
             "ruleId": "orphan",
             "severity": "info",
-            "nodeId": "adr-036-arbitrary-signature",
+            "nodeId": "adr-003-dynamic-capability-store",
             "files": [
-              "docs/architecture/adr-036-arbitrary-signature.md"
+              "docs/architecture/adr-003-dynamic-capability-store.md"
             ],
-            "reason": "Decision adr-036-arbitrary-signature has no incoming or outgoing edges (orphan)."
+            "reason": "Decision adr-003-dynamic-capability-store has no incoming or outgoing edges (orphan)."
           },
           {
             "ruleId": "orphan",
             "severity": "info",
-            "nodeId": "adr-041-in-place-store-migrations",
+            "nodeId": "adr-004-split-denomination-keys",
             "files": [
-              "docs/architecture/adr-041-in-place-store-migrations.md"
+              "docs/architecture/adr-004-split-denomination-keys.md"
             ],
-            "reason": "Decision adr-041-in-place-store-migrations has no incoming or outgoing edges (orphan)."
+            "reason": "Decision adr-004-split-denomination-keys has no incoming or outgoing edges (orphan)."
           },
           {
             "ruleId": "orphan",
             "severity": "info",
-            "nodeId": "adr-043-nft-module",
+            "nodeId": "adr-006-secret-store-replacement",
             "files": [
-              "docs/architecture/adr-043-nft-module.md"
+              "docs/architecture/adr-006-secret-store-replacement.md"
             ],
-            "reason": "Decision adr-043-nft-module has no incoming or outgoing edges (orphan)."
+            "reason": "Decision adr-006-secret-store-replacement has no incoming or outgoing edges (orphan)."
           },
           {
             "ruleId": "orphan",
             "severity": "info",
-            "nodeId": "adr-048-consensus-fees",
+            "nodeId": "adr-009-evidence-module",
             "files": [
-              "docs/architecture/adr-048-consensus-fees.md"
+              "docs/architecture/adr-009-evidence-module.md"
             ],
-            "reason": "Decision adr-048-consensus-fees has no incoming or outgoing edges (orphan)."
+            "reason": "Decision adr-009-evidence-module has no incoming or outgoing edges (orphan)."
           }
         ]
       }
@@ -695,6 +1569,36 @@
     {
       "repo": "JabRef/jabref",
       "commitSha": "d0584506a13a7fb0dc6f404b89e3e47d6f7d129d",
+      "excludedFiles": [
+        "docs/decisions/adr-template.md",
+        "docs/decisions/index.md"
+      ],
+      "extractionSamples": [
+        {
+          "file": "docs/decisions/0000-use-markdown-architectural-decision-records.md",
+          "id": "ADR-0000",
+          "title": "Use Markdown Architectural Decision Records",
+          "titleSource": "heading",
+          "status": "accepted",
+          "statusSource": "default"
+        },
+        {
+          "file": "docs/decisions/0043-show-merge-dialog-when-importing-a-single-pdf.md",
+          "id": "ADR-0043",
+          "title": "Show merge dialog when importing a single PDF",
+          "titleSource": "heading",
+          "status": "accepted",
+          "statusSource": "default"
+        },
+        {
+          "file": "docs/decisions/0085-bundle-custom-api-keys.md",
+          "id": "ADR-0085",
+          "title": "Store custom API keys in one keyring item",
+          "titleSource": "heading",
+          "status": "accepted",
+          "statusSource": "default"
+        }
+      ],
       "cycles": [],
       "mutualReferences": [
         {
@@ -788,6 +1692,17 @@
       ],
       "brokenLinks": [],
       "lintFindings": {
+        "superseded-without-successor": [
+          {
+            "ruleId": "superseded-without-successor",
+            "severity": "warn",
+            "nodeId": "ADR-0045",
+            "files": [
+              "docs/decisions/0045-use-input-flag-always-for-input-files.md"
+            ],
+            "reason": "Decision ADR-0045 is marked superseded but no decision declares it superseded-by or supersedes it."
+          }
+        ],
         "orphan": [
           {
             "ruleId": "orphan",
@@ -840,20 +1755,52 @@
     {
       "repo": "alphagov/govuk-design-system-architecture",
       "commitSha": "89854bdaa299203bccae8b64bcfb690d4d8c5824",
+      "excludedFiles": [
+        "decision-records/000-template.md",
+        "decision-records/README.md"
+      ],
+      "extractionSamples": [
+        {
+          "file": "decision-records/001-javascript-for-less-capable-browsers.md",
+          "id": "ADR-001",
+          "title": "JavaScript for less-capable browsers",
+          "titleSource": "heading",
+          "status": "superseded",
+          "statusSource": "line"
+        },
+        {
+          "file": "decision-records/006-javascript-compatibility.md",
+          "id": "ADR-006",
+          "title": "JavaScript browser compatibility",
+          "titleSource": "heading",
+          "status": "accepted",
+          "statusSource": "line"
+        },
+        {
+          "file": "decision-records/010-remove-init-method.md",
+          "id": "ADR-010",
+          "title": "Remove `init()` method from JavaScript components",
+          "titleSource": "heading",
+          "status": "accepted",
+          "statusSource": "line"
+        }
+      ],
       "cycles": [],
       "mutualReferences": [],
       "brokenLinks": [],
       "lintFindings": {
-        "orphan": [
+        "superseded-without-successor": [
           {
-            "ruleId": "orphan",
-            "severity": "info",
-            "nodeId": "ADR-000",
+            "ruleId": "superseded-without-successor",
+            "severity": "warn",
+            "nodeId": "ADR-001",
             "files": [
-              "decision-records/000-template.md"
+              "decision-records/001-javascript-for-less-capable-browsers.md"
             ],
-            "reason": "Decision ADR-000 has no incoming or outgoing edges (orphan)."
-          },
+            "reason": "Decision ADR-001 is marked superseded but no decision declares it superseded-by or supersedes it."
+          }
+        ],
+        "orphan": [
           {
             "ruleId": "orphan",
             "severity": "info",

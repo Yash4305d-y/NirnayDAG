@@ -69,6 +69,10 @@ export type {
 export {
   listDecisionFiles,
   listDecisionFilesSync,
+  loadDecisionFileInputs,
+  loadDecisionFileInputsSync,
+  readSiblingKepYaml,
+  readSiblingKepYamlSync,
   loadNirnayConfig as loadDecisionLoaderConfig,
   loadNirnayConfigSync,
   DEFAULT_INCLUDE_GLOBS,
@@ -78,4 +82,6 @@ export type {
   NirnayConfig,
   ListDecisionFilesOptions,
   DecisionFileListResult,
+  LoadedDecisionFile,
+  LoadedDecisionFilesResult,
 } from './core/decisionLoader.js';

@@ -195,3 +195,88 @@ export function listDecisionFilesSync(
 
   return { included, excluded, all };
 }
+
+export interface LoadedDecisionFile {
+  name: string;
+  filePath: string;
+  absPath: string;
+  content: string;
+  kepYamlContent?: string;
+}
+
+export interface LoadedDecisionFilesResult {
+  files: LoadedDecisionFile[];
+  excluded: string[];
+}
+
+export async function readSiblingKepYaml(markdownFilePath: string): Promise<string | undefined> {
+  if (path.basename(markdownFilePath).toLowerCase() !== 'readme.md') {
+    return undefined;
+  }
+  const dir = path.dirname(markdownFilePath);
+  const kepYamlPath = path.join(dir, 'kep.yaml');
+  const kepYmlPath = path.join(dir, 'kep.yml');
+  if (await fs.pathExists(kepYamlPath)) {
+    return fs.readFile(kepYamlPath, 'utf-8');
+  }
+  if (await fs.pathExists(kepYmlPath)) {
+    return fs.readFile(kepYmlPath, 'utf-8');
+  }
+  return undefined;
+}
+
+export function readSiblingKepYamlSync(markdownFilePath: string): string | undefined {
+  if (path.basename(markdownFilePath).toLowerCase() !== 'readme.md') {
+    return undefined;
+  }
+  const dir = path.dirname(markdownFilePath);
+  const kepYamlPath = path.join(dir, 'kep.yaml');
+  const kepYmlPath = path.join(dir, 'kep.yml');
+  if (fs.existsSync(kepYamlPath)) {
+    return fs.readFileSync(kepYamlPath, 'utf-8');
+  }
+  if (fs.existsSync(kepYmlPath)) {
+    return fs.readFileSync(kepYmlPath, 'utf-8');
+  }
+  return undefined;
+}
+
+export async function loadDecisionFileInputs(
+  targetDir: string,
+  options?: ListDecisionFilesOptions
+): Promise<LoadedDecisionFilesResult> {
+  const { included, excluded } = await listDecisionFiles(targetDir, options);
+  const files = await Promise.all(
+    included.map(async (file): Promise<LoadedDecisionFile> => {
+      const content = await fs.readFile(file, 'utf-8');
+      const kepYamlContent = await readSiblingKepYaml(file);
+      return {
+        name: path.basename(file),
+        filePath: path.relative(targetDir, file).replace(/\\/g, '/'),
+        absPath: file.replace(/\\/g, '/'),
+        content,
+        ...(kepYamlContent !== undefined ? { kepYamlContent } : {}),
+      };
+    })
+  );
+  return { files, excluded };
+}
+
+export function loadDecisionFileInputsSync(
+  targetDir: string,
+  options?: ListDecisionFilesOptions
+): LoadedDecisionFilesResult {
+  const { included, excluded } = listDecisionFilesSync(targetDir, options);
+  const files = included.map((file): LoadedDecisionFile => {
+    const content = fs.readFileSync(file, 'utf-8');
+    const kepYamlContent = readSiblingKepYamlSync(file);
+    return {
+      name: path.basename(file),
+      filePath: path.relative(targetDir, file).replace(/\\/g, '/'),
+      absPath: file.replace(/\\/g, '/'),
+      content,
+      ...(kepYamlContent !== undefined ? { kepYamlContent } : {}),
+    };
+  });
+  return { files, excluded };
+}

@@ -7,7 +7,7 @@ import path from 'path';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import { parseBatchADRs } from '../core/adrParser.js';
-import { listDecisionFiles } from '../core/decisionLoader.js';
+import { loadDecisionFileInputs } from '../core/decisionLoader.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
 import { calculateGraphRisk } from '../core/risk.js';
 
@@ -17,17 +17,11 @@ export async function loadGraph(dir: string) {
   if (!fs.existsSync(fullPath)) {
     throw new Error(`Directory not found: ${fullPath}`);
   }
-  const { included: files } = await listDecisionFiles(fullPath);
-  if (files.length === 0) {
+  const { files: fileData } = await loadDecisionFileInputs(fullPath);
+  if (fileData.length === 0) {
     throw new Error(`No ADR files found in ${fullPath}`);
   }
-  const fileData = await Promise.all(
-    files.map(async (file) => ({
-      name: path.basename(file),
-      content: await fs.readFile(file, 'utf-8'),
-    }))
-  );
-  const parsedADRs = parseBatchADRs(fileData);
+  const parsedADRs = parseBatchADRs(fileData, { baseDir: fullPath });
   const { validationResult, engine, mappedAdrs } = validateAndComputeDAG(parsedADRs);
   return { parsedADRs, validationResult, engine, mappedAdrs, fullPath };
 }
