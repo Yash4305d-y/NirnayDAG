@@ -3,6 +3,8 @@ import type {
   ParsedADR,
   ADRFrontmatter,
   ADRStatus,
+  StatusSource,
+  TitleSource,
   ADRConsequences,
   NirnayADR,
   DecisionStatus,
@@ -10,6 +12,29 @@ import type {
   ClassifiedLink,
   LinkClassification,
 } from './types.js';
+
+const PROPOSED_STATUSES = new Set(['proposed', 'draft', 'provisional', 'implementable', 'deferred']);
+const ACCEPTED_STATUSES = new Set(['accepted', 'implemented', 'done', 'approved', 'active']);
+const DEPRECATED_STATUSES = new Set(['deprecated', 'obsolete', 'retired', 'withdrawn']);
+const SUPERSEDED_STATUSES = new Set(['superseded', 'superceded', 'replaced']);
+const REJECTED_STATUSES = new Set(['rejected', 'declined']);
+
+export function mapStatus(raw: string): ADRStatus | null {
+  const cleaned = raw.trim().toLowerCase();
+  if (!cleaned) return null;
+
+  const unstyled = cleaned.replace(/^[*_`]+|[*_`]+$/g, '').trim();
+  const firstWord = unstyled.split(/[\s:;,.()[\]-]+/)[0];
+
+  for (const token of [unstyled, firstWord]) {
+    if (PROPOSED_STATUSES.has(token)) return 'proposed';
+    if (ACCEPTED_STATUSES.has(token)) return 'accepted';
+    if (DEPRECATED_STATUSES.has(token)) return 'deprecated';
+    if (SUPERSEDED_STATUSES.has(token)) return 'superseded';
+    if (REJECTED_STATUSES.has(token)) return 'rejected';
+  }
+  return null;
+}
 
 function extractSection(content: string, headings: string[]): string {
   const headingsRe = headings.map(h => h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
@@ -121,34 +146,62 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
     bodyContent = content.slice(fmMatch[0].length).trim();
   }
 
-  // Extract title from first heading if not in frontmatter
-  let title = frontmatterData.title;
-  if (!title) {
-    const titleMatch = content.match(/^#\s+(.+)$/m);
-    title = titleMatch ? titleMatch[1].trim() : 'Untitled ADR';
+  // Extract title with precedence: frontmatter -> H1 heading -> metadata line -> filename slug -> default
+  let title = '';
+  let titleSource: TitleSource = 'default';
+
+  if (frontmatterData.title !== undefined && frontmatterData.title !== null && String(frontmatterData.title).trim() !== '') {
+    title = String(frontmatterData.title).trim();
+    titleSource = 'frontmatter';
+  } else {
+    const titleMatch = bodyContent.match(/^#\s+(.+)$/m);
+    if (titleMatch && titleMatch[1].trim() !== '') {
+      title = titleMatch[1].trim();
+      titleSource = 'heading';
+    } else {
+      const featureMatch = bodyContent.match(/^[ \t]*(?:[-*]\s*)?Feature Name\s*:\s*(.+)$/im);
+      if (featureMatch && featureMatch[1].trim() !== '') {
+        title = featureMatch[1].trim();
+        titleSource = 'metadata-line';
+      } else if (fallbackId && fallbackId.trim() !== '') {
+        title = fallbackId.trim();
+        titleSource = 'slug';
+      } else {
+        title = 'Untitled ADR';
+        titleSource = 'default';
+      }
+    }
   }
 
   // Determine ID
   const id = frontmatterData.id || fallbackId || `ADR-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
-  // Process Status with Aliases and Normalization
-  const rawStatusInput = frontmatterData.status ?? frontmatterData.stage ?? frontmatterData.state;
-  const statusSource: 'explicit' | 'default' =
-    rawStatusInput !== undefined && rawStatusInput !== null && String(rawStatusInput).trim() !== ''
-      ? 'explicit'
-      : 'default';
-  let rawStatus = rawStatusInput || 'accepted';
-  rawStatus = String(rawStatus).toLowerCase();
-  
+  // Process Status with Aliases, Normalization, and Source Tracking
   let status: ADRStatus = 'accepted';
-  if (['proposed', 'draft'].includes(rawStatus)) {
-    status = 'proposed';
-  } else if (['accepted', 'implemented', 'done', 'approved', 'active'].includes(rawStatus)) {
-    status = 'accepted';
-  } else if (['deprecated', 'obsolete', 'retired'].includes(rawStatus)) {
-    status = 'deprecated';
-  } else if (['superseded', 'replaced'].includes(rawStatus)) {
-    status = 'superseded';
+  let statusSource: StatusSource = 'default';
+
+  const rawFmStatus = frontmatterData.status ?? frontmatterData.stage ?? frontmatterData.state;
+  if (rawFmStatus !== undefined && rawFmStatus !== null && String(rawFmStatus).trim() !== '') {
+    status = mapStatus(String(rawFmStatus)) ?? 'accepted';
+    statusSource = 'frontmatter';
+  } else {
+    const statusSection = extractSection(bodyContent, ['Status']);
+    const firstNonEmptyLine = statusSection
+      ? statusSection.split(/\r?\n/).map((l) => l.trim()).find(Boolean)
+      : undefined;
+    const sectionMapped = firstNonEmptyLine ? mapStatus(firstNonEmptyLine) : null;
+
+    if (sectionMapped) {
+      status = sectionMapped;
+      statusSource = 'section';
+    } else {
+      const lineMatch = bodyContent.match(/^[ \t]*(?:[-*]\s*)?(?:\*\*)?Status(?:\*\*)?\s*:\s*(.+)$/im);
+      const lineMapped = lineMatch ? mapStatus(lineMatch[1]) : null;
+      if (lineMapped) {
+        status = lineMapped;
+        statusSource = 'line';
+      }
+    }
   }
 
   // Process Dependencies with Aliases (Hard edges)
@@ -283,6 +336,8 @@ export function parseADRContent(content: string, fallbackId?: string): ParsedADR
     decision,
     consequences,
     rawContent: content,
+    titleSource,
+    statusSource,
     edges,
     ...(affectsWarnings.length > 0 ? { warnings: affectsWarnings } : {}),
   };
@@ -486,6 +541,12 @@ function registerAliasesForAdr(adr: ParsedADR, aliasToAdrs: Map<string, Set<Pars
   const id = adr.frontmatter.id;
   addAlias(id);
 
+  if (adr.kepNumber !== undefined && adr.kepNumber !== null && String(adr.kepNumber).trim() !== '') {
+    const kepNumStr = String(adr.kepNumber).trim();
+    addAlias(kepNumStr);
+    addAlias(`kep-${kepNumStr}`);
+  }
+
   // Register numeric-prefix aliases (adr-020, ADR-020, ADR-20, 020, 20) case-insensitively
   const baseId = id.split('::')[0];
   const idNumMatch = baseId.match(/^(?:adr[-_]?)?(\d+)(?:[-_].*)?$/i);
@@ -524,11 +585,161 @@ function resolveAliasToken(
   return { status: 'resolved', resolvedId: targetAdr.frontmatter.id };
 }
 
+const COMMON_DOMAIN_TLDS = new Set([
+  'com', 'org', 'net', 'io', 'dev', 'edu', 'gov', 'co', 'uk', 'de',
+  'jp', 'fr', 'ai', 'app', 'rs', 'me', 'info', 'biz', 'xyz', 'tech', 'cloud',
+]);
+
+function isNotAFileLink(target: string): boolean {
+  if (!target || target.startsWith('#')) return true;
+  if (/^(?:mailto:|tel:)/i.test(target)) return true;
+  if (target.includes('::')) return true;
+  if (/^www\.[a-z0-9-]+/i.test(target)) return true;
+
+  // Scheme-less domain-like hostnames (e.g. git.k8s.io/enhancements/..., example.com/spec)
+  // Exclude relative paths (./, ../, /) and files with non-TLD extensions (.md, .go, .proto)
+  if (!target.startsWith('.') && !target.startsWith('/')) {
+    const hostMatch = target.match(/^([a-z0-9-]+(?:\.[a-z0-9-]+)+)(?::\d+)?(?:[/?#]|$)/i);
+    if (hostMatch) {
+      const host = hostMatch[1];
+      const lastLabel = host.split('.').pop()?.toLowerCase() || '';
+      if (COMMON_DOMAIN_TLDS.has(lastLabel)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 /**
  * Resolves relative Markdown body links and bare ID mentions across a batch of
  * parsed ADRs, classifying each as `resolved`, `non-decision`, `outside-scope`,
- * `ambiguous`, `external`, or `broken`.
+ * `ambiguous`, `external`, `not-a-file-link`, or `broken`.
  */
+function toStringArray(val: unknown): string[] {
+  if (val === undefined || val === null) return [];
+  const arr = Array.isArray(val) ? val : [val];
+  return arr.map((item) => String(item).trim()).filter(Boolean);
+}
+
+/**
+ * Applies metadata from a sibling `kep.yaml` file onto a parsed KEP README.
+ */
+export function applyKepMetadata(parsed: ParsedADR, kepYamlContent: string): void {
+  let kepData: Record<string, unknown> | null = null;
+  try {
+    const loaded = yaml.load(kepYamlContent);
+    if (typeof loaded === 'object' && loaded !== null) {
+      kepData = loaded as Record<string, unknown>;
+    }
+  } catch (e) {
+    console.warn('Failed to parse kep.yaml:', e);
+    return;
+  }
+  if (!kepData) return;
+
+  if (kepData.title !== undefined && kepData.title !== null && String(kepData.title).trim() !== '') {
+    parsed.frontmatter.title = String(kepData.title).trim();
+    parsed.titleSource = 'kep-yaml';
+  }
+
+  if (kepData.status !== undefined && kepData.status !== null && String(kepData.status).trim() !== '') {
+    const mapped = mapStatus(String(kepData.status));
+    if (mapped) {
+      parsed.frontmatter.status = mapped;
+      parsed.frontmatter.statusSource = 'kep-yaml';
+      parsed.statusSource = 'kep-yaml';
+    }
+  }
+
+  const owningSig = kepData['owning-sig'];
+  if (typeof owningSig === 'string' && owningSig.trim() !== '') {
+    const existingTags = parsed.frontmatter.tags ?? [];
+    if (!existingTags.includes(owningSig.trim())) {
+      parsed.frontmatter.tags = [...existingTags, owningSig.trim()];
+    }
+  }
+
+  const kepNum = kepData['kep-number'];
+  if (kepNum !== undefined && kepNum !== null && String(kepNum).trim() !== '') {
+    parsed.kepNumber = typeof kepNum === 'number' ? kepNum : String(kepNum).trim();
+  }
+
+  const edges = parsed.edges ?? [];
+  const supersedesSet = new Set<string>(parsed.frontmatter.supersedes ?? []);
+  const existingTargets = new Set<string>(edges.map((e) => `${e.source}:${e.targetId}`));
+
+  const addKepEdges = (
+    rawList: unknown,
+    kind: 'hard' | 'soft',
+    source: 'kep:replaces' | 'kep:superseded-by' | 'kep:see-also',
+    fieldName: string
+  ) => {
+    for (const target of toStringArray(rawList)) {
+      if (/^(?:https?:|mailto:|tel:|ftp:|\/\/|#)/i.test(target)) {
+        continue;
+      }
+      if (!existingTargets.has(`${source}:${target}`)) {
+        existingTargets.add(`${source}:${target}`);
+        edges.push({
+          targetId: target,
+          kind,
+          source,
+          rawText: `${fieldName}: ${target}`,
+        });
+      }
+      if (kind === 'hard') {
+        supersedesSet.add(target);
+      }
+    }
+  };
+
+  addKepEdges(kepData.replaces, 'hard', 'kep:replaces', 'replaces');
+  addKepEdges(kepData['superseded-by'], 'hard', 'kep:superseded-by', 'superseded-by');
+  addKepEdges(kepData['see-also'], 'soft', 'kep:see-also', 'see-also');
+
+  parsed.edges = edges;
+  parsed.frontmatter.supersedes = Array.from(supersedesSet);
+}
+
+function resolveKepTarget(
+  rawTarget: string,
+  pathToId: Map<string, string>,
+  aliasToAdrs: Map<string, Set<ParsedADR>>
+): string | null {
+  const cleaned = rawTarget.split('#')[0].split('?')[0].trim();
+  if (!cleaned) return null;
+
+  const norm = normalizePosixPath(cleaned.replace(/^\/+/, '')).toLowerCase();
+  const candidates = [norm];
+  if (norm.startsWith('keps/')) {
+    candidates.push(norm.slice('keps/'.length));
+  } else {
+    candidates.push(`keps/${norm}`);
+  }
+
+  for (const cand of candidates) {
+    const trimmed = cand.replace(/\/+$/, '');
+    const byPath =
+      pathToId.get(cand) ??
+      pathToId.get(`${cand}.md`) ??
+      pathToId.get(`${trimmed}/readme.md`);
+    if (byPath) return byPath;
+  }
+
+  const byAlias = resolveAliasToken(cleaned, aliasToAdrs);
+  if (byAlias.status === 'resolved') return byAlias.resolvedId;
+
+  const slugMatch = norm.match(/([^/]+?)(?:\/readme\.md|\.md)?$/);
+  if (slugMatch) {
+    const bySlug = resolveAliasToken(slugMatch[1], aliasToAdrs);
+    if (bySlug.status === 'resolved') return bySlug.resolvedId;
+  }
+
+  return null;
+}
+
 export function resolveBatchLinks(parsedADRs: ParsedADR[], options?: LinkResolutionOptions): void {
   const pathToId = new Map<string, string>();
   const aliasToAdrs = new Map<string, Set<ParsedADR>>();
@@ -552,6 +763,24 @@ export function resolveBatchLinks(parsedADRs: ParsedADR[], options?: LinkResolut
     const nonLinkEdges = (adr.edges || []).filter(
       (e) => e.source !== 'body:link' && e.source !== 'body:id'
     );
+    const resolvedSupersedes = new Set<string>();
+    for (const edge of nonLinkEdges) {
+      if (edge.source.startsWith('kep:')) {
+        const resolved = resolveKepTarget(edge.targetId, pathToId, aliasToAdrs);
+        if (resolved && resolved !== adr.frontmatter.id) {
+          edge.targetId = resolved;
+        }
+        if (edge.kind === 'hard') {
+          resolvedSupersedes.add(edge.targetId);
+        }
+      }
+    }
+    if (resolvedSupersedes.size > 0) {
+      const existingHardNonKep = (adr.frontmatter.supersedes || []).filter(
+        (s) => !nonLinkEdges.some((e) => e.source.startsWith('kep:') && e.rawText?.endsWith(`: ${s}`))
+      );
+      adr.frontmatter.supersedes = Array.from(new Set([...existingHardNonKep, ...resolvedSupersedes]));
+    }
     const seenTargets = new Set<string>(nonLinkEdges.map((e) => e.targetId));
     const resolvedEdges: ADREdgeRef[] = [...nonLinkEdges];
     const classifiedLinks: ClassifiedLink[] = [];
@@ -566,11 +795,20 @@ export function resolveBatchLinks(parsedADRs: ParsedADR[], options?: LinkResolut
       const rawLinkText = `(${rawInner})`;
       const targetWithFragment = parseLinkTarget(rawInner);
 
-      if (!targetWithFragment || /^(?:https?:|mailto:|tel:|ftp:|\/\/|#)/i.test(targetWithFragment)) {
+      if (/^(?:https?:|ftp:|\/\/)/i.test(targetWithFragment)) {
         classifiedLinks.push({
           rawLinkText,
           targetPath: targetWithFragment,
           classification: 'external',
+        });
+        continue;
+      }
+
+      if (isNotAFileLink(targetWithFragment)) {
+        classifiedLinks.push({
+          rawLinkText,
+          targetPath: targetWithFragment,
+          classification: 'not-a-file-link',
         });
         continue;
       }
@@ -580,7 +818,7 @@ export function resolveBatchLinks(parsedADRs: ParsedADR[], options?: LinkResolut
         classifiedLinks.push({
           rawLinkText,
           targetPath: targetWithFragment,
-          classification: 'external',
+          classification: 'not-a-file-link',
         });
         continue;
       }
@@ -703,10 +941,20 @@ export function resolveBatchLinks(parsedADRs: ParsedADR[], options?: LinkResolut
 }
 
 export function parseBatchADRs(
-  files: Array<{ name: string; content: string; filePath?: string }>,
+  files: Array<{ name: string; content: string; filePath?: string; kepYamlContent?: string }>,
   options?: LinkResolutionOptions
 ): ParsedADR[] {
   const parsedADRs: ParsedADR[] = [];
+  const kepYamlByDir = new Map<string, string>();
+
+  for (const file of files) {
+    const targetPath = (file.filePath ?? file.name).replace(/\\/g, '/');
+    const baseName = targetPath.split('/').pop()?.toLowerCase() ?? '';
+    if (baseName === 'kep.yaml' || baseName === 'kep.yml') {
+      const dir = targetPath.includes('/') ? targetPath.slice(0, targetPath.lastIndexOf('/')) : '';
+      kepYamlByDir.set(dir, file.content);
+    }
+  }
 
   for (const file of files) {
     if (!file.name.endsWith('.md') && !file.name.endsWith('.mdx')) {
@@ -719,6 +967,15 @@ export function parseBatchADRs(
 
       const parsed = parseADRContent(file.content, fallbackId);
       parsed.filePath = targetPath;
+
+      const normPath = targetPath.replace(/\\/g, '/');
+      const baseName = normPath.split('/').pop()?.toLowerCase() ?? '';
+      const dir = normPath.includes('/') ? normPath.slice(0, normPath.lastIndexOf('/')) : '';
+      const siblingKepYaml = file.kepYamlContent ?? (baseName === 'readme.md' ? kepYamlByDir.get(dir) : undefined);
+      if (siblingKepYaml) {
+        applyKepMetadata(parsed, siblingKepYaml);
+      }
+
       parsedADRs.push(parsed);
     } catch (e) {
       console.warn(`Error parsing ADR file ${file.name}:`, e);

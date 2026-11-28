@@ -1,7 +1,7 @@
 # NirnayDAG Corpus Benchmark Findings (Phase 2A.2 + 2B)
 
-> Benchmark Executed: 2026-11-26T14:12:22.817Z  
-> Runner Version: `1.0.0-phase3`  
+> Benchmark Executed: 2026-11-28T14:56:54.302Z  
+> Runner Version: `1.0.0-phase6c`  
 > Scope: Hard vs. Soft dependency edge classification and Data-Integrity Fixes across pinned open-source decision-record commits.
 
 ---
@@ -11,13 +11,13 @@
 NirnayDAG's parser and DAG engine were run against **7 open-source repositories** pinned to exact commit SHAs across `madr`, `rfc`, `kep`, `adr`, `nygard` formats.
 
 - **Total Decision Files Found:** 1565
-- **Parsed OK:** 1565 (100%) — *see definition below*
-- **Total Graph Nodes:** 1565 (1565 unique IDs; 4 files with initial ID collisions before disambiguation)
-- **Total Active Graph Edges:** 353 (0 hard, 353 soft)
-- **Total Isolated Nodes:** 1188
-- **Unresolved References (Broken Links):** 73 (unvalidated)
+- **Parsed OK:** 1538 (100%) — *see definition below*
+- **Total Graph Nodes:** 1538 (1538 unique IDs; 2 files with initial ID collisions before disambiguation)
+- **Total Active Graph Edges:** 426 (9 hard, 417 soft)
+- **Total Isolated Nodes:** 1102
+- **Unresolved References (Broken Links):** 161 (unvalidated)
 - **Repositories with Hard Cycles:** 0
-- **Soft Mutual References:** 14 pair(s) (informational, non-failing)
+- **Soft Mutual References:** 35 pair(s) (informational, non-failing)
 
 > **Definition — "Parsed OK":** A non-empty file where `parseADRContent()` did not throw and returned a non-null `ParsedADR` object with a non-empty `frontmatter.id` (whether from frontmatter, filename fallback, or generated ID). **"Parsed OK" measures parser survival, not metadata extraction quality**—which is reported separately in the extraction-quality columns immediately next to it.
 
@@ -29,37 +29,51 @@ In Phase 2A.1, `kubernetes/enhancements` had 708 markdown files, 689 of which we
 
 ## 2. Benchmark Results & Extraction Quality
 
-| Repository | Commit | Format | License | Files Found | Parsed OK | Parse Rate | Real Title % | Status Found % | ID Source (FM / File / Gen) | Duplicate IDs | Unique IDs | Nodes | Edges (Hard / Soft) | Edge Density | Isolated Nodes | Hard Cycles | Mutual Refs | Broken Links | Analysis Time | Checkout Time (cached) |
-| :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [backstage/backstage](https://github.com/backstage/backstage.git) | `b3ed969` | `madr` | Apache-2.0 | 17 | 17 | 100% | 100% | 0% | 100% / 0% / 0% | 0 | 17 | 17 | 0 / 4 | 0.235 | 12 | None | 1 | 0 | 106ms | 57ms |
-| [adr/madr](https://github.com/adr/madr.git) | `ba75bb1` | `madr` | MIT | 21 | 21 | 100% | 100% | 4.8% | 0% / 100% / 0% | 0 | 21 | 21 | 0 / 4 | 0.19 | 16 | None | 1 | 0 | 70ms | 48ms |
-| [rust-lang/rfcs](https://github.com/rust-lang/rfcs.git) | `f43d578` | `rfc` | MIT / Apache-2.0 | 654 | 654 | 100% | 7.5% | 0% | 0% / 100% / 0% | 2 | 654 | 654 | 0 / 12 | 0.018 | 624 | None | 0 | 21 | 341ms | 48ms |
-| [kubernetes/enhancements](https://github.com/kubernetes/enhancements.git) | `cac930c` | `kep` | Apache-2.0 | 708 | 708 | 100% | 97.9% | 0% | 0% / 100% / 0% | 2 | 708 | 708 | 0 / 216 | 0.305 | 461 | None | 3 | 51 | 576ms | 53ms |
-| [cosmos/cosmos-sdk](https://github.com/cosmos/cosmos-sdk.git) | `06a0152` | `adr` | Apache-2.0 | 65 | 65 | 100% | 100% | 0% | 0% / 100% / 0% | 0 | 65 | 65 | 0 / 88 | 1.354 | 7 | None | 5 | 1 | 104ms | 50ms |
-| [JabRef/jabref](https://github.com/JabRef/jabref.git) | `d058450` | `madr` | MIT | 88 | 88 | 100% | 100% | 9.1% | 0% / 100% / 0% | 0 | 88 | 88 | 0 / 25 | 0.284 | 62 | None | 4 | 0 | 120ms | 49ms |
-| [alphagov/govuk-design-system-architecture](https://github.com/alphagov/govuk-design-system-architecture.git) | `89854bd` | `nygard` | MIT | 12 | 12 | 100% | 100% | 0% | 0% / 100% / 0% | 0 | 12 | 12 | 0 / 4 | 0.333 | 6 | None | 0 | 0 | 62ms | 48ms |
+| Repository | Commit | Format | License | Files Found | Excluded | Decision Nodes | Nodes (Before → After) | Edges (Hard / Soft) | Mutual Refs | Hard Cycles | Resolved / Non-decision / Outside-scope / Ambiguous / Truly Broken | Truly Broken (Before → After) | Real Title % | Title Source (FM / H1 / Meta / KEP / Slug) | Status Found % | Status Source (FM / Sec / Line / KEP) |
+| :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| [backstage/backstage](https://github.com/backstage/backstage.git) | `b3ed969` | `madr` | Apache-2.0 | 17 | 2 | 15 | 17 → 15 | 0 / 4 | 1 | None | 4 / 0 / 1 / 0 / 0 | 0 → 0 | 100% | 100% / 0% / 0% / 0% / 0% | 0% | 0% / 0% / 0% / 0% |
+| [adr/madr](https://github.com/adr/madr.git) | `ba75bb1` | `madr` | MIT | 21 | 2 | 19 | 21 → 19 | 0 / 3 | 1 | None | 3 / 4 / 0 / 0 / 0 | 0 → 0 | 100% | 0% / 100% / 0% / 0% / 0% | 10.5% | 5.3% / 0% / 5.3% / 0% |
+| [rust-lang/rfcs](https://github.com/rust-lang/rfcs.git) | `f43d578` | `rfc` | MIT / Apache-2.0 | 654 | 9 | 645 | 654 → 645 | 0 / 8 | 0 | None | 9 / 5 / 0 / 0 / 8 | 21 → 8 | 75.3% | 0.2% / 6% / 69.1% / 0% / 24.7% | 0% | 0% / 0% / 0% / 0% |
+| [kubernetes/enhancements](https://github.com/kubernetes/enhancements.git) | `cac930c` | `kep` | Apache-2.0 | 708 | 7 | 701 | 708 → 701 | 9 / 339 | 25 | None | 106 / 308 / 0 / 0 / 152 | 51 → 152 | 98.7% | 0% / 1.3% / 0% / 97.4% / 1.3% | 97% | 0% / 0% / 0% / 97% |
+| [cosmos/cosmos-sdk](https://github.com/cosmos/cosmos-sdk.git) | `06a0152` | `adr` | Apache-2.0 | 65 | 3 | 62 | 65 → 62 | 0 / 39 | 4 | None | 88 / 0 / 5 / 0 / 1 | 1 → 1 | 100% | 0% / 100% / 0% / 0% / 0% | 95.2% | 0% / 95.2% / 0% / 0% |
+| [JabRef/jabref](https://github.com/JabRef/jabref.git) | `d058450` | `madr` | MIT | 88 | 2 | 86 | 88 → 86 | 0 / 20 | 4 | None | 34 / 6 / 10 / 0 / 0 | 0 → 0 | 100% | 3.5% / 96.5% / 0% / 0% / 0% | 9.3% | 9.3% / 0% / 0% / 0% |
+| [alphagov/govuk-design-system-architecture](https://github.com/alphagov/govuk-design-system-architecture.git) | `89854bd` | `nygard` | MIT | 12 | 2 | 10 | 12 → 10 | 0 / 4 | 0 | None | 5 / 0 / 0 / 0 / 0 | 0 → 0 | 100% | 0% / 100% / 0% / 0% / 0% | 100% | 0% / 0% / 100% / 0% |
 
 *Column notes:*
-- **Real Title %**: % of parsed files whose extracted title is not the parser fallback `'Untitled ADR'`.
-- **Status Found %**: % of parsed files with an explicit `status`, `stage`, or `state` key in YAML frontmatter (the parser defaults missing frontmatter status to `'accepted'`).
+- **Real Title %**: % of parsed files whose extracted title came from frontmatter, H1 heading, RFC metadata line, or `kep.yaml` (excludes filename slug and `'Untitled ADR'` fallbacks).
+- **Title Source (FM / H1 / Meta / KEP / Slug)**: % breakdown by title source: YAML frontmatter (`FM`), first H1 heading (`H1`), RFC metadata line (`Meta`), `kep.yaml` (`KEP`), or filename slug (`Slug`).
+- **Status Found %**: % of parsed files where `statusSource` is not `'default'` (i.e. extracted from frontmatter, `## Status` section, metadata line, or `kep.yaml`).
+- **Status Source (FM / Sec / Line / KEP)**: % breakdown by status source: YAML frontmatter (`FM`), `## Status` section (`Sec`), metadata line (`Line`), or `kep.yaml` (`KEP`).
 - **ID Source (FM / File / Gen)**: % of parsed files whose ID came from YAML frontmatter (`FM`), filename fallback (`File`), or random generation (`Gen`).
 - **Duplicate IDs**: Count of parsed files whose initial ID collided with another file before relative-path disambiguation.
 - **Unique IDs**: Count of distinct node IDs in `DAGEngine`'s graph after disambiguation.
-- **Edges (Hard / Soft)**: Active intra-repo edges split into hard dependencies (frontmatter `depends_on` / `supersedes` or status `Supersedes ADR-XXXX`) and soft references (body markdown links and ID tokens).
+- **Edges (Hard / Soft)**: Active intra-repo edges split into hard dependencies (frontmatter `depends_on` / `supersedes`, status `Supersedes ADR-XXXX`, or KEP `replaces` / `superseded-by`) and soft references (body markdown links, ID tokens, and KEP `see-also`).
 - **Hard Cycles / Mutual Refs**: Hard cycles fail `ndag validate`; soft mutual references are informational only.
 - **Checkout Time (cached)**: Time to verify/checkout the pinned commit SHA from the local `.corpus/` cache (50–60 ms reflects cached local checkouts, not fresh network clones).
+
+### Extraction Quality Before/After Comparison (Phase 2C-2b)
+
+| Repository | Real Title % (Before → After) | Status Found % (Before → After) | Hard Edges (Before → After) |
+| :--- | :---: | :---: | :---: |
+| **backstage/backstage** | 100% → 100% | 0% → 0% | 0 → 0 |
+| **adr/madr** | 100% → 100% | 4.8% → 10.5% | 0 → 0 |
+| **rust-lang/rfcs** | 7.5% → 75.3% | 0% → 0% | 0 → 0 |
+| **kubernetes/enhancements** | 97.9% → 98.7% | 0% → 97% | 0 → 9 |
+| **cosmos/cosmos-sdk** | 100% → 100% | 0% → 95.2% | 0 → 0 |
+| **JabRef/jabref** | 100% → 100% | 9.1% → 9.3% | 0 → 0 |
+| **alphagov/govuk-design-system-architecture** | 100% → 100% | 0% → 100% | 0 → 0 |
 
 ### Link Resolution & Before/After Comparison (Phase 2C-1.1)
 
 | Repository | Resolved Links | Non-Decision | Outside-Scope | Ambiguous | Truly Broken Links | Edges (Before → After) | Broken Links (Before → After) |
 | :--- |:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **backstage/backstage** | 4 | 0 | 1 | 0 | 0 | 0 → 4 | 4 → 0 |
-| **adr/madr** | 4 | 4 | 0 | 0 | 0 | 3 → 4 | 0 → 0 |
-| **rust-lang/rfcs** | 13 | 1 | 0 | 0 | 21 | 0 → 12 | 4 → 21 |
-| **kubernetes/enhancements** | 254 | 165 | 0 | 0 | 51 | 0 → 216 | 93 → 51 |
-| **cosmos/cosmos-sdk** | 137 | 0 | 5 | 0 | 1 | 0 → 88 | 92 → 1 |
-| **JabRef/jabref** | 39 | 6 | 10 | 0 | 0 | 12 → 25 | 4 → 0 |
-| **alphagov/govuk-design-system-architecture** | 5 | 0 | 0 | 0 | 0 | 0 → 4 | 4 → 0 |
+| **backstage/backstage** | 4 | 0 | 1 | 0 | 0 | 4 → 4 | 0 → 0 |
+| **adr/madr** | 3 | 4 | 0 | 0 | 0 | 4 → 3 | 0 → 0 |
+| **rust-lang/rfcs** | 9 | 5 | 0 | 0 | 8 | 12 → 8 | 21 → 8 |
+| **kubernetes/enhancements** | 106 | 308 | 0 | 0 | 152 | 216 → 348 | 51 → 152 |
+| **cosmos/cosmos-sdk** | 88 | 0 | 5 | 0 | 1 | 88 → 39 | 1 → 1 |
+| **JabRef/jabref** | 34 | 6 | 10 | 0 | 0 | 25 → 20 | 0 → 0 |
+| **alphagov/govuk-design-system-architecture** | 5 | 0 | 0 | 0 | 0 | 4 → 4 | 0 → 0 |
 
 *Notes:*
 - **Resolved Links**: Relative Markdown links and bare ID mentions resolved to a unique decision node in the same repository (creating soft edges).
@@ -72,14 +86,14 @@ In Phase 2A.1, `kubernetes/enhancements` had 708 markdown files, 689 of which we
 
 | Repository | `accepted-depends-on-deprecated` | `superseded-without-successor` | `broken-supersedes` | `orphan` | Total Findings |
 | :--- |:---:|:---:|:---:|:---:|:---:|
-| **backstage/backstage** | 0 | 0 | 0 | 12 | 12 |
+| **backstage/backstage** | 0 | 0 | 0 | 10 | 10 |
 | **adr/madr** | 0 | 0 | 0 | 16 | 16 |
 | **rust-lang/rfcs** | 0 | 0 | 0 | 624 | 624 |
-| **kubernetes/enhancements** | 0 | 0 | 0 | 461 | 461 |
-| **cosmos/cosmos-sdk** | 0 | 0 | 0 | 7 | 7 |
-| **JabRef/jabref** | 0 | 0 | 0 | 62 | 62 |
-| **alphagov/govuk-design-system-architecture** | 0 | 0 | 0 | 6 | 6 |
-| **Total** | **0** | **0** | **0** | **1188** | **1188** |
+| **kubernetes/enhancements** | 2 | 4 | 29 | 357 | 392 |
+| **cosmos/cosmos-sdk** | 0 | 2 | 0 | 29 | 31 |
+| **JabRef/jabref** | 0 | 1 | 0 | 62 | 63 |
+| **alphagov/govuk-design-system-architecture** | 0 | 1 | 0 | 4 | 5 |
+| **Total** | **2** | **8** | **29** | **1102** | **1141** |
 
 *Notes:*
 - Status-dependent rules (`accepted-depends-on-deprecated`, `superseded-without-successor`) skip nodes whose status is defaulted (no explicit `status`, `stage`, or `state` in frontmatter).
@@ -95,13 +109,13 @@ No unhandled parse failures were recorded across the analyzed files.
 
 
 ### Graph Connectivity & Isolated Nodes
-- Across the 7 repositories, measured edge density ranges from **0.018** to **1.354** edges per node, with **1188** of **1565** nodes having zero incoming and zero outgoing edges.
+- Across the 7 repositories, measured edge density ranges from **0.012** to **0.629** edges per node, with **1102** of **1538** nodes having zero incoming and zero outgoing edges.
 
 ### Unresolved References (Broken Links)
-- **73** dependency targets could not be matched to any parsed node ID in the same repository. Samples (up to 10 per repository, with source file path and raw link text) are recorded in `results/evidence.json`.
+- **161** dependency targets could not be matched to any parsed node ID in the same repository. Samples (up to 10 per repository, with source file path and raw link text) are recorded in `results/evidence.json`.
 
 ### Hard Cycles vs. Soft Mutual References
-- The DAG engine flagged **0** repository(ies) with hard circular dependencies and **14** soft mutual reference pair(s) (see-also body links recorded in `results/evidence.json`).
+- The DAG engine flagged **0** repository(ies) with hard circular dependencies and **35** soft mutual reference pair(s) (see-also body links recorded in `results/evidence.json`).
 
 ---
 
@@ -121,8 +135,8 @@ Review the raw evidence in `results/evidence.json` and check off each item once 
 - [ ] No cycles detected
 
 ### Broken Link Samples
-- [ ] **rust-lang/rfcs** — Review sample of 10 of 21 broken link(s) in `results/evidence.json`
-- [ ] **kubernetes/enhancements** — Review sample of 10 of 51 broken link(s) in `results/evidence.json`
+- [ ] **rust-lang/rfcs** — Review sample of 8 of 8 broken link(s) in `results/evidence.json`
+- [ ] **kubernetes/enhancements** — Review sample of 10 of 152 broken link(s) in `results/evidence.json`
 - [ ] **cosmos/cosmos-sdk** — Review sample of 1 of 1 broken link(s) in `results/evidence.json`
 
 ---

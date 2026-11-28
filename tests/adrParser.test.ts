@@ -307,3 +307,233 @@ Testing list, nested map, and date parsing with patched js-yaml.
     expect(parsed.frontmatter.date).toBeTruthy();
   });
 });
+
+describe('Status extraction and statusSource (Phase 2C-2b Step 1)', () => {
+  it('extracts status from YAML frontmatter (status/stage/state) with statusSource=frontmatter', () => {
+    const parsed = parseADRContent(`---
+id: ADR-101
+title: Frontmatter Status
+stage: draft
+---
+## Context
+Test
+`);
+    expect(parsed.frontmatter.status).toBe('proposed');
+    expect(parsed.statusSource).toBe('frontmatter');
+  });
+
+  it('extracts status from Nygard "## Status" section with statusSource=section', () => {
+    const parsed = parseADRContent(`# Use PostgreSQL
+
+## Status
+
+Superseded by [ADR-0010](./0010-mysql.md)
+
+## Context
+Some context.
+`, 'ADR-102');
+    expect(parsed.frontmatter.status).toBe('superseded');
+    expect(parsed.statusSource).toBe('section');
+  });
+
+  it('extracts status from MADR/metadata line ("Status: Accepted" or "* Status: accepted") with statusSource=line', () => {
+    const parsedBullet = parseADRContent(`# Use Vitest
+
+* Status: deprecated
+
+## Context and Problem Statement
+Test
+`, 'ADR-103');
+    expect(parsedBullet.frontmatter.status).toBe('deprecated');
+    expect(parsedBullet.statusSource).toBe('line');
+
+    const parsedBold = parseADRContent(`# Browser Support
+
+**Status:** Rejected
+
+## Context
+Test
+`, 'ADR-104');
+    expect(parsedBold.frontmatter.status).toBe('rejected');
+    expect(parsedBold.statusSource).toBe('line');
+  });
+
+  it('defaults missing status to accepted with statusSource=default', () => {
+    const parsed = parseADRContent(`# No Status ADR
+
+## Context
+Just context, no status anywhere.
+`, 'ADR-105');
+    expect(parsed.frontmatter.status).toBe('accepted');
+    expect(parsed.statusSource).toBe('default');
+  });
+});
+
+describe('Title extraction and titleSource (Phase 2C-2b Step 2)', () => {
+  it('extracts title from YAML frontmatter with titleSource=frontmatter', () => {
+    const parsed = parseADRContent(`---
+id: ADR-201
+title: Frontmatter Title
+---
+# Heading Title
+`, 'ADR-201');
+    expect(parsed.frontmatter.title).toBe('Frontmatter Title');
+    expect(parsed.titleSource).toBe('frontmatter');
+  });
+
+  it('extracts title from first H1 heading with titleSource=heading', () => {
+    const parsed = parseADRContent(`# Heading Title
+
+## Context
+No frontmatter title.
+`, 'ADR-202');
+    expect(parsed.frontmatter.title).toBe('Heading Title');
+    expect(parsed.titleSource).toBe('heading');
+  });
+
+  it('extracts title from RFC metadata line ("- Feature Name: foo") with titleSource=metadata-line', () => {
+    const parsed = parseADRContent(`- Feature Name: nonzeroing_dynamic_drop
+- Start Date: 2014-09-24
+- RFC PR: [rust-lang/rfcs#320](https://github.com/rust-lang/rfcs/pull/320)
+
+## Summary
+Summary text.
+`, 'ADR-0320');
+    expect(parsed.frontmatter.title).toBe('nonzeroing_dynamic_drop');
+    expect(parsed.titleSource).toBe('metadata-line');
+  });
+
+  it('falls back to filename slug with titleSource=slug when fallbackId is provided', () => {
+    const parsed = parseADRContent(`- Start Date: 2014-03-11
+- RFC PR: [rust-lang/rfcs#1](https://github.com/rust-lang/rfcs/pull/1)
+
+## Summary
+No H1 and no Feature Name.
+`, '0001-private-fields');
+    expect(parsed.frontmatter.title).toBe('0001-private-fields');
+    expect(parsed.titleSource).toBe('slug');
+  });
+
+  it('falls back to Untitled ADR with titleSource=default when no title or fallbackId exists', () => {
+    const parsed = parseADRContent(`## Summary
+No title and no fallbackId.
+`);
+    expect(parsed.frontmatter.title).toBe('Untitled ADR');
+    expect(parsed.titleSource).toBe('default');
+  });
+});
+
+describe('KEP adapter (Phase 2C-2b Step 3)', () => {
+  it('extracts title, status, owning-sig tag, kep-number, hard replaces/superseded-by edges, and soft see-also edges from sibling kep.yaml', () => {
+    const parsed = parseBatchADRs([
+      {
+        name: 'README.md',
+        filePath: 'sig-api/100-base/README.md',
+        content: '# Base API KEP\n\n## Summary\nBase\n',
+      },
+      {
+        name: 'kep.yaml',
+        filePath: 'sig-api/100-base/kep.yaml',
+        content: `title: Base API
+kep-number: 100
+owning-sig: sig-api
+status: implemented
+see-also:
+  - "/sig-api/150-related/README.md"
+`,
+      },
+      {
+        name: 'README.md',
+        filePath: 'sig-api/150-related/README.md',
+        content: '# Related API KEP\n',
+      },
+      {
+        name: 'kep.yaml',
+        filePath: 'sig-api/150-related/kep.yaml',
+        content: `title: Related API
+kep-number: 150
+owning-sig: sig-api
+status: provisional
+`,
+      },
+      {
+        name: 'README.md',
+        filePath: 'sig-api/200-replacement/README.md',
+        content: '# Replacement API KEP\n',
+      },
+      {
+        name: 'kep.yaml',
+        filePath: 'sig-api/200-replacement/kep.yaml',
+        content: `title: Replacement API
+kep-number: 200
+owning-sig: sig-api
+status: implementable
+replaces:
+  - "/sig-api/100-base/README.md"
+  - "https://example.com/external-doc"
+superseded-by:
+  - "150"
+`,
+      },
+    ]);
+
+    expect(parsed.length).toBe(3);
+
+    const base = parsed.find((p) => p.frontmatter.id === '100-base')!;
+    expect(base.frontmatter.title).toBe('Base API');
+    expect(base.titleSource).toBe('kep-yaml');
+    expect(base.frontmatter.status).toBe('accepted');
+    expect(base.statusSource).toBe('kep-yaml');
+    expect(base.frontmatter.tags).toContain('sig-api');
+    expect(base.kepNumber).toBe(100);
+    expect(base.edges).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ targetId: '150-related', kind: 'soft', source: 'kep:see-also' }),
+      ])
+    );
+
+    const related = parsed.find((p) => p.frontmatter.id === '150-related')!;
+    expect(related.frontmatter.status).toBe('proposed');
+    expect(related.statusSource).toBe('kep-yaml');
+
+    const replacement = parsed.find((p) => p.frontmatter.id === '200-replacement')!;
+    expect(replacement.frontmatter.status).toBe('proposed');
+    expect(replacement.frontmatter.supersedes).toEqual(expect.arrayContaining(['100-base', '150-related']));
+    expect(replacement.edges).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ targetId: '100-base', kind: 'hard', source: 'kep:replaces' }),
+        expect.objectContaining({ targetId: '150-related', kind: 'hard', source: 'kep:superseded-by' }),
+      ])
+    );
+    // External URL should not become a broken internal edge
+    expect(replacement.edges?.some((e) => e.targetId.includes('example.com'))).toBe(false);
+  });
+
+  it('maps all KEP statuses (provisional, implementable, implemented, deferred, rejected, withdrawn, replaced) to canonical states', () => {
+    const statuses = [
+      ['provisional', 'proposed'],
+      ['implementable', 'proposed'],
+      ['implemented', 'accepted'],
+      ['deferred', 'proposed'],
+      ['rejected', 'rejected'],
+      ['withdrawn', 'deprecated'],
+      ['replaced', 'superseded'],
+    ] as const;
+
+    const files = statuses.flatMap(([kepStatus], idx) => [
+      {
+        name: 'README.md',
+        filePath: `sig-test/${idx}-kep/README.md`,
+        content: '# Placeholder\n',
+      },
+      {
+        name: 'kep.yaml',
+        filePath: `sig-test/${idx}-kep/kep.yaml`,
+        content: `title: KEP ${idx}\nkep-number: ${idx}\nstatus: ${kepStatus}\n`,
+      },
+    ]);
+
+    const parsed = parseBatchADRs(files);
+    expect(parsed.map((p) => p.frontmatter.status)).toEqual(statuses.map(([, expected]) => expected));
+  });
+});

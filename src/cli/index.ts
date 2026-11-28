@@ -5,9 +5,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawnSync } from 'child_process';
 import chalk from 'chalk';
-import glob from 'fast-glob';
 import Table from 'cli-table3';
 import { parseBatchADRs } from '../core/adrParser.js';
+import { loadDecisionFileInputs } from '../core/decisionLoader.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
 import { calculateGraphRisk } from '../core/risk.js';
 import { detectRepoRoot, lintArchitecture, loadNirnayConfig } from '../core/linter.js';
@@ -47,18 +47,11 @@ async function loadAndValidate(dir: string) {
     console.error(chalk.red(`Directory not found: ${fullPath}`));
     process.exit(1);
   }
-  const files = await glob('**/*.{md,mdx}', { cwd: fullPath, absolute: true });
-  if (files.length === 0) {
+  const { files: fileData } = await loadDecisionFileInputs(fullPath);
+  if (fileData.length === 0) {
     console.error(chalk.yellow(`No ADR files found in ${fullPath}`));
     process.exit(0);
   }
-  const fileData = await Promise.all(
-    files.map(async (file) => ({
-      name: path.basename(file),
-      filePath: path.relative(fullPath, file).replace(/\\/g, '/'),
-      content: await fs.readFile(file, 'utf-8'),
-    }))
-  );
   const parsedADRs = parseBatchADRs(fileData, { baseDir: fullPath });
   const dag = validateAndComputeDAG(parsedADRs);
   return { parsedADRs, ...dag };

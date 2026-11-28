@@ -6,6 +6,9 @@ export type EdgeSource =
   | 'frontmatter:depends_on'
   | 'frontmatter:supersedes'
   | 'status:supersedes'
+  | 'kep:replaces'
+  | 'kep:superseded-by'
+  | 'kep:see-also'
   | 'body:link'
   | 'body:id';
 
@@ -21,7 +24,7 @@ export interface NirnayADR extends Record<string, unknown> {
   title: string;
   category: 'Infrastructure' | 'Database' | 'AI / Engine' | 'Security';
   status: DecisionStatus;
-  statusSource?: 'explicit' | 'default';
+  statusSource?: StatusSource;
   timestamp: string;
   context: string;
   decision: string;
@@ -65,11 +68,15 @@ export interface NirnayValidationError {
 
 export type ADRStatus = 'proposed' | 'accepted' | 'deprecated' | 'superseded' | 'rejected';
 
+export type StatusSource = 'frontmatter' | 'section' | 'line' | 'kep-yaml' | 'explicit' | 'default';
+
+export type TitleSource = 'frontmatter' | 'heading' | 'metadata-line' | 'kep-yaml' | 'slug' | 'default';
+
 export interface ADRFrontmatter {
   id: string;
   title: string;
   status: ADRStatus;
-  statusSource?: 'explicit' | 'default';
+  statusSource?: StatusSource;
   date: string;
   deciders?: string[];
   tags?: string[];
@@ -91,6 +98,7 @@ export type LinkClassification =
   | 'outside-scope'
   | 'ambiguous'
   | 'external'
+  | 'not-a-file-link'
   | 'broken';
 
 export interface ClassifiedLink {
@@ -107,6 +115,9 @@ export interface ParsedADR {
   consequences: ADRConsequences;
   rawContent: string;
   filePath?: string;
+  kepNumber?: number | string;
+  titleSource?: TitleSource;
+  statusSource?: StatusSource;
   edges?: ADREdgeRef[];
   links?: ClassifiedLink[];
   warnings?: string[];

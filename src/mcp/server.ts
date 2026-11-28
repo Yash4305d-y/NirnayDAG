@@ -3,8 +3,8 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import fs from 'fs-extra';
 import path from 'path';
-import glob from 'fast-glob';
-import { parseADRContent, deriveFallbackId } from '../core/adrParser.js';
+import { parseBatchADRs } from '../core/adrParser.js';
+import { loadDecisionFileInputsSync } from '../core/decisionLoader.js';
 import { validateAndComputeDAG } from '../core/dagEngine.js';
 import { calculateGraphRisk } from '../core/risk.js';
 import { lintArchitecture, loadNirnayConfig } from '../core/linter.js';
@@ -31,22 +31,10 @@ function loadAdrs(): ParsedADR[] {
     return [];
   }
 
-  const files = glob.sync("**/*.{md,markdown}", { cwd: resolvedDir, absolute: true });
-  const adrs: ParsedADR[] = [];
-  
-  for (const file of files) {
-    const content = fs.readFileSync(file, "utf8");
-    try {
-      const relativePath = path.relative(resolvedDir, file).replace(/\\/g, '/');
-      const fallbackId = deriveFallbackId(relativePath);
-      const parsed = parseADRContent(content, fallbackId);
-      parsed.filePath = relativePath;
-      adrs.push(parsed);
-    } catch (e) {
-      console.error(`Failed to parse ${file}`, e);
-    }
-  }
-  return adrs;
+  const { files } = loadDecisionFileInputsSync(resolvedDir, {
+    basePatterns: ['**/*.{md,mdx,markdown}'],
+  });
+  return parseBatchADRs(files, { baseDir: resolvedDir });
 }
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {

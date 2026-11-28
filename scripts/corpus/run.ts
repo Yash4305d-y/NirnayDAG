@@ -14,7 +14,7 @@ import type {
   ExtractionQualityMetrics,
 } from './types.js';
 import {
-  readDirectoryDecisionFiles,
+  readDirectoryDecisionFilesWithExclusions,
   analyzeDecisionFiles,
 } from './analyzer.js';
 import {
@@ -40,14 +40,24 @@ function executeGit(cmd: string, cwd?: string): string {
   }).trim();
 }
 
-const PHASE_2B_BASELINE: Record<string, { edges: number; brokenLinks: number }> = {
-  'backstage/backstage': { edges: 0, brokenLinks: 4 },
-  'adr/madr': { edges: 3, brokenLinks: 0 },
-  'rust-lang/rfcs': { edges: 0, brokenLinks: 4 },
-  'kubernetes/enhancements': { edges: 0, brokenLinks: 93 },
-  'cosmos/cosmos-sdk': { edges: 0, brokenLinks: 92 },
-  'JabRef/jabref': { edges: 12, brokenLinks: 4 },
-  'alphagov/govuk-design-system-architecture': { edges: 0, brokenLinks: 4 },
+const PHASE_2C_1_1_BASELINE: Record<
+  string,
+  {
+    nodes: number;
+    edges: number;
+    brokenLinks: number;
+    realTitlePercent: number;
+    statusFoundPercent: number;
+    hardEdges: number;
+  }
+> = {
+  'backstage/backstage': { nodes: 17, edges: 4, brokenLinks: 0, realTitlePercent: 100, statusFoundPercent: 0, hardEdges: 0 },
+  'adr/madr': { nodes: 21, edges: 4, brokenLinks: 0, realTitlePercent: 100, statusFoundPercent: 4.8, hardEdges: 0 },
+  'rust-lang/rfcs': { nodes: 654, edges: 12, brokenLinks: 21, realTitlePercent: 7.5, statusFoundPercent: 0, hardEdges: 0 },
+  'kubernetes/enhancements': { nodes: 708, edges: 216, brokenLinks: 51, realTitlePercent: 97.9, statusFoundPercent: 0, hardEdges: 0 },
+  'cosmos/cosmos-sdk': { nodes: 65, edges: 88, brokenLinks: 1, realTitlePercent: 100, statusFoundPercent: 0, hardEdges: 0 },
+  'JabRef/jabref': { nodes: 88, edges: 25, brokenLinks: 0, realTitlePercent: 100, statusFoundPercent: 9.1, hardEdges: 0 },
+  'alphagov/govuk-design-system-architecture': { nodes: 12, edges: 4, brokenLinks: 0, realTitlePercent: 100, statusFoundPercent: 0, hardEdges: 0 },
 };
 
 const EMPTY_EXTRACTION_QUALITY: ExtractionQualityMetrics = {
@@ -193,8 +203,15 @@ export async function benchmarkSingleRepo(
   }
 
   const startAnalysis = Date.now();
-  const files = await readDirectoryDecisionFiles(repoDir, repo.subfolders);
-  console.log(chalk.gray(`  Found ${files.length} decision markdown files in subfolders: ${repo.subfolders.join(', ')}`));
+  const { files, excludedFiles } = await readDirectoryDecisionFilesWithExclusions(repoDir, repo.subfolders, {
+    include: repo.include,
+    exclude: repo.exclude,
+  });
+  console.log(
+    chalk.gray(
+      `  Found ${files.length + excludedFiles.length} markdown files (${files.length} decision, ${excludedFiles.length} excluded) in subfolders: ${repo.subfolders.join(', ')}`
+    )
+  );
 
   let repoFiles: string[] = [];
   try {
@@ -235,7 +252,9 @@ export async function benchmarkSingleRepo(
       license: repo.license,
       commitSha,
       ...metrics,
-      before: PHASE_2B_BASELINE[repo.name],
+      filesFound: files.length + excludedFiles.length,
+      excludedCount: excludedFiles.length,
+      before: PHASE_2C_1_1_BASELINE[repo.name],
       timing: {
         cloneMs,
         analysisMs,
@@ -245,6 +264,8 @@ export async function benchmarkSingleRepo(
     evidence: {
       repo: repo.name,
       commitSha,
+      excludedFiles,
+      extractionSamples: evidence.extractionSamples,
       cycles: evidence.cycles,
       mutualReferences: evidence.mutualReferences,
       brokenLinks: evidence.brokenLinks,
@@ -319,6 +340,7 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
   }
 
   const totalFilesFound = results.reduce((acc, r) => acc + r.filesFound, 0);
+  const totalExcludedFiles = results.reduce((acc, r) => acc + (r.excludedCount ?? 0), 0);
   const totalFilesParsedOK = results.reduce((acc, r) => acc + r.filesParsedOK, 0);
   const totalNodes = results.reduce((acc, r) => acc + r.nodes, 0);
   const totalEdges = results.reduce((acc, r) => acc + r.edges, 0);
@@ -331,6 +353,7 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
   const totalOutsideScopeLinks = results.reduce((acc, r) => acc + (r.outsideScopeLinks ?? 0), 0);
   const totalAmbiguousLinks = results.reduce((acc, r) => acc + (r.ambiguousLinks ?? 0), 0);
   const totalExternalLinks = results.reduce((acc, r) => acc + (r.externalLinks ?? 0), 0);
+  const totalNotAFileLinks = results.reduce((acc, r) => acc + (r.notAFileLinks ?? 0), 0);
   const totalBrokenLinks = results.reduce((acc, r) => acc + r.brokenLinks, 0);
   const totalCyclesDetected = results.filter((r) => r.cyclesFound).length;
   const totalMutualReferences = results.reduce((acc, r) => acc + r.mutualReferencesCount, 0);
@@ -368,12 +391,13 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
     }
   }
 
-  const averageParseRatePercent = totalFilesFound > 0
-    ? Number(((totalFilesParsedOK / totalFilesFound) * 100).toFixed(1))
+  const totalDecisionFiles = results.reduce((acc, r) => acc + (r.filesFound - (r.excludedCount ?? 0)), 0);
+  const averageParseRatePercent = totalDecisionFiles > 0
+    ? Number(((totalFilesParsedOK / totalDecisionFiles) * 100).toFixed(1))
     : 0;
 
   const timestamp = new Date().toISOString();
-  const runnerVersion = '1.0.0-phase3';
+  const runnerVersion = '1.0.0-phase6c';
 
   const report: CorpusBenchmarkReport = {
     timestamp,
@@ -382,6 +406,7 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
     summary: {
       totalReposAnalyzed: results.length,
       totalFilesFound,
+      totalExcludedFiles,
       totalFilesParsedOK,
       averageParseRatePercent,
       totalNodes,
@@ -395,6 +420,7 @@ export async function runCorpusBenchmark(): Promise<CorpusBenchmarkReport> {
       totalOutsideScopeLinks,
       totalAmbiguousLinks,
       totalExternalLinks,
+      totalNotAFileLinks,
       totalBrokenLinks,
       totalCyclesDetected,
       totalMutualReferences,
