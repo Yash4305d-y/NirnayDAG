@@ -19,12 +19,26 @@ import { runInteractiveSession } from './interactive.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function readCliVersion(): string {
+  const candidates = [
+    path.resolve(__dirname, '../package.json'),
+    path.resolve(__dirname, '../../package.json'),
+  ];
+  for (const pkgPath of candidates) {
+    if (fs.existsSync(pkgPath)) {
+      const pkg = fs.readJsonSync(pkgPath) as { version?: string };
+      if (pkg.version) return pkg.version;
+    }
+  }
+  return '0.0.0';
+}
+
 const program = new Command();
 
 program
   .name('ndag')
   .description('NirnayDAG CLI - Architecture Decision Graph Tool')
-  .version('0.1.0');
+  .version(readCliVersion());
 
 // Helper to load and parse ADRs
 async function loadAndValidate(dir: string) {
