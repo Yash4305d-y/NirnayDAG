@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Yash4305d-y/NirnayDAG.git"
+    "url": "git+https://github.com/Yash4305d-y/NirnayDAG.git"
   },
   "homepage": "https://github.com/Yash4305d-y/NirnayDAG#readme",
   "bugs": {
@@ -25,7 +25,6 @@
   },
   "files": [
     "dist",
-    "bin",
     "README.md",
     "LICENSE",
     "docs/RISK_MODEL.md"
@@ -51,8 +50,8 @@
     }
   },
   "bin": {
-    "nirnay-dag": "./dist/cli.js",
-    "ndag": "./dist/cli.js"
+    "nirnay-dag": "dist/cli.js",
+    "ndag": "dist/cli.js"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
