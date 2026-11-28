@@ -86,4 +86,43 @@ affects:
       await fs.remove(tmpDir);
     }
   }, 30000);
+
+  it('supports --root override and resolves repo root from ADR dir when run from outside cwd', async () => {
+    const baseTmp = await fs.mkdtemp(path.join(os.tmpdir(), 'ndag-why-root-'));
+    const repoDir = path.join(baseTmp, 'repo');
+    const adrDir = path.join(repoDir, 'docs', 'adr');
+    const outsideDir = path.join(baseTmp, 'outside');
+
+    try {
+      await fs.ensureDir(path.join(repoDir, '.git'));
+      await fs.ensureDir(path.join(repoDir, 'src', 'core'));
+      await fs.ensureDir(adrDir);
+      await fs.ensureDir(outsideDir);
+
+      const targetFile = path.join(repoDir, 'src', 'core', 'engine.ts');
+      await fs.writeFile(targetFile, 'export const x = 1;\n');
+      await fs.writeFile(
+        path.join(adrDir, '0001-core.md'),
+        `---\nid: ADR-0001\ntitle: Core Engine\nstatus: accepted\naffects:\n  - "src/core/**"\n---\n# Core Engine\n`
+      );
+
+      const autoRootRun = runWhyCli([targetFile, adrDir, '--json'], outsideDir);
+      expect(autoRootRun.status).toBe(0);
+      const autoJson = JSON.parse(autoRootRun.stdout);
+      expect(autoJson.results[0].file).toBe('src/core/engine.ts');
+      expect(autoJson.results[0].decisions).toHaveLength(1);
+      expect(autoJson.results[0].decisions[0].id).toBe('ADR-0001');
+
+      const explicitRootRun = runWhyCli(
+        [targetFile, '--dir', adrDir, '--root', repoDir, '--json'],
+        outsideDir
+      );
+      expect(explicitRootRun.status).toBe(0);
+      const explicitJson = JSON.parse(explicitRootRun.stdout);
+      expect(explicitJson.results[0].file).toBe('src/core/engine.ts');
+      expect(explicitJson.results[0].decisions[0].id).toBe('ADR-0001');
+    } finally {
+      await fs.remove(baseTmp);
+    }
+  }, 30000);
 });

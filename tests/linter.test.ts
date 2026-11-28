@@ -4,7 +4,7 @@ import os from 'os';
 import path from 'path';
 import { parseBatchADRs } from '../src/core/adrParser.js';
 import { validateAndComputeDAG } from '../src/core/dagEngine.js';
-import { lintArchitecture, listRepoFiles, type LintConfig, type LintOptions } from '../src/core/linter.js';
+import { detectRepoRoot, lintArchitecture, listRepoFiles, type LintConfig, type LintOptions } from '../src/core/linter.js';
 
 function buildAndLint(
   files: { name: string; content: string }[],
@@ -246,5 +246,42 @@ describe('ADR Lint Rules Engine', () => {
     } finally {
       await fs.remove(tmpDir);
     }
+  });
+
+  it('detectRepoRoot walks up to nearest .git or .nirnayrc.json and returns null when none exists', async () => {
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ndag-root-detect-'));
+    try {
+      const gitRepo = path.join(tmpDir, 'git-repo');
+      const gitAdrDir = path.join(gitRepo, 'docs', 'adr');
+      await fs.ensureDir(path.join(gitRepo, '.git'));
+      await fs.ensureDir(gitAdrDir);
+      expect(detectRepoRoot(gitAdrDir)).toBe(gitRepo);
+
+      const rcRepo = path.join(tmpDir, 'rc-repo');
+      const rcAdrDir = path.join(rcRepo, 'decisions');
+      await fs.ensureDir(rcAdrDir);
+      await fs.writeJson(path.join(rcRepo, '.nirnayrc.json'), { rules: {} });
+      expect(detectRepoRoot(rcAdrDir)).toBe(rcRepo);
+
+      const noRootDir = path.join(tmpDir, 'plain', 'adrs');
+      await fs.ensureDir(noRootDir);
+      expect(detectRepoRoot(noRootDir)).toBeNull();
+    } finally {
+      await fs.remove(tmpDir);
+    }
+  });
+
+  it('skips affects-no-match and deprecated-governs-code when repoRoot is null', () => {
+    const result = buildAndLint(
+      [
+        {
+          name: '0001-deprecated.md',
+          content: `---\nid: ADR-0001\ntitle: Old\nstatus: deprecated\naffects:\n  - "src/missing/**"\n---\n# Old`,
+        },
+      ],
+      { rules: { orphan: 'off' } },
+      { repoRoot: null }
+    );
+    expect(result.findings).toHaveLength(0);
   });
 });

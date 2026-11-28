@@ -39,6 +39,7 @@ export type {
   BetweennessResult,
 } from './core/risk.js';
 export {
+  detectRepoRoot,
   lintArchitecture,
   loadNirnayConfig,
   listRepoFiles,

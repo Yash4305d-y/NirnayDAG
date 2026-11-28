@@ -15,7 +15,7 @@ export type LintRuleId =
 
 export interface LintOptions {
   repoFiles?: string[];
-  repoRoot?: string;
+  repoRoot?: string | null;
 }
 
 export type LintSeverity = 'error' | 'warn' | 'info';
@@ -104,14 +104,49 @@ function resolveRuleSettings(
 }
 
 /**
- * Loads `.nirnayrc.json` from targetDir or cwd if present.
+ * Walks up from `startDir` to the nearest ancestor containing `.git` or `.nirnayrc.json`.
+ * Returns `null` if no repository root marker is found.
  */
-export async function loadNirnayConfig(targetDir?: string): Promise<LintConfig> {
+export function detectRepoRoot(startDir: string): string | null {
+  let current = path.resolve(startDir);
+  try {
+    if (fs.existsSync(current) && fs.statSync(current).isFile()) {
+      current = path.dirname(current);
+    }
+  } catch {
+    // Ignore stat errors and walk up from resolved path
+  }
+
+  while (true) {
+    if (
+      fs.existsSync(path.join(current, '.git')) ||
+      fs.existsSync(path.join(current, '.nirnayrc.json'))
+    ) {
+      return current;
+    }
+    const parent = path.dirname(current);
+    if (parent === current) {
+      return null;
+    }
+    current = parent;
+  }
+}
+
+/**
+ * Loads `.nirnayrc.json` from targetDir, repoRoot, or cwd if present.
+ */
+export async function loadNirnayConfig(
+  targetDir?: string,
+  repoRoot?: string | null
+): Promise<LintConfig> {
   const candidates: string[] = [];
   if (targetDir) {
     const absTarget = path.resolve(targetDir);
     candidates.push(path.join(absTarget, '.nirnayrc.json'));
     candidates.push(path.join(path.dirname(absTarget), '.nirnayrc.json'));
+  }
+  if (repoRoot) {
+    candidates.push(path.join(path.resolve(repoRoot), '.nirnayrc.json'));
   }
   candidates.push(path.join(process.cwd(), '.nirnayrc.json'));
 
@@ -198,14 +233,18 @@ export function lintArchitecture(
   const rules = resolveRuleSettings(config);
   const findings: LintFinding[] = [];
 
+  const hasExplicitFiles = Boolean(options?.repoFiles);
+  const skipRepoFileRules = !hasExplicitFiles && options?.repoRoot === null;
+
   const needsRepoFiles =
+    !skipRepoFileRules &&
     (rules['affects-no-match'].enabled || rules['deprecated-governs-code'].enabled) &&
     adrs.some((a) => Array.isArray(a.affects) && a.affects.length > 0);
 
   const repoFiles = needsRepoFiles
     ? (options?.repoFiles
         ? options.repoFiles.map((f) => normalizeRepoPath(f))
-        : listRepoFiles(options?.repoRoot))
+        : listRepoFiles(options?.repoRoot ?? undefined))
     : [];
 
   const adrMap = new Map<string, NirnayADR>();
@@ -317,7 +356,7 @@ export function lintArchitecture(
     }
 
     const affectsGlobs = adr.affects || [];
-    if (affectsGlobs.length > 0) {
+    if (affectsGlobs.length > 0 && !skipRepoFileRules) {
       let hasAnyMatchedFile = false;
 
       for (const globPattern of affectsGlobs) {
