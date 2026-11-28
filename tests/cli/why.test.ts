@@ -4,14 +4,13 @@ import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
 
-const cliEntry = path.resolve(process.cwd(), 'src/cli/index.ts');
+const cliEntry = path.resolve(process.cwd(), 'dist/cli.js');
 
 function runWhyCli(args: string[], cwd: string) {
   try {
-    const stdout = execFileSync('npx', ['tsx', cliEntry, 'why', ...args], {
+    const stdout = execFileSync(process.execPath, [cliEntry, 'why', ...args], {
       cwd,
       encoding: 'utf-8',
-      shell: true,
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     return { status: 0, stdout };

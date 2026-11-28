@@ -4,17 +4,16 @@ import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
 
-const cliEntry = path.resolve(process.cwd(), 'src/cli/index.ts');
+const cliEntry = path.resolve(process.cwd(), 'dist/cli.js');
 
 function runLintCli(args: string[], cwd: string) {
   try {
     const stdout = execFileSync(
-      'npx',
-      ['tsx', cliEntry, 'lint', ...args],
+      process.execPath,
+      [cliEntry, 'lint', ...args],
       {
         cwd,
         encoding: 'utf-8',
-        shell: true,
         stdio: ['ignore', 'pipe', 'pipe'],
       }
     );
