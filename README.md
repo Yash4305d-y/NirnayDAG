@@ -8,9 +8,14 @@ Turns Markdown Architecture Decision Records (ADRs) into a dependency graph so y
 
 ![NirnayDAG demo](docs/demo.gif)
 
-Try it now without installing:
+Try it now against your own ADR folder (or clone this repo to try the built-in `./docs/adr` and `./sample-adrs` examples, which are not bundled in the npm package):
 
 ```bash
+# Against your own ADR directory:
+npx nirnay-dag validate ./path/to/your-adrs
+
+# Or clone this repository to run on the included ADRs:
+git clone https://github.com/Yash4305d-y/NirnayDAG.git && cd NirnayDAG
 npx nirnay-dag validate ./docs/adr
 npx nirnay-dag blast ADR-0001 ./docs/adr
 npx nirnay-dag serve ./docs/adr --open
