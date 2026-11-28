@@ -1,428 +1,120 @@
-# NirnayDAG ⚡
+# NirnayDAG
 
-> **Computational Architecture Decision Graph Engine, Linter & MCP Server**
+Turns Markdown Architecture Decision Records (ADRs) into a dependency graph so you can detect cycles, compute blast radius, lint rules, map decisions to files, and expose architecture context over MCP.
 
-NirnayDAG transforms static Markdown **Architecture Decision Records (ADRs)** into an interactive, computational **Directed Acyclic Graph (DAG)**.
+[![npm version](https://img.shields.io/npm/v/nirnay-dag)](https://www.npmjs.com/package/nirnay-dag)
+[![CI](https://github.com/Yash4305d-y/NirnayDAG/actions/workflows/ci.yml/badge.svg)](https://github.com/Yash4305d-y/NirnayDAG/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-It automatically detects circular dependencies using **Kahn’s algorithm**, simulates **blast radii** for architectural deprecation, gates pull requests in CI/CD, and integrates directly with AI coding assistants such as **Cursor, Claude Desktop, and Google Antigravity** through the **Model Context Protocol (MCP)**.
+![NirnayDAG demo](docs/demo.gif)
 
----
-
-## 📖 Table of Contents
-
-* [What is NirnayDAG?](#-what-is-nirnaydag)
-* [Why NirnayDAG?](#-why-nirnaydag)
-* [Key Features](#-key-features)
-* [Supported ADR Format](#-supported-adr-format)
-* [Quick Start](#-quick-start)
-
-  * [1. Interactive Canvas](#1-interactive-canvas)
-  * [2. Graph Validation & Cycle Detection](#2-graph-validation--cycle-detection)
-  * [3. Blast Radius Simulation](#3-blast-radius-simulation)
-  * [4. CI/CD PR Gating & Markdown Reports](#4-cicd-pr-gating--markdown-reports)
-  * [5. AI Assistant Integration (MCP)](#5-ai-assistant-integration-mcp)
-* [CLI Reference](#-cli-reference)
-* [How It Works](#-how-it-works)
-* [Development & Testing](#-development--testing)
-* [Tech Stack](#-tech-stack)
-* [Contributing](#-contributing)
-* [License](#-license)
-
----
-
-## 🔍 What is NirnayDAG?
-
-Architecture Decision Records are essential for documenting technical choices. However, traditional ADRs are static files stored in a repository.
-
-This creates important questions:
-
-* What decisions depend on this choice?
-* What breaks if we deprecate this technology?
-* Are there circular dependencies between decisions?
-* Can an AI assistant understand our architecture before generating or refactoring code?
-* Can CI automatically block broken architectural dependencies?
-
-**NirnayDAG converts ADRs into a computational architecture graph.**
-
-Each ADR becomes a node, while dependencies between decisions become directed edges.
-
-```text
-ADR-0001
-   │
-   ├──────────► ADR-0002
-   │                 │
-   │                 └──────────► ADR-0004
-   │
-   └──────────► ADR-0003
-                     │
-                     └──────────► ADR-0005
-```
-
----
-
-## 🎯 Why NirnayDAG?
-
-NirnayDAG bridges **architecture documentation, graph algorithms, developer tooling, CI/CD, and AI** into a unified pipeline:
-
-```text
-Write ADR
-    │
-    ▼
-Build DAG
-    │
-    ▼
-Kahn's Validation
-    │
-    ▼
-Blast Radius
-    │
-    ├──────────────► Interactive UI
-    │
-    └──────────────► MCP AI Context
-```
-
-Instead of treating ADRs as passive documentation, NirnayDAG makes architectural decisions **computable, testable, visual, and AI-accessible**.
-
----
-
-## ✨ Key Features
-
-### 🔄 Cycle Detection
-
-Uses **Kahn's topological sorting algorithm** to detect circular architectural dependencies.
-
-Example:
-
-```text
-ADR-A → ADR-B → ADR-C → ADR-A
-```
-
-Such cycles are flagged during validation.
-
-### 💥 Blast Radius Engine
-
-Computes the downstream impact of changing or deprecating an architectural decision.
-
-Includes:
-
-* **Direct dependents**: Nodes that directly depend on the target decision
-* **Transitive cascade**: Complete list of downstream nodes impacted across the dependency graph
-* **Hierarchy depth**: Real longest-path traversal through dependents (cycle-safe)
-* **Affected systems**: Downstream decisions grouped by frontmatter `tags` (with `untagged` fallback)
-* **Architectural risk score (0–100, v2)**: Graph-based risk model computed from hard edges only using normalized direct dependents, cascade fraction of the graph, longest dependency depth, and Brandes betweenness centrality (with a 5,000-node sampled fallback). See [docs/RISK_MODEL.md](docs/RISK_MODEL.md). Legacy v1 heuristic remains available behind `version: 'v1'`.
-
-### 🖥️ Zero-Install Web Canvas
-
-Launch a local browser-based interactive architecture graph powered by **React Flow**.
-
-### 🤖 Model Context Protocol (MCP)
-
-Connects architecture context directly to AI coding assistants such as:
-
-* Cursor
-* Claude Desktop
-* Google Antigravity
-
-This allows AI assistants to reason about architectural decisions before generating or modifying code.
-
-### 🚦 CI/CD Governance
-
-Validate ADR dependency graphs automatically in CI/CD and generate Markdown impact reports for pull requests.
-
-### 📄 Universal Format Support
-
-Supports:
-
-* YAML frontmatter
-* Standard Markdown links
-* MADR-style ADRs
-* RFC-style documents
-* Kubernetes KEP-style documents
-* Other frontmatter-based Markdown architecture documents
-
----
-
-## 📄 Supported ADR Format
-
-NirnayDAG parses **YAML frontmatter** as well as **standard Markdown link fallbacks**.
-
-### Recommended Directory Structure
-
-```text
-my-project/
-└── docs/
-    └── adr/
-        ├── ADR-0001-microservices-core.md
-        ├── ADR-0002-event-driven-broker.md
-        └── ADR-0003-primary-database.md
-```
-
-### Example Frontmatter
-
-```markdown
----
-id: ADR-0002
-title: Event-Driven Message Broker
-status: accepted
-date: 2026-08-24
-deciders:
-  - Architecture Guild
-depends_on:
-  - ADR-0001
-tags:
-  - backend
-  - infrastructure
-affects:
-  - "src/events/**"
-  - "services/messaging/*.ts"
----
-
-# Context and Problem Statement
-
-We require an asynchronous messaging backbone between core services.
-
-# Decision Outcome
-
-Chosen option: **Apache Kafka** because it satisfies stream persistence
-requirements defined in [ADR-0001](./ADR-0001-microservices-core.md).
-
-# Consequences
-
-- Loose coupling across domain boundaries.
-- Additional infrastructure overhead.
-```
-
-### Supported Statuses
-
-* `proposed`
-* `accepted`
-* `deprecated`
-* `superseded`
-
-### Linking Decisions to Code (`affects:`)
-
-ADRs can optionally declare an `affects:` list of repo-root-relative glob patterns (forward slashes) in YAML frontmatter:
-
-```yaml
-affects:
-  - "src/auth/**"
-  - "services/pay/*.ts"
-```
-
-* Evaluated with `picomatch` using **case-sensitive POSIX matching** (`nocase: false`, `dot: true`) so glob behavior is identical across Linux CI, macOS, and Windows.
-* Windows backslashes (`\\`) in input file paths are normalized to `/` before matching.
-* Non-array `affects` values or non-string entries emit parse warnings without crashing.
-
-### Dependency Edge Kinds (Hard vs. Soft)
-
-NirnayDAG distinguishes structural architectural dependencies from informational cross-references:
-
-* **Hard edges** (`frontmatter:depends_on`, `frontmatter:supersedes`, or an explicit `Supersedes ADR-XXXX` status line): used for DAG validation, cycle detection, topological ordering, blast radius, and risk scoring.
-* **Soft edges** (relative Markdown links and `[ADR-XXXX]` ID tokens found in the document body): tracked separately as informational references (`alsoReferencedBy` / `mutualReferences`) and do **not** cause cycle errors or inflate blast radius unless `--include-soft` (`includeSoft: true`) is requested.
-
-### Relative Link Resolution & Classification
-
-When loading a directory of decisions, NirnayDAG derives fallback IDs in core (`README.md` and `index.md` use their parent directory name, e.g., `keps/sig-api/1027-api-unions/README.md` → `1027-api-unions`) and resolves relative Markdown links against a case-insensitive `path → nodeId` index rather than synthesizing IDs from filenames:
-
-* **Path normalization**: Relative links are resolved from the source file's directory, `#anchors` and `?queries` are stripped, matching is case-insensitive, and `.md`/`.mdx` extensions are optional.
-* **Link classification**: Each body link is classified as:
-  * **Resolved**: Target matches a loaded decision node (added as a `soft` edge).
-  * **Non-decision**: Target exists on disk (e.g., `PROCESS.md`, diagrams, images) but is not a decision file.
-  * **External**: `http://`, `https://`, `mailto:`, or same-page `#anchor` links.
-  * **Broken**: Target looks like a local decision path but does not exist (only `broken` links count as unresolved references).
-
----
-
-# 🚀 Quick Start
-
-Run NirnayDAG directly inside any project using `npx` — **no global installation required**.
-
-## 1. Interactive CLI Mode
-
-Launch a fully interactive terminal session to explore ADRs, visualize neighborhood graphs, and simulate blast radii directly from your CLI:
+Try it now without installing:
 
 ```bash
-npx nirnay-dag interactive ./docs/adr
-```
-
-Shortcuts:
-- `↑ / ↓` and `Enter`: Navigate and select ADRs
-- `b`: Inline blast radius simulation
-- `v`: Re-run cycle detection validation
-- `:`: Command palette
-
----
-
-## 2. Interactive Canvas
-
-Visualize your architecture decision graph in your browser:
-
-```bash
+npx nirnay-dag validate ./docs/adr
+npx nirnay-dag blast ADR-0001 ./docs/adr
 npx nirnay-dag serve ./docs/adr --open
 ```
 
-You can omit the directory if your ADRs are located in `./docs/adr`, or provide a custom directory:
+## Why
 
-```bash
-npx nirnay-dag serve ./sample-adrs --open
-```
+Architecture Decision Records are usually plain Markdown documents, not queryable data. Because dependencies live in prose or unvalidated headers, teams cannot reliably ask "what breaks if we change this decision?" or "which decisions govern this file?" before editing code or reviewing a pull request. NirnayDAG parses Markdown ADRs into a Directed Acyclic Graph (DAG) so those checks run locally, in CI, and inside AI coding assistants.
 
----
+## Features
 
-## 3. Graph Validation & Cycle Detection
+> **Examples folder:** [./sample-adrs](./sample-adrs) contains 6 sample ADRs, including `0006-cycle-test-case.md` to demonstrate cycle detection (`ADR-0004 -> ADR-0006 -> ADR-0004`) and `0005-legacy-auth-system.md` as an orphan decision.
 
-Validate graph integrity, detect hard circular references, and identify missing hard dependency IDs:
+### `validate` — Check for cycles, missing dependencies, and duplicate IDs
 
 ```bash
 npx nirnay-dag validate ./docs/adr
 ```
 
-Soft mutual references (two ADRs that mention each other only in body links) are reported as informational `mutualReferences` and do not fail validation. Use `--strict-refs` to emit warnings for soft mutual references (combine with `--strict` to fail on warnings):
-
-```bash
-npx nirnay-dag validate ./docs/adr --strict-refs
+```text
+✅ Architecture DAG validated successfully.
+   - Total ADRs: 3
+   - Root Decisions: 1
+   - Zero Cycles: Verified
 ```
 
-Exit codes:
+Pass `--strict-refs --strict` to fail on soft mutual references between body links.
+
+### `blast` — Measure downstream impact and risk score
+
+```bash
+npx nirnay-dag blast ADR-0001 ./docs/adr
+```
 
 ```text
-0 — Graph is structurally valid (soft mutual references ignored by default)
-1 — Hard cycle, missing hard dependency, or invalid schema detected
+ADR ID                    │ ADR-0001
+Direct Dependents         │ 2
+Also Referenced By (soft) │ 0
+Cascade Count             │ 2
+Max Depth                 │ 1
+Affected Systems          │ untagged (2)
+Risk Score                │ 66.5/100 (High)
+
+Cascading Impacts:
+ - ADR-0002
+ - ADR-0003
 ```
 
-### ADR Linter (`ndag lint`)
+Pass `--include-soft` to include body-link references in the traversal. The 0–100 risk score is a documented topological heuristic computed from hard edges only; see [docs/RISK_MODEL.md](docs/RISK_MODEL.md).
 
-Run architectural lint rules across your ADR directory:
+### `lint` — Enforce architecture lifecycle rules
 
 ```bash
-npx nirnay-dag lint ./docs/adr
-npx nirnay-dag lint ./docs/adr --json
+npx nirnay-dag lint ./sample-adrs
 ```
 
-Built-in rules:
-- `accepted-depends-on-deprecated` (`error`): an `accepted` decision has a hard dependency on a `deprecated` or `superseded` one.
-- `superseded-without-successor` (`warn`): a decision is marked `superseded` without any `superseded-by` or incoming `supersedes` target.
-- `broken-supersedes` (`error`): a `supersedes` or `superseded-by` target does not exist.
-- `orphan` (`info`): a decision with no incoming or outgoing edges (never fails CI).
-- `affects-no-match` (`warn`): an `affects:` glob matches zero files in the repository (discovered via `git ls-files`, falling back to a filesystem walk ignoring `node_modules` and `.git`).
-- `deprecated-governs-code` (`warn`): a `deprecated` or `superseded` decision still matches existing repository files via `affects:`.
+```text
+Severity │ Rule   │ Files                      │ Message
+info     │ orphan │ 0005-legacy-auth-system.md │ Decision ADR-0005 has no incoming or outgoing edges (orphan).
 
-Status-dependent rules skip nodes whose status was defaulted (no explicit `status`, `stage`, or `state` in frontmatter). Configure rule enable/disable and severity overrides in `.nirnayrc.json`:
-
-```json
-{
-  "rules": {
-    "accepted-depends-on-deprecated": "error",
-    "superseded-without-successor": "warn",
-    "broken-supersedes": "error",
-    "orphan": "off",
-    "affects-no-match": "warn",
-    "deprecated-governs-code": "warn"
-  }
-}
+Summary: 0 error(s), 0 warning(s), 1 info(s)
 ```
 
-`ndag lint` exits `1` only when at least one `error`-severity finding is reported.
+Built-in rules: `accepted-depends-on-deprecated`, `superseded-without-successor`, `broken-supersedes`, `orphan`, `affects-no-match`, and `deprecated-governs-code`.
 
-### File-to-Decision Lookup (`ndag why`)
-
-Query which architectural decisions (and their upstream hard-dependency ancestors) govern one or more repo-relative files:
+### `why` — Map repo files to governing ADRs
 
 ```bash
-npx nirnay-dag why src/core/dagEngine.ts
-npx nirnay-dag why src/core/dagEngine.ts ./docs/adr --json
+npx nirnay-dag why src/core/dagEngine.ts ./docs/adr
 ```
-
-Example output on this repository:
 
 ```text
 src/core/dagEngine.ts
   ADR-0001 — Choose Kahn's Topological Sort and Dagre for Graph Engine [accepted] (glob: src/core/dagEngine.ts)
 ```
 
-This tells engineers and CI which ADR governs `src/core/dagEngine.ts`, its current status, which `affects:` glob matched, and any upstream hard-dependency constraints (and flags `deprecated` or `superseded` decisions). With `--json`, `ndag why` outputs `{ adrDir, results: [{ file, decisions: [{ id, title, status, statusSource, matchingGlob, isDeprecatedOrSuperseded, ancestors }] }] }` and exits `0`.
-
----
-
-## 4. Blast Radius Simulation
-
-Simulate the cascading downstream impact of deprecating or changing a decision:
+### `serve` — Interactive web graph UI
 
 ```bash
-npx nirnay-dag blast ADR-0001 ./docs/adr
+npx nirnay-dag serve ./docs/adr --open
 ```
 
-Output includes:
+```text
+🚀 NirnayDAG server running at http://127.0.0.1:5173
+📁 Serving ADRs from: <repo>/docs/adr
+```
 
-* **Direct dependents**: Count of decisions directly depending on this ADR (hard edges)
-* **Also referenced by (soft)**: Decisions that mention this ADR only via body links/tokens
-* **Cascade count & list**: Total number and IDs of cascading downstream decisions (pass `--include-soft` to include soft references in blast radius and risk calculation)
-* **Impact hierarchy depth**: Longest path through dependents from this node
-* **Affected systems**: Tag-based system grouping of affected decisions
-* **Architectural risk score**: Risk Model v2 score (0–100), risk level (Low / Medium / High), and explainable factor breakdown (direct dependents, cascade fraction, depth, betweenness centrality)
+Binds to `127.0.0.1` (loopback only) and serves a React Flow + Dagre graph canvas.
 
----
-
-## 5. CI/CD PR Gating & Markdown Reports
-
-Generate a structured Markdown report for CI/CD pipelines or pull request comments:
+### `report` — Generate a PR Markdown summary
 
 ```bash
 npx nirnay-dag report ./docs/adr
 ```
 
-### GitHub Actions Workflow Example
-
-Create:
-
 ```text
-.github/workflows/adr-lint.yml
+Successfully wrote PR blast radius summary to <repo>/nirnay-pr-summary.md
 ```
 
-```yaml
-name: ADR Validation & Blast Radius
+Writes `nirnay-pr-summary.md` with DAG status, per-ADR risk table, downstream dependents, `affects` matches, and lint results.
 
-on:
-  pull_request:
-    paths:
-      - "docs/adr/**"
+### MCP server — Query architecture from AI assistants
 
-jobs:
-  validate-adrs:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Validate ADR DAG
-        run: npx -y nirnay-dag validate ./docs/adr
-
-      - name: Generate Blast Radius Report
-        run: npx -y nirnay-dag report ./docs/adr
-```
-
----
-
-## 6. AI Assistant Integration (MCP & Antigravity)
-
-### Google Antigravity Skill Setup
-
-NirnayDAG includes a native Antigravity skill descriptor to automatically assist with ADR validation and blast radius checks during Agent planning.
-
-To install the skill for your workspace:
-1. Ensure the `.agents/skills/nirnaydag/SKILL.md` descriptor is in your repository.
-2. Antigravity will now automatically invoke NirnayDAG when discussing architecture changes, validating ADRs, or assessing blast radius.
-3. NirnayDAG will intelligently export reports as artifacts to `.antigravity/artifacts/` when run non-interactively by agents.
-
-### Standard MCP Server
-
-NirnayDAG runs as a standard **Model Context Protocol (MCP) server over stdio**.
-
-Add the following configuration to your MCP client, such as Cursor, Antigravity, or Claude Desktop:
+Add to your Antigravity, Claude Desktop, or Cursor MCP configuration:
 
 ```json
 {
@@ -438,183 +130,77 @@ Add the following configuration to your MCP client, such as Cursor, Antigravity,
 }
 ```
 
-### Example MCP Prompts
+Exposes 6 stdio tools: `list_adrs`, `get_adr_context`, `query_blast_radius`, `validate_architecture`, `lint_architecture`, and `get_adrs_for_files`. See [docs/ANTIGRAVITY_SETUP.md](docs/ANTIGRAVITY_SETUP.md) for workspace setup.
 
-```text
-"What is the blast radius if we deprecate ADR-0002?"
+## Frontmatter Reference & Formats
 
-"Are there any circular dependencies between my accepted ADRs?"
+NirnayDAG parses Markdown files (`*.md`, `*.mdx`) across MADR, Nygard, RFC, and KEP Markdown directory layouts (`README.md` / `index.md` derive fallback IDs from their parent directory).
 
-"Which infrastructure decisions are superseded by newer records?"
-```
-
-### Available MCP Tools
-
-- `list_adrs` — List ADRs with optional `status` and `tag` filters.
-- `get_adr_context` — Retrieve full Context, Decision, Consequences, and metadata for an ADR ID.
-- `query_blast_radius` — Compute downstream dependents, depth, affected systems, and Risk Model v2 score.
-- `validate_architecture` — Validate the ADR DAG for cycles and missing dependencies.
-- `lint_architecture` — Run all configured ADR lint rules.
-- `get_adrs_for_files` — Given an array of repo-relative `paths`, return the governing decisions and upstream hard-dependency ancestors (same schema as `ndag why`). Rejects absolute paths, `..` traversal segments, paths resolving outside the repository root, and symlinks without reading file contents.
-
+```markdown
 ---
-
-# 🧰 CLI Reference
-
-You can run commands through:
-
-```bash
-npx nirnay-dag <command>
-```
-
-Or install NirnayDAG globally:
-
-```bash
-npm install -g nirnay-dag
-```
-
-After global installation, use the `ndag` binary:
-
-| Command                                    | Description                                      | Example                          |
-| ------------------------------------------ | ------------------------------------------------ | -------------------------------- |
-| `ndag serve [dir] [--open] [--port <num>]` | Launch interactive React Flow web canvas         | `ndag serve ./docs/adr --open`   |
-| `ndag interactive [dir]`                   | Launch interactive terminal UI (TUI)             | `ndag interactive ./docs/adr`    |
-| `ndag validate [dir]`                      | Check DAG for circular loops and broken links    | `ndag validate ./docs/adr`       |
-| `ndag blast <id> [dir]`                    | Calculate downstream blast radius and risk score | `ndag blast ADR-0001 ./docs/adr` |
-| `ndag why <file...> [dir] [--json]`       | Show ADRs governing repo-relative files          | `ndag why src/core/dagEngine.ts` |
-| `ndag lint [dir] [--json]`                | Run architectural lint rules                     | `ndag lint ./docs/adr`           |
-| `ndag report [dir]`                        | Generate Markdown blast-radius report            | `ndag report ./docs/adr`         |
-| `ndag mcp`                                 | Start the stdio MCP server                       | `ndag mcp`                       |
-
+id: ADR-0002
+title: Event-Driven Message Broker
+status: accepted        # proposed | accepted | deprecated | superseded
+depends_on:
+  - ADR-0001
+supersedes: []
+tags:
+  - messaging
+affects:
+  - "src/events/**"
 ---
-
-# 🧠 How It Works
-
-```text
-              Markdown ADRs (*.md)
-                       │
-                       ▼
-            ┌─────────────────────┐
-            │     ADR Parser      │
-            │ Frontmatter & MD    │
-            │                     │
-            │ • YAML frontmatter │
-            │ • Metadata          │
-            │ • Markdown links    │
-            └──────────┬──────────┘
-                       │
-                       ▼
-            ┌─────────────────────┐
-            │    Graph Engine     │
-            │   DAG & Topo Engine │
-            │                     │
-            │ • Kahn's Algorithm  │
-            │ • Transitive        │
-            │   closure           │
-            └──────────┬──────────┘
-                       │
-              ┌────────┴────────┐
-              │                 │
-              ▼                 ▼
-       ┌──────────────┐  ┌──────────────┐
-       │  Graph/UI    │  │   Analysis   │
-       │              │  │              │
-       │ React Flow   │  │ Blast Radius │
-       │ + Dagre      │  │ Risk Scoring │
-       └──────┬───────┘  └──────┬───────┘
-              │                 │
-              └────────┬────────┘
-                       │
-          ┌────────────┼────────────┐
-          ▼            ▼            ▼
-   Interactive       MCP        CI/CD Gate
-      Canvas       AI Context    Validation
 ```
 
----
+**Honest limits:**
+- Only Markdown files are parsed; KEP metadata stored in `kep.yaml` is not read directly.
+- Hard dependencies require `depends_on` or `supersedes` in YAML frontmatter (or a `Supersedes ADR-XXXX` status line). Body Markdown links and `[ADR-XXXX]` tokens are tracked as **soft** references.
+- `.nirnayrc.json` supports `rules` overrides (enable/disable and `error`/`warn`/`info` severity); directory `include`/`exclude` globs are not implemented.
 
-# 🧪 Development & Testing
+## Tested on Real Repositories
 
-Clone the repository:
+Evaluated against 7 pinned open-source repositories (1,565 decision files total); exact figures from [results/corpus-results.json](results/corpus-results.json) and [docs/FINDINGS.md](docs/FINDINGS.md):
+
+| Repository | Decision Files | Status Found % | Title Found % |
+| :--- | :---: | :---: | :---: |
+| `backstage/backstage` | 17 | 0% | 100% |
+| `adr/madr` | 21 | 4.8% | 100% |
+| `rust-lang/rfcs` | 654 | 0% | 7.5% |
+| `kubernetes/enhancements` | 708 | 0% | 97.9% |
+| `cosmos/cosmos-sdk` | 65 | 0% | 100% |
+| `JabRef/jabref` | 88 | 9.1% | 100% |
+| `alphagov/govuk-design-system-architecture` | 12 | 0% | 100% |
+
+What the benchmark found:
+- **Duplicate ID collisions:** 4 files collided before relative-path disambiguation (such as nested `README.md` files in `kubernetes/enhancements`).
+- **Links that only look like dependencies:** Across 1,565 files, NirnayDAG found 456 resolved soft links, 176 non-decision links (e.g., images/docs), 16 outside-scope links, and 73 broken links.
+- **Almost no machine-readable dependencies:** All 7 repositories had `0` hard edges (`depends_on` / `supersedes` frontmatter), leaving 1,188 of 1,565 nodes isolated.
+
+## How It Works
+
+```mermaid
+flowchart LR
+  Files["Markdown ADRs"] --> Parser["ADR Parser (YAML + Body Links)"]
+  Parser --> Engine["Graph Engine (Kahn's + Closure)"]
+  Engine --> Rules["Lint Rules, Risk v2 & Affects"]
+  Rules --> Interfaces["CLI / Web UI / PR Report / MCP"]
+```
+
+Architecture decisions for NirnayDAG itself live in [docs/adr/](docs/adr/):
+- [0001-dag-graph-engine.md](docs/adr/0001-dag-graph-engine.md)
+- [0002-mcp-assistant-protocol.md](docs/adr/0002-mcp-assistant-protocol.md)
+- [0003-hybrid-ingestion-strategy.md](docs/adr/0003-hybrid-ingestion-strategy.md)
+
+## Development
 
 ```bash
-git clone https://github.com/your-org/nirnay-dag.git
-cd nirnay-dag
+git clone https://github.com/Yash4305d-y/NirnayDAG.git
+cd NirnayDAG
+npm ci
+npm run check
 ```
 
-Install dependencies:
+`npm run check` runs TypeScript type-checking, Oxlint, Vite + tsup builds, and Vitest. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
-```bash
-npm install
-```
+## License
 
-Build the CLI and client bundles:
-
-```bash
-npm run build
-```
-
-Run unit and integration tests:
-
-```bash
-npm test
-```
-
-Run the local CLI against sample data:
-
-```bash
-node ./dist/cli.js serve ./sample-adrs --open
-```
-
----
-
-# 🧱 Tech Stack
-
-| Area              | Technology                           |
-| ----------------- | ------------------------------------ |
-| Graph Computation | Kahn's Algorithm, Transitive Closure |
-| Graph Layout      | Dagre                                |
-| UI Engine         | React, `@xyflow/react`               |
-| Styling           | Tailwind CSS                         |
-| UI Animation      | Framer Motion                        |
-| CLI               | Node.js, TypeScript, Commander.js    |
-| Parsing           | `js-yaml`                            |
-| Bundling          | tsup                                 |
-| AI Protocol       | `@modelcontextprotocol/sdk`          |
-| Testing           | Unit & Integration Tests             |
-
----
-
-# 🤝 Contributing
-
-Contributions are welcome.
-
-1. Fork the repository.
-2. Create a feature branch:
-
-```bash
-git checkout -b feat/graph-enhancement
-```
-
-3. Make your changes.
-4. Run the test suite:
-
-```bash
-npm test
-```
-
-5. Commit your changes:
-
-```bash
-git commit -m "feat: add cluster grouping"
-```
-
-6. Push the branch and open a Pull Request.
-
----
-
-## 📜 License
-
-NirnayDAG is licensed under the **MIT License**.
-
-See the [LICENSE](./LICENSE) file for the full license text.
+MIT — see [LICENSE](LICENSE).
