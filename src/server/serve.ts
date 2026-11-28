@@ -1,9 +1,8 @@
-import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import http, { type Server, type IncomingMessage, type ServerResponse } from 'node:http';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import fs from 'fs-extra';
 import fg from 'fast-glob';
-import type { Server } from 'http';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,78 +23,190 @@ export interface ServerInstance {
   close: () => Promise<void>;
 }
 
-export function createServerApp(options: ServeOptions = {}) {
-  const app = express();
-  const targetDir = path.resolve(process.cwd(), options.dir || process.env.ADR_DIR || './docs/adr');
+const MIME_TYPES: Record<string, string> = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.mjs': 'application/javascript; charset=utf-8',
+  '.cjs': 'application/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.ico': 'image/x-icon',
+  '.map': 'application/json; charset=utf-8',
+  '.txt': 'text/plain; charset=utf-8',
+};
 
-  // 1. Local API endpoint for ADRs in target folder
-  app.get('/api/adrs', async (_req, res) => {
+function sendJson(res: ServerResponse, statusCode: number, payload: unknown): void {
+  const body = JSON.stringify(payload);
+  res.writeHead(statusCode, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Content-Length': Buffer.byteLength(body),
+  });
+  res.end(body);
+}
+
+async function sendStaticFile(res: ServerResponse, filePath: string): Promise<void> {
+  const ext = path.extname(filePath).toLowerCase();
+  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+  const data = await fs.readFile(filePath);
+  res.writeHead(200, {
+    'Content-Type': contentType,
+    'Content-Length': data.byteLength,
+  });
+  res.end(data);
+}
+
+function resolveDistDir(explicitDistDir?: string): string | undefined {
+  if (explicitDistDir) return explicitDistDir;
+  const candidateDirs = [
+    __dirname,
+    path.resolve(__dirname, '..'),
+    path.resolve(__dirname, '../../dist'),
+    path.resolve(process.cwd(), 'dist'),
+  ];
+  for (const c of candidateDirs) {
+    if (fs.existsSync(path.join(c, 'index.html'))) {
+      return c;
+    }
+  }
+  return undefined;
+}
+
+export function createServerApp(options: ServeOptions = {}) {
+  const targetDir = path.resolve(process.cwd(), options.dir || process.env.ADR_DIR || './docs/adr');
+  const distDir = resolveDistDir(options.distDir);
+  const resolvedDistDir = distDir ? path.resolve(distDir) : undefined;
+  const hasIndexHtml = Boolean(resolvedDistDir && fs.existsSync(path.join(resolvedDistDir, 'index.html')));
+
+  const handleRequest = async (req: IncomingMessage, res: ServerResponse) => {
+    const method = req.method || 'GET';
+    if (method !== 'GET' && method !== 'HEAD') {
+      res.writeHead(405, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('Method Not Allowed');
+      return;
+    }
+
+    let pathname: string;
+    let decodedRawPath: string;
     try {
-      if (!fs.existsSync(targetDir)) {
-        return res.status(404).json({
-          error: `ADR directory not found: ${targetDir}`,
-          files: [],
-          count: 0,
+      const rawPath = (req.url || '/').split('?')[0];
+      decodedRawPath = decodeURIComponent(rawPath);
+      const parsed = new URL(req.url || '/', 'http://127.0.0.1');
+      pathname = decodeURIComponent(parsed.pathname);
+    } catch {
+      res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('Bad Request');
+      return;
+    }
+
+    if (decodedRawPath.includes('\0') || decodedRawPath.split(/[\\/]/).includes('..')) {
+      res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('Forbidden');
+      return;
+    }
+
+    // 1. Local API endpoint for ADRs in target folder
+    if (pathname === '/api/adrs') {
+      try {
+        if (!fs.existsSync(targetDir)) {
+          sendJson(res, 404, {
+            error: `ADR directory not found: ${targetDir}`,
+            files: [],
+            count: 0,
+            dir: targetDir,
+          });
+          return;
+        }
+
+        const files = await fg('**/*.{md,mdx}', { cwd: targetDir, absolute: true });
+        const fileData = await Promise.all(
+          files.map(async (file) => ({
+            name: path.basename(file),
+            content: await fs.readFile(file, 'utf-8'),
+            path: file.replace(/\\/g, '/'),
+          }))
+        );
+
+        sendJson(res, 200, {
+          files: fileData,
+          count: fileData.length,
           dir: targetDir,
         });
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        sendJson(res, 500, { error: message, files: [], count: 0, dir: targetDir });
+      }
+      return;
+    }
+
+    // 2. Serve built web static assets with path-traversal protection
+    if (hasIndexHtml && resolvedDistDir) {
+      if (pathname.startsWith('/api/')) {
+        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end('Not Found');
+        return;
       }
 
-      const files = await fg('**/*.{md,mdx}', { cwd: targetDir, absolute: true });
-      const fileData = await Promise.all(
-        files.map(async (file) => ({
-          name: path.basename(file),
-          content: await fs.readFile(file, 'utf-8'),
-          path: file.replace(/\\/g, '/'),
-        }))
-      );
+      const relPath = pathname.replace(/^\/+/, '');
+      if (relPath.includes('\0') || relPath.split(/[\\/]/).includes('..')) {
+        res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end('Forbidden');
+        return;
+      }
 
-      res.json({
-        files: fileData,
-        count: fileData.length,
-        dir: targetDir,
-      });
-    } catch (err: any) {
-      res.status(500).json({ error: err.message, files: [], count: 0, dir: targetDir });
+      const candidate = path.resolve(resolvedDistDir, relPath);
+      const isInsideDist =
+        candidate === resolvedDistDir || candidate.startsWith(resolvedDistDir + path.sep);
+      if (!isInsideDist) {
+        res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end('Forbidden');
+        return;
+      }
+
+      if (relPath && fs.existsSync(candidate)) {
+        const stat = await fs.stat(candidate);
+        if (stat.isFile()) {
+          await sendStaticFile(res, candidate);
+          return;
+        }
+      }
+
+      // SPA fallback
+      await sendStaticFile(res, path.join(resolvedDistDir, 'index.html'));
+      return;
     }
+
+    if (pathname === '/') {
+      const html = `<h1>NirnayDAG Server</h1><p>API is active at <a href="/api/adrs">/api/adrs</a>.</p>`;
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Content-Length': Buffer.byteLength(html),
+      });
+      res.end(html);
+      return;
+    }
+
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Not Found');
+  };
+
+  const server = http.createServer((req, res) => {
+    void handleRequest(req, res).catch((err) => {
+      if (!res.headersSent) {
+        res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+      }
+      res.end(err instanceof Error ? err.message : 'Internal Server Error');
+    });
   });
 
-  // 2. Locate built web static assets directory
-  let distDir = options.distDir;
-  if (!distDir) {
-    const candidateDirs = [
-      __dirname,
-      path.resolve(__dirname, '..'),
-      path.resolve(__dirname, '../../dist'),
-      path.resolve(process.cwd(), 'dist'),
-    ];
-    for (const c of candidateDirs) {
-      if (fs.existsSync(path.join(c, 'index.html'))) {
-        distDir = c;
-        break;
-      }
-    }
-  }
-
-  if (distDir && fs.existsSync(path.join(distDir, 'index.html'))) {
-    app.use(express.static(distDir));
-    // SPA fallback
-    app.get('*', (req, res, next) => {
-      if (req.path.startsWith('/api')) return next();
-      res.sendFile(path.join(distDir!, 'index.html'));
-    });
-  } else {
-    app.get('/', (_req, res) => {
-      res.send(
-        `<h1>NirnayDAG Server</h1><p>API is active at <a href="/api/adrs">/api/adrs</a>.</p>`
-      );
-    });
-  }
-
-  return { app, targetDir, distDir };
+  return { server, targetDir, distDir };
 }
 
 export async function startServer(options: ServeOptions = {}): Promise<ServerInstance> {
-  const { app, targetDir } = createServerApp(options);
+  const { server, targetDir } = createServerApp(options);
   const port =
     options.port !== undefined && options.port !== '' && !isNaN(Number(options.port))
       ? Number(options.port)
@@ -103,8 +214,10 @@ export async function startServer(options: ServeOptions = {}): Promise<ServerIns
   const host = '127.0.0.1';
 
   return new Promise((resolve, reject) => {
-    const server = app.listen(port, host, () => {
-      const actualPort = (server.address() as any)?.port || port;
+    server.on('error', reject);
+    server.listen(port, host, () => {
+      const addr = server.address();
+      const actualPort = typeof addr === 'object' && addr ? addr.port : port;
       const url = `http://${host}:${actualPort}`;
       console.log(`🚀 NirnayDAG server running at ${url}`);
       console.log(`📁 Serving ADRs from: ${targetDir}`);
@@ -131,7 +244,5 @@ export async function startServer(options: ServeOptions = {}): Promise<ServerIns
           new Promise<void>((res, rej) => server.close((err) => (err ? rej(err) : res()))),
       });
     });
-
-    server.on('error', reject);
   });
 }

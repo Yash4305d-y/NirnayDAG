@@ -1,4 +1,5 @@
 import { describe, it, expect, afterAll } from 'vitest';
+import http from 'node:http';
 import path from 'path';
 import { startServer, type ServerInstance } from '../src/server/serve.js';
 
@@ -46,6 +47,27 @@ describe('Local Static & API Server (ndag serve)', () => {
     expect(res.status).toBe(200);
     const text = await res.text();
     expect(text.toLowerCase()).toContain('<!doctype html>');
+  });
+
+  it('blocks path traversal attempts on static files', async () => {
+    expect(serverInstance).not.toBeNull();
+    const { status, body } = await new Promise<{ status: number; body: string }>((resolve, reject) => {
+      const req = http.get(
+        {
+          hostname: '127.0.0.1',
+          port: serverInstance!.port,
+          path: '/%2e%2e/package.json',
+        },
+        (res) => {
+          let data = '';
+          res.on('data', (chunk) => (data += chunk));
+          res.on('end', () => resolve({ status: res.statusCode ?? 0, body: data }));
+        }
+      );
+      req.on('error', reject);
+    });
+    expect(status).toBe(403);
+    expect(body).not.toContain('nirnay-dag');
   });
 
   it('handles non-existent ADR directory with 404 on /api/adrs', async () => {

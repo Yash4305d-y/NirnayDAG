@@ -280,4 +280,30 @@ Mixed affects entries.
     expect(parsed.frontmatter.affects).toEqual(['src/auth/**', 'src/users/*.ts']);
     expect(parsed.warnings?.some((w) => w.includes('affects'))).toBe(true);
   });
+
+  it('parses YAML frontmatter containing a list, nested values, and a date', () => {
+    const markdown = `---
+id: ADR-0024
+title: Structured YAML Test
+status: accepted
+date: 2026-01-15
+tags:
+  - core
+  - security
+deciders:
+  - Alice
+  - Bob
+metadata:
+  owner: platform
+  tier: 1
+---
+## Context
+Testing list, nested map, and date parsing with patched js-yaml.
+`;
+    const parsed = parseADRContent(markdown);
+    expect(parsed.frontmatter.id).toBe('ADR-0024');
+    expect(parsed.frontmatter.tags).toEqual(['core', 'security']);
+    expect(parsed.frontmatter.deciders).toEqual(['Alice', 'Bob']);
+    expect(parsed.frontmatter.date).toBeTruthy();
+  });
 });

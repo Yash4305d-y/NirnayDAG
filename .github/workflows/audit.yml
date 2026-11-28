@@ -1,0 +1,27 @@
+name: Weekly Security Audit
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  npm-audit:
+    name: Production Dependency Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Production Dependencies
+        run: npm ci --omit=dev
+
+      - name: Run npm audit (high/critical)
+        run: npm audit --omit=dev --audit-level=high

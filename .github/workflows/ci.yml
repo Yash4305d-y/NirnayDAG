@@ -38,3 +38,63 @@ jobs:
 
       - name: Run Test Suite
         run: npm test
+
+  install-smoke-test:
+    name: Install Smoke Test (npm pack)
+    runs-on: ubuntu-latest
+    needs: validate-and-test
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Package
+        run: npm run build
+
+      - name: Pack Tarball & Smoke Test Installed CLI
+        run: |
+          TARBALL=$(npm pack --silent | tail -n 1)
+          TARBALL_PATH="$(pwd)/${TARBALL}"
+          TMP_DIR=$(mktemp -d)
+          trap 'rm -rf "$TMP_DIR" "$TARBALL_PATH"' EXIT
+
+          mkdir -p "$TMP_DIR/fixtures"
+          cat <<'EOF' > "$TMP_DIR/fixtures/0001-base.md"
+          ---
+          id: ADR-0001
+          title: Core Architecture
+          status: accepted
+          affects:
+            - "src/core/**"
+          ---
+          # Core Architecture
+          EOF
+          cat <<'EOF' > "$TMP_DIR/fixtures/0002-api.md"
+          ---
+          id: ADR-0002
+          title: API Layer
+          status: accepted
+          depends_on:
+            - ADR-0001
+          ---
+          # API Layer
+          EOF
+
+          cd "$TMP_DIR"
+          npm init -y >/dev/null
+          npm install "$TARBALL_PATH"
+
+          ./node_modules/.bin/ndag --help
+          ./node_modules/.bin/ndag validate ./fixtures
+          ./node_modules/.bin/ndag lint ./fixtures
+          ./node_modules/.bin/ndag why src/core/engine.ts ./fixtures
+          ./node_modules/.bin/ndag blast ADR-0001 ./fixtures --json
