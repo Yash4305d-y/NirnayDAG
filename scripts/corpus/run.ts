@@ -40,14 +40,24 @@ function executeGit(cmd: string, cwd?: string): string {
   }).trim();
 }
 
-const PHASE_2C_1_1_BASELINE: Record<string, { nodes: number; edges: number; brokenLinks: number }> = {
-  'backstage/backstage': { nodes: 17, edges: 4, brokenLinks: 0 },
-  'adr/madr': { nodes: 21, edges: 4, brokenLinks: 0 },
-  'rust-lang/rfcs': { nodes: 654, edges: 12, brokenLinks: 21 },
-  'kubernetes/enhancements': { nodes: 708, edges: 216, brokenLinks: 51 },
-  'cosmos/cosmos-sdk': { nodes: 65, edges: 88, brokenLinks: 1 },
-  'JabRef/jabref': { nodes: 88, edges: 25, brokenLinks: 0 },
-  'alphagov/govuk-design-system-architecture': { nodes: 12, edges: 4, brokenLinks: 0 },
+const PHASE_2C_1_1_BASELINE: Record<
+  string,
+  {
+    nodes: number;
+    edges: number;
+    brokenLinks: number;
+    realTitlePercent: number;
+    statusFoundPercent: number;
+    hardEdges: number;
+  }
+> = {
+  'backstage/backstage': { nodes: 17, edges: 4, brokenLinks: 0, realTitlePercent: 100, statusFoundPercent: 0, hardEdges: 0 },
+  'adr/madr': { nodes: 21, edges: 4, brokenLinks: 0, realTitlePercent: 100, statusFoundPercent: 4.8, hardEdges: 0 },
+  'rust-lang/rfcs': { nodes: 654, edges: 12, brokenLinks: 21, realTitlePercent: 7.5, statusFoundPercent: 0, hardEdges: 0 },
+  'kubernetes/enhancements': { nodes: 708, edges: 216, brokenLinks: 51, realTitlePercent: 97.9, statusFoundPercent: 0, hardEdges: 0 },
+  'cosmos/cosmos-sdk': { nodes: 65, edges: 88, brokenLinks: 1, realTitlePercent: 100, statusFoundPercent: 0, hardEdges: 0 },
+  'JabRef/jabref': { nodes: 88, edges: 25, brokenLinks: 0, realTitlePercent: 100, statusFoundPercent: 9.1, hardEdges: 0 },
+  'alphagov/govuk-design-system-architecture': { nodes: 12, edges: 4, brokenLinks: 0, realTitlePercent: 100, statusFoundPercent: 0, hardEdges: 0 },
 };
 
 const EMPTY_EXTRACTION_QUALITY: ExtractionQualityMetrics = {
@@ -255,6 +265,7 @@ export async function benchmarkSingleRepo(
       repo: repo.name,
       commitSha,
       excludedFiles,
+      extractionSamples: evidence.extractionSamples,
       cycles: evidence.cycles,
       mutualReferences: evidence.mutualReferences,
       brokenLinks: evidence.brokenLinks,

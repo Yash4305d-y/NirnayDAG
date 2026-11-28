@@ -1,0 +1,9 @@
+title: Replacement API
+kep-number: 200
+owning-sig: sig-api
+status: implementable
+replaces:
+  - "/sig-api/100-base/README.md"
+  - "https://example.com/external-doc"
+superseded-by:
+  - "300"

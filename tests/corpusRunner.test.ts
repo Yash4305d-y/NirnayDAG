@@ -219,7 +219,10 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
     };
 
     const markdown = generateFindingsMarkdown(mockReport);
-    expect(markdown).toContain('| [test-org/test-repo](https://github.com/test-org/test-repo.git) | `abc1234` | `madr` | MIT | 6 | 4 | 66.7% | 75% | 50% | 25% / 75% / 0% | 0 | 4 | 4 | 1 / 0 | 0.25 | 2 | None | 0 | 1 | 15ms | 50ms |');
+    expect(markdown).toContain('| [test-org/test-repo](https://github.com/test-org/test-repo.git) | `abc1234` | `madr` | MIT | 6 | 4 | 66.7% | 75% | 0% / 0% / 0% / 0% / 0% | 50% | 0% / 0% / 0% / 0% | 25% / 75% / 0% | 0 | 4 | 4 | 1 / 0 | 0.25 | 2 | None | 0 | 1 | 15ms | 50ms |');
+    expect(markdown).toContain('Title Source (FM / H1 / Meta / KEP / Slug)');
+    expect(markdown).toContain('Status Source (FM / Sec / Line / KEP)');
+    expect(markdown).toContain('Extraction Quality Before/After Comparison (Phase 2C-2b)');
     expect(markdown).toContain('Duplicate IDs');
     expect(markdown).toContain('Unique IDs');
     expect(markdown).toContain('Checkout Time (cached)');
@@ -238,7 +241,7 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
       .filter(
         (l) =>
           l.startsWith('| Repository | Commit |') ||
-          l.startsWith('| :--- | :---: |') ||
+          l.startsWith('| :--- | :---: | :--- | :--- |') ||
           l.startsWith('| [test-org/test-repo]')
       );
     expect(tableLines.length).toBe(3);
@@ -513,6 +516,83 @@ describe('Corpus Runner & Analyzer Error Handling', () => {
       expect(md).toContain('Nodes (Before → After)');
       expect(md).toContain('5 → 3');
       expect(md).toContain('1 → 0');
+    });
+  });
+
+  describe('Status Found counts non-default statusSource only (Phase 2C-2b Step 1)', () => {
+    it('counts frontmatter, section, and line statuses as found, excluding default', () => {
+      const outcome = analyzeDecisionFiles([
+        {
+          relativePath: '0001-fm.md',
+          content: '---\nid: ADR-0001\ntitle: FM\nstatus: accepted\n---\n# FM\n',
+        },
+        {
+          relativePath: '0002-nygard.md',
+          content: '# Nygard\n\n## Status\n\nDeprecated\n',
+        },
+        {
+          relativePath: '0003-madr.md',
+          content: '# MADR\n\n* Status: proposed\n',
+        },
+        {
+          relativePath: '0004-none.md',
+          content: '# No Status\n\n## Context\nNothing here.\n',
+        },
+      ]);
+
+      expect(outcome.filesParsedOK).toBe(4);
+      expect(outcome.extractionQuality.statusFoundCount).toBe(3);
+      expect(outcome.extractionQuality.statusFoundPercent).toBe(75);
+    });
+  });
+
+  describe('Real Title counts non-slug/non-default titleSource only (Phase 2C-2b Step 2)', () => {
+    it('counts frontmatter, heading, and metadata-line titles as real, excluding slug fallback', () => {
+      const outcome = analyzeDecisionFiles([
+        {
+          relativePath: '0001-fm.md',
+          content: '---\nid: ADR-0001\ntitle: FM Title\n---\nBody\n',
+        },
+        {
+          relativePath: '0002-h1.md',
+          content: '# H1 Title\n\nBody\n',
+        },
+        {
+          relativePath: '0003-rfc.md',
+          content: '- Feature Name: my_feature\n- Start Date: 2020-01-01\n\n## Summary\n',
+        },
+        {
+          relativePath: '0004-slug-only.md',
+          content: '- Start Date: 2014-03-11\n\n## Summary\nNo H1 or Feature Name.\n',
+        },
+      ]);
+
+      expect(outcome.filesParsedOK).toBe(4);
+      expect(outcome.extractionQuality.realTitleCount).toBe(3);
+      expect(outcome.extractionQuality.realTitlePercent).toBe(75);
+    });
+  });
+
+  describe('KEP fixture folder extraction (Phase 2C-2b Step 3)', () => {
+    it('detects sibling kep.yaml by file layout and extracts hard/soft edges, titles, and statuses', async () => {
+      const kepFixtureDir = path.resolve(__dirname, 'fixtures', 'kep-fixture');
+      const files = await readDirectoryDecisionFiles(kepFixtureDir, ['.']);
+      const outcome = analyzeDecisionFiles(files);
+
+      expect(outcome.filesFound).toBe(4);
+      expect(outcome.filesParsedOK).toBe(4);
+      expect(outcome.extractionQuality.realTitleCount).toBe(4);
+      expect(outcome.extractionQuality.statusFoundCount).toBe(4);
+      expect(outcome.hardEdges).toBe(2);
+      expect(outcome.softEdges).toBe(1);
+      expect(outcome.brokenLinks).toBe(0);
+      expect(outcome.extractionQuality.statusFromKepYamlPercent).toBe(100);
+      expect(outcome.extractionQuality.titleFromKepYamlPercent).toBe(100);
+      expect(outcome.evidence.extractionSamples?.length).toBe(3);
+      expect(outcome.evidence.extractionSamples?.[0]).toMatchObject({
+        titleSource: 'kep-yaml',
+        statusSource: 'kep-yaml',
+      });
     });
   });
 });

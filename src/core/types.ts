@@ -6,6 +6,9 @@ export type EdgeSource =
   | 'frontmatter:depends_on'
   | 'frontmatter:supersedes'
   | 'status:supersedes'
+  | 'kep:replaces'
+  | 'kep:superseded-by'
+  | 'kep:see-also'
   | 'body:link'
   | 'body:id';
 
@@ -65,6 +68,10 @@ export interface NirnayValidationError {
 
 export type ADRStatus = 'proposed' | 'accepted' | 'deprecated' | 'superseded' | 'rejected';
 
+export type StatusSource = 'frontmatter' | 'section' | 'line' | 'kep-yaml' | 'default';
+
+export type TitleSource = 'frontmatter' | 'heading' | 'metadata-line' | 'kep-yaml' | 'slug' | 'default';
+
 export interface ADRFrontmatter {
   id: string;
   title: string;
@@ -108,6 +115,9 @@ export interface ParsedADR {
   consequences: ADRConsequences;
   rawContent: string;
   filePath?: string;
+  kepNumber?: number | string;
+  titleSource?: TitleSource;
+  statusSource?: StatusSource;
   edges?: ADREdgeRef[];
   links?: ClassifiedLink[];
   warnings?: string[];

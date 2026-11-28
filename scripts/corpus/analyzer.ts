@@ -4,6 +4,7 @@ import * as yaml from 'js-yaml';
 import { listDecisionFiles } from '../../src/core/decisionLoader.js';
 import {
   parseADRContent,
+  applyKepMetadata,
   deriveFallbackId,
   disambiguateDuplicateIds,
   resolveBatchLinks,
@@ -16,6 +17,7 @@ import type {
   FileParseFailure,
   FailureReasonCount,
   ExtractionQualityMetrics,
+  ExtractionSampleEvidence,
   CycleEdgeEvidence,
   BrokenLinkEvidence,
   MutualReferenceEvidence,
@@ -26,9 +28,11 @@ import type {
 export interface DecisionFileInput {
   relativePath: string;
   content: string;
+  kepYamlContent?: string;
 }
 
 export interface AnalysisEvidence {
+  extractionSamples: ExtractionSampleEvidence[];
   cycles: Array<{
     cyclePath: string[];
     edges: CycleEdgeEvidence[];
@@ -159,6 +163,15 @@ export function analyzeDecisionFiles(
 
   let realTitleCount = 0;
   let statusFoundCount = 0;
+  let statusFromFrontmatterCount = 0;
+  let statusFromSectionCount = 0;
+  let statusFromLineCount = 0;
+  let statusFromKepYamlCount = 0;
+  let titleFromFrontmatterCount = 0;
+  let titleFromHeadingCount = 0;
+  let titleFromMetadataLineCount = 0;
+  let titleFromKepYamlCount = 0;
+  let titleFromSlugCount = 0;
   let idFromFrontmatterCount = 0;
   let idFromFilenameCount = 0;
   let idGeneratedCount = 0;
@@ -177,16 +190,35 @@ export function analyzeDecisionFiles(
       }
 
       parsed.filePath = file.relativePath;
+      if (file.kepYamlContent) {
+        applyKepMetadata(parsed, file.kepYamlContent);
+      }
 
       const { data: rawFm } = extractRawFrontmatter(file.content);
 
-      if (parsed.frontmatter.title && parsed.frontmatter.title !== 'Untitled ADR') {
+      if (
+        parsed.titleSource &&
+        parsed.titleSource !== 'slug' &&
+        parsed.titleSource !== 'default' &&
+        parsed.frontmatter.title !== 'Untitled ADR'
+      ) {
         realTitleCount++;
       }
 
-      if (rawFm && (rawFm.status !== undefined || rawFm.stage !== undefined || rawFm.state !== undefined)) {
+      if (parsed.titleSource === 'frontmatter') titleFromFrontmatterCount++;
+      else if (parsed.titleSource === 'heading') titleFromHeadingCount++;
+      else if (parsed.titleSource === 'metadata-line') titleFromMetadataLineCount++;
+      else if (parsed.titleSource === 'kep-yaml') titleFromKepYamlCount++;
+      else if (parsed.titleSource === 'slug') titleFromSlugCount++;
+
+      if (parsed.statusSource && parsed.statusSource !== 'default') {
         statusFoundCount++;
       }
+
+      if (parsed.statusSource === 'frontmatter') statusFromFrontmatterCount++;
+      else if (parsed.statusSource === 'section') statusFromSectionCount++;
+      else if (parsed.statusSource === 'line') statusFromLineCount++;
+      else if (parsed.statusSource === 'kep-yaml') statusFromKepYamlCount++;
 
       if (rawFm && rawFm.id !== undefined && String(rawFm.id) === parsed.frontmatter.id) {
         idFromFrontmatterCount++;
@@ -216,6 +248,15 @@ export function analyzeDecisionFiles(
     realTitlePercent: toPercent(realTitleCount, filesParsedOK),
     statusFoundCount,
     statusFoundPercent: toPercent(statusFoundCount, filesParsedOK),
+    statusFromFrontmatterPercent: toPercent(statusFromFrontmatterCount, filesParsedOK),
+    statusFromSectionPercent: toPercent(statusFromSectionCount, filesParsedOK),
+    statusFromLinePercent: toPercent(statusFromLineCount, filesParsedOK),
+    statusFromKepYamlPercent: toPercent(statusFromKepYamlCount, filesParsedOK),
+    titleFromFrontmatterPercent: toPercent(titleFromFrontmatterCount, filesParsedOK),
+    titleFromHeadingPercent: toPercent(titleFromHeadingCount, filesParsedOK),
+    titleFromMetadataLinePercent: toPercent(titleFromMetadataLineCount, filesParsedOK),
+    titleFromKepYamlPercent: toPercent(titleFromKepYamlCount, filesParsedOK),
+    titleFromSlugPercent: toPercent(titleFromSlugCount, filesParsedOK),
     idFromFrontmatterCount,
     idFromFrontmatterPercent: toPercent(idFromFrontmatterCount, filesParsedOK),
     idFromFilenameCount,
@@ -265,7 +306,7 @@ export function analyzeDecisionFiles(
           orphan: 0,
         },
       },
-      evidence: { cycles: [], mutualReferences: [], brokenLinks: [], lintFindings: {} },
+      evidence: { extractionSamples: [], cycles: [], mutualReferences: [], brokenLinks: [], lintFindings: {} },
     };
   }
 
@@ -431,6 +472,22 @@ export function analyzeDecisionFiles(
       };
     });
 
+  const sampleIndices = parsedADRs.length <= 3
+    ? parsedADRs.map((_, idx) => idx)
+    : [0, Math.floor(parsedADRs.length / 2), parsedADRs.length - 1];
+  const extractionSamples: ExtractionSampleEvidence[] = sampleIndices.map((idx) => {
+    const adr = parsedADRs[idx];
+    return {
+      file: adr.filePath || 'unknown',
+      id: adr.frontmatter.id,
+      title: adr.frontmatter.title,
+      titleSource: adr.titleSource ?? 'default',
+      status: adr.frontmatter.status,
+      statusSource: adr.statusSource ?? 'default',
+      ...(adr.frontmatter.tags && adr.frontmatter.tags.length > 0 ? { tags: adr.frontmatter.tags } : {}),
+    };
+  });
+
   return {
     filesFound,
     filesParsedOK,
@@ -461,6 +518,7 @@ export function analyzeDecisionFiles(
     missingDependencies: allMissing,
     lintSummary: lintResult.summary,
     evidence: {
+      extractionSamples,
       cycles: cycleEvidence,
       mutualReferences: mutualRefEvidence,
       brokenLinks: brokenLinkEvidence,
@@ -497,9 +555,21 @@ export async function readDirectoryDecisionFilesWithExclusions(
       try {
         const content = await fs.readFile(absolutePath, 'utf-8');
         const relativeToRepo = path.relative(repoRoot, absolutePath).replace(/\\/g, '/');
+        let kepYamlContent: string | undefined;
+        if (path.basename(absolutePath).toLowerCase() === 'readme.md') {
+          const dir = path.dirname(absolutePath);
+          const kepYamlPath = path.join(dir, 'kep.yaml');
+          const kepYmlPath = path.join(dir, 'kep.yml');
+          if (await fs.pathExists(kepYamlPath)) {
+            kepYamlContent = await fs.readFile(kepYamlPath, 'utf-8');
+          } else if (await fs.pathExists(kepYmlPath)) {
+            kepYamlContent = await fs.readFile(kepYmlPath, 'utf-8');
+          }
+        }
         allFiles.push({
           relativePath: relativeToRepo,
           content,
+          ...(kepYamlContent !== undefined ? { kepYamlContent } : {}),
         });
       } catch {
         const relativeToRepo = path.relative(repoRoot, absolutePath).replace(/\\/g, '/');
