@@ -67,8 +67,9 @@ jobs:
           TMP_DIR=$(mktemp -d)
           trap 'rm -rf "$TMP_DIR" "$TARBALL_PATH"' EXIT
 
-          mkdir -p "$TMP_DIR/fixtures"
-          cat <<'EOF' > "$TMP_DIR/fixtures/0001-base.md"
+          mkdir -p "$TMP_DIR/fixture-repo/fixtures" "$TMP_DIR/fixture-repo/src/core"
+          echo "export const engine = true;" > "$TMP_DIR/fixture-repo/src/core/engine.ts"
+          cat <<'EOF' > "$TMP_DIR/fixture-repo/fixtures/0001-base.md"
           ---
           id: ADR-0001
           title: Core Architecture
@@ -78,7 +79,7 @@ jobs:
           ---
           # Core Architecture
           EOF
-          cat <<'EOF' > "$TMP_DIR/fixtures/0002-api.md"
+          cat <<'EOF' > "$TMP_DIR/fixture-repo/fixtures/0002-api.md"
           ---
           id: ADR-0002
           title: API Layer
@@ -89,12 +90,20 @@ jobs:
           # API Layer
           EOF
 
+          git -C "$TMP_DIR/fixture-repo" init
+          git -C "$TMP_DIR/fixture-repo" add src/core/engine.ts
+
           cd "$TMP_DIR"
           npm init -y >/dev/null
           npm install "$TARBALL_PATH"
 
+          test -e ./node_modules/.bin/ndag
+          EXPECTED_VER=$(node -e "console.log(require('./node_modules/nirnay-dag/package.json').version)")
+          ACTUAL_VER=$(./node_modules/.bin/ndag --version)
+          test "$ACTUAL_VER" = "$EXPECTED_VER"
+
           ./node_modules/.bin/ndag --help
-          ./node_modules/.bin/ndag validate ./fixtures
-          ./node_modules/.bin/ndag lint ./fixtures
-          ./node_modules/.bin/ndag why src/core/engine.ts ./fixtures
-          ./node_modules/.bin/ndag blast ADR-0001 ./fixtures --json
+          ./node_modules/.bin/ndag validate ./fixture-repo/fixtures
+          ./node_modules/.bin/ndag lint ./fixture-repo/fixtures
+          ./node_modules/.bin/ndag why "$TMP_DIR/fixture-repo/src/core/engine.ts" ./fixture-repo/fixtures
+          ./node_modules/.bin/ndag blast ADR-0001 ./fixture-repo/fixtures --json
